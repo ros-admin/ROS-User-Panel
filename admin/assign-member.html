@@ -30,6 +30,29 @@
   </div>
 
   <script type="module">
+    import { db, auth } from '../firebase-config.js'; // auth নিশ্চিত করুন
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// 🔐 সিকিউরিটি গেটওয়াল: লগইন এবং রোল চেক
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    // লগইন না থাকলে লাথি মেরে লগইন পেজে পাঠাবে
+    window.location.href = "../login.html";
+    return;
+  }
+  
+  // লগইন থাকলে সে আসলেই অ্যাডমিন কিনা ডাটাবেজ থেকে চেক করবে
+  const userSnap = await getDoc(doc(db, "users", user.uid));
+  if (userSnap.exists()) {
+    const role = userSnap.data().role;
+    if (role !== "super_admin" && role !== "president" && role !== "secretary") {
+      alert("আপনার এই পেজে ঢোকার অনুমতি নেই!");
+      window.location.href = "../login.html";
+    }
+  }
+});
+    
     import { db } from '../firebase-config.js';
     import { doc, getDoc, collection, getDocs, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
