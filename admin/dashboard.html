@@ -90,7 +90,6 @@
   <script src="../admin/qrVerify.js"></script>
   <script src="../admin/reports.js"></script>
   <script src="../admin/logs.js"></script>
-  <script src="../admin/backup.js"></script>
   <script src="../admin/settings.js"></script>
   
   
@@ -242,11 +241,7 @@
         // সিস্টেম অ্যাক্টিভিটি লগ মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
                         }
-                        else if (id === 'backup') {
-  // এখন শুধু contentRoot আর db পাস করলেই হবে
-  loadBackupModule(contentRoot, db);
-}
-
+                      
                         else if (id === 'settings') {
         // এখানে onSnapshot, doc, updateDoc এবং আমাদের নতুন ইম্পোর্ট করা setDoc পাস করা হলো
         loadSettingsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, setDoc);
