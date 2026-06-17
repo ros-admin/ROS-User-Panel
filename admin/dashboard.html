@@ -78,6 +78,8 @@
   <script src="../admin/members.js"></script>
   <script src="../admin/committee.js"></script>
   <script src="../admin/comHistory.js"></script>
+  <script src="../admin/events.js"></script>
+  <script src="../admin/volunteers.js"></script>
   
   <script type="module">
     import { db, auth } from '../firebase-config.js';
@@ -175,6 +177,22 @@
         // কমিটির ইতিহাস মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadComHistoryModule(contentRoot, db, collection, onSnapshot);
           }
+            else if (id === 'events') {
+        // ইভেন্ট মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadEventsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
+            }
+              else if (id === 'volunteers') {
+        // স্বেচ্ছাসেবক মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadVolunteersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, updateDoc, deleteDoc);
+              }
+
+
+
+
+
+
+
+            
       else {
         contentRoot.innerHTML = `
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
