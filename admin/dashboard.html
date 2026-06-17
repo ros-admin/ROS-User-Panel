@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROS Nexus - Enterprise Admin ERP</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Galada&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --cyber-bg: #030712;
+      --glass-bg: rgba(17, 24, 39, 0.7);
+      --glass-border: rgba(0, 180, 216, 0.2);
+      --neon-blue: #00b4d8;
+      --neon-green: #2ec4b6;
+      --neon-yellow: #ffb703;
+      --neon-red: #e63946;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', 'Orbitron', sans-serif; }
+    
+    body {
+      background-color: var(--cyber-bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .cyber-glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .erp-wrapper {
+      display: flex;
+      flex: 1;
+      position: relative;
+      margin-top: 60px;
+      margin-bottom: 50px;
+    }
+
+    .sidebar-nav {
+      width: 280px;
+      height: calc(100vh - 110px);
+      position: fixed;
+      top: 60px;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 99;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .sidebar-header h2 {
+      font-size: 18px;
+      color: var(--neon-blue);
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(0, 180, 216, 0.5);
+    }
+
+    .sidebar-menu { list-style: none; padding: 15px 0; }
+    .menu-item a {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      border-left: 4px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .menu-item a:hover, .menu-item.active a {
+      color: #fff;
+      background: rgba(0, 180, 216, 0.1);
+      border-left-color: var(--neon-blue);
+      text-shadow: 0 0 8px var(--neon-blue);
+    }
+
+    .main-content-node {
+      margin-left: 280px;
+      flex: 1;
+      padding: 30px;
+      min-height: calc(100vh - 110px);
+      transition: all 0.4s ease;
+    }
+
+    .admin-profile-trigger {
+      position: absolute;
+      top: -50px;
+      right: 20px;
+      z-index: 1000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0, 180, 216, 0.4);
+      object-fit: cover;
+    }
+
+    .profile-dropdown {
+      position: absolute;
+      top: 50px;
+      right: 0;
+      width: 220px;
+      border-radius: 8px;
+      padding: 10px 0;
+      display: none;
+      flex-direction: column;
+    }
+
+    .dropdown-info { padding: 10px 20px; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
+    .profile-dropdown a {
+      padding: 10px 20px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: 0.2s;
+    }
+    .profile-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+    .mobile-menu-btn {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1001;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .nexus-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-body { width: 90%; max-width: 450px; padding: 25px; border-radius: 8px; }
+
+    .cyber-input {
+      width: 100%; padding: 12px; background: rgba(0,0,0,0.4);
+      border: 1px solid var(--glass-border); color: #fff;
+      border-radius: 4px; margin-bottom: 15px; outline: none;
+    }
+    .cyber-input:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0,180,216,0.3); }
+
+    @media (max-width: 992px) {
+      .sidebar-nav { left: -280px; height: calc(100vh - 60px); top: 60px; }
+      .sidebar-nav.active { left: 0; }
+      .main-content-node { margin-left: 0; padding: 15px; }
+      .mobile-menu-btn { display: block; }
+      .admin-profile-trigger { top: 15px; right: 15px; }
+    }
+  </style>
+</head>
+<body id="nexusCoreBody" style="display: none;">
+
+  <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+
+  <div class="admin-profile-trigger" id="profileTrigger">
+    <span id="headerAdminRole" style="font-size: 11px; color: var(--neon-green); font-weight: bold;">SECURE NODE</span>
+    <img src="../placeholder.png" id="topAdminAvatar" class="admin-avatar">
+    
+    <div class="profile-dropdown cyber-glass" id="profileDropdown">
+      <div class="dropdown-info">
+        <h4 id="dropAdminName">লোড হচ্ছে...</h4>
+        <small id="dropAdminEmail">admin@ros.org</small>
+      </div>
+      <a href="#" id="openPassModalBtn"><i class="fas fa-key"></i> পাসওয়ার্ড পরিবর্তন</a>
+      <a href="#" id="adminSignOutBtn" style="color: var(--neon-red);"><i class="fas fa-sign-out-alt"></i> লগআউট</a>
+    </div>
+  </div>
+
+  <div class="erp-wrapper">
+    
+    <aside class="sidebar-nav cyber-glass" id="sidebarNode">
+      <div class="sidebar-header">
+        <h2>ROS NEXUS ERP</h2>
+        <small style="color: var(--text-muted); font-size: 10px;">SYSTEM CONTROL STATION</small>
+      </div>
+      <ul class="sidebar-menu" id="centralMenuContainer">
+        </ul>
+    </aside>
+
+    <main class="main-content-node" id="spaContentRoot">
+      </main>
+
+  </div>
+
+  <div class="nexus-modal" id="passwordChangeModal">
+    <div class="modal-body cyber-glass">
+      <h3 style="color: var(--neon-blue); margin-bottom: 15px;">🔒 সিকিউর কি-পাসওয়ার্ড আপডেট</h3>
+      <form id="passwordUpdateForm">
+        <input type="password" id="newPassword" class="cyber-input" placeholder="নতুন পাসওয়ার্ড (নূন্যতম ৬ ডিজিট)" required>
+        <input type="password" id="confirmNewPassword" class="cyber-input" placeholder="নতুন পাসওয়ার্ড নিশ্চিত করুন" required>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="cyber-input" id="closePassModalBtn" style="width: auto; margin:0; background: transparent;">বাতিল</button>
+          <button type="submit" class="cyber-input" style="width: auto; margin:0; background: var(--neon-blue); border:none; font-weight:bold;">আপডেট</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/navigation.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script type="module">
+    import { db, auth } from '../firebase-config.js';
+    import { 
+      collection, query, where, orderBy, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // ১৮টি গ্লোবাল ইআরপি মডিউল
+    const erpModules = [
+      { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
+      { id: 'members', name: '👥 সদস্য ম্যানেজমেন্ট' },
+      { id: 'committee', name: '🏛️ কমিটি ফরমেশন' },
+      { id: 'comHistory', name: '📜 কমিটির ইতিহাস' },
+      { id: 'events', name: '📅 ইভেন্ট প্যানেল' },
+      { id: 'volunteers', name: '🙋 স্বেচ্ছাসেবক উইং' },
+      { id: 'attendance', name: '⏱️ ডিজিটাল উপস্থিতি' },
+      { id: 'logistics', name: '📦 লজিস্টিকস ও নোটস' },
+      { id: 'treasury', name: '💰 সেন্ট্রাল ট্রেজারি' },
+      { id: 'documents', name: '📁 ডকুমেন্ট হাব' },
+      { id: 'notifications', name: '🔔 নোটিফিকেশন সেন্টার' },
+      { id: 'messages', name: '💬 মেসেজ ও সাপোর্ট টিকিট' },
+      { id: 'idCards', name: '🪪 মেম্বারশিপ কার্ড জোন' },
+      { id: 'qrVerify', name: '🔍 QR কোড ভেরিфикации' },
+      { id: 'reports', name: '📈 এন্টারপ্রাইজ রিপোর্টস' },
+      { id: 'logs', name: '🔐 সিস্টেম অ্যাক্টিভিটি লগ' },
+      { id: 'backup', name: '💾 ব্যাকআপ ও রিস্টোর' },
+      { id: 'settings', name: '⚙️ গ্লোবাল সিস্টেম সেটিংস' }
+    ];
+
+    const menuContainer = document.getElementById('centralMenuContainer');
+    const contentRoot = document.getElementById('spaContentRoot');
+    const sidebarNode = document.getElementById('sidebarNode');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const passwordChangeModal = document.getElementById('passwordChangeModal');
+    let currentAdminData = null;
+    let localMembersArray = []; // মেম্বার ফিল্টারিং ক্যাশ ভ্যারিয়েবল
+
+    // 🔐 ১. গেটওয়ে সিকিউরিটি ভেরিফিকেশন
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "../login.html";
+        return;
+      }
+      try {
+        const adminSnap = await getDoc(doc(db, "users", user.uid));
+        if (adminSnap.exists() && ["super_admin", "president", "secretary", "treasurer"].includes(adminSnap.data().role)) {
+          currentAdminData = adminSnap.data();
+          setupAdminHeaderProfile();
+          initSidebarMenu();
+          switchModuleView('dashboard'); 
+          document.getElementById('nexusCoreBody').style.display = 'flex';
+        } else {
+          alert("অনাধিকার প্রবেশ নিষিদ্ধ! আপনি অ্যাডমিন প্যানেলের জন্য অনুমোদিত নন।");
+          window.location.href = "../login.html";
+        }
+      } catch (err) {
+        console.error("Security Gateway Error: ", err);
+      }
+    });
+
+    function setupAdminHeaderProfile() {
+      document.getElementById('headerAdminRole').innerText = currentAdminData.role.toUpperCase().replace('_', ' ');
+      document.getElementById('topAdminAvatar').src = currentAdminData.photoUrl || '../placeholder.png';
+      document.getElementById('dropAdminName').innerText = currentAdminData.englishName;
+      document.getElementById('dropAdminEmail').innerText = auth.currentUser.email;
+    }
+
+    // ২. সাইডবার জেনারেশন লজিক
+    function initSidebarMenu() {
+      menuContainer.innerHTML = "";
+      erpModules.forEach((mod, index) => {
+        const li = document.createElement('li');
+        li.className = `menu-item ${index === 0 ? 'active' : ''}`;
+        li.innerHTML = `<a href="#" data-mod-id="${mod.id}">${mod.name}</a>`;
+        menuContainer.appendChild(li);
+      });
+
+      document.querySelectorAll('.menu-item a').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.querySelectorAll('.menu-item').forEach(li => li.classList.remove('active'));
+          link.parentElement.classList.add('active');
+          switchModuleView(link.getAttribute('data-mod-id'));
+          if (window.innerWidth <= 992) sidebarNode.classList.remove('active');
+        });
+      });
+    }
+
+    // ৩. সেন্ট্রাল এসপিএ (SPA) রেন্ডারিং মডিউল
+    function switchModuleView(id) {
+      contentRoot.innerHTML = "";
+
+      if (id === 'dashboard') {
+        contentRoot.innerHTML = `
+          <div class="cyber-glass" style="padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid var(--neon-blue);">
+            <h2 style="font-size: 20px;">স্বাগতম, <span style="color: var(--neon-blue);">${currentAdminData.englishName}</span></h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">সার্ভার স্ট্যাটাস: <span style="color: var(--neon-green);">লাইভ নোড অনলাইন</span> | সময়: <span>${new Date().toLocaleDateString('bn-BD')}</span></p>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+            <div class="cyber-glass" style="padding:15px; text-align:center;"><small style="color:var(--text-muted);">মোট সদস্য</small><h2 id="cTotal" style="color:var(--neon-blue); margin-top:5px;">...</h2></div>
+            <div class="cyber-glass" style="padding:15px; text-align:center;"><small style="color:var(--neon-green);">সক্রিয় সদস্য</small><h2 id="cActive" style="color:var(--neon-green); margin-top:5px;">...</h2></div>
+            <div class="cyber-glass" style="padding:15px; text-align:center;"><small style="color:var(--neon-yellow);">পেন্ডিং অনুমোদন</small><h2 id="cPending" style="color:var(--neon-yellow); margin-top:5px;">...</h2></div>
+            <div class="cyber-glass" style="padding:15px; text-align:center;"><small style="color:var(--neon-red);">মোট ট্রানজেকশন</small><h2 id="cTreasury" style="color:var(--neon-red); margin-top:5px;">...</h2></div>
+          </div>
+        `;
+        
+        // রিয়েল-টাইম ডাটাবেজ কাউন্ট (সুপার এডমিন বাদে)
+        onSnapshot(collection(db, "users"), (snap) => {
+          const nonAdminDocs = snap.docs.filter(d => d.data().role !== 'super_admin');
+          document.getElementById('cTotal').innerText = nonAdminDocs.length;
+          document.getElementById('cActive').innerText = nonAdminDocs.filter(d => d.data().status === 'active').length;
+          document.getElementById('cPending').innerText = nonAdminDocs.filter(d => d.data().status === 'pending').length;
+        });
+        
+        onSnapshot(collection(db, "treasury"), (snap) => {
+          document.getElementById('cTreasury').innerText = snap.size;
+        });
+      }
+
+      else if (id === 'members') {
+        contentRoot.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+            <h2 style="font-size:18px; color:var(--neon-blue);">👥 সদস্য ডাটাবেজ কন্ট্রোল</h2>
+            <button class="cyber-input" id="btnManualEntry" style="width:auto; margin:0; background:var(--neon-green); border:none; font-weight:bold; padding:8px 15px;">+ ম্যানুয়াল মেম্বার তৈরি করুন</button>
+          </div>
+          
+          <div class="cyber-glass" style="padding:15px; border-radius:6px; margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
+            <input type="text" id="memberSearchInput" class="cyber-input" placeholder="নাম, ইমেইল বা আইডি দিয়ে খুঁজুন..." style="margin:0; flex:1; min-width:200px;">
+            <select id="memberStatusFilter" class="cyber-input" style="margin:0; width:150px; background:#000; color:#fff;">
+              <option value="all">সকল স্ট্যাটাস</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+              <option value="suspended">Suspended</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div class="cyber-glass" style="overflow-x:auto; border-radius:8px;">
+            <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+              <thead style="background:rgba(0,180,216,0.15); color:var(--neon-blue);">
+                <tr>
+                  <th style="padding:12px;">রেজিস্ট্রেশন নং</th>
+                  <th style="padding:12px;">নাম</th>
+                  <th style="padding:12px;">মোবাইল</th>
+                  <th style="padding:12px;">স্ট্যাটাস</th>
+                  <th style="padding:12px; text-align:right;">ব্যবস্থাপনা</th>
+                </tr>
+              </thead>
+              <tbody id="memberTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="nexus-modal" id="memberDetailsModal" style="display:none; background:rgba(0,0,0,0.85);">
+            <div class="modal-body cyber-glass" style="max-width:550px; border-color:var(--neon-blue);">
+              <h3 style="color:var(--neon-blue); margin-bottom:15px; border-bottom:1px solid var(--glass-border); padding-bottom:10px;">🪪 সদস্য প্রোফাইল কার্ড</h3>
+              <div id="modalMemberCardContent" style="font-size:13px; line-height:1.8; color:var(--text-main);"></div>
+              <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                <button type="button" class="cyber-input" id="closeMemberModalBtn" style="width:auto; margin:0; background:var(--neon-red); border:none; font-weight:bold;">বন্ধ করুন</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // লাইভ মেম্বার ডাটাবেজ স্ট্রিম (সুপার এডমিন বাদে ফিল্টারিং)
+        onSnapshot(collection(db, "users"), (snap) => {
+          localMembersArray = [];
+          snap.forEach(userDoc => {
+            const data = userDoc.data();
+            if (data.role !== 'super_admin') {
+              localMembersArray.push({ id: userDoc.id, ...data });
+            }
+          });
+          renderFilteredMembers();
+        });
+
+        const searchInput = document.getElementById('memberSearchInput');
+        const statusFilter = document.getElementById('memberStatusFilter');
+
+        function renderFilteredMembers() {
+          const tbody = document.getElementById('memberTableBody');
+          tbody.innerHTML = "";
+
+          const searchTerm = searchInput.value.toLowerCase();
+          const filterValue = statusFilter.value;
+
+          const filtered = localMembersArray.filter(u => {
+            const matchesSearch = 
+              (u.englishName && u.englishName.toLowerCase().includes(searchTerm)) ||
+              (u.memberId && u.memberId.toLowerCase().includes(searchTerm)) ||
+              (u.mobileNumber && u.mobileNumber.includes(searchTerm));
+            
+            const matchesFilter = filterValue === 'all' || u.status === filterValue;
+            return matchesSearch && matchesFilter;
+          });
+
+          if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="padding:15px; text-align:center; color:var(--text-muted);">কোনো সদস্যের রেকর্ড পাওয়া যায়নি।</td></tr>`;
+            return;
+          }
+
+          filtered.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = "1px solid var(--glass-border)";
+            
+            let statusColor = "var(--neon-yellow)";
+            if(u.status === 'active') statusColor = "var(--neon-green)";
+            if(u.status === 'suspended') statusColor = "var(--neon-red)";
+            if(u.status === 'inactive') statusColor = "var(--text-muted)";
+
+            tr.innerHTML = `
+              <td style="padding:12px; color:var(--neon-blue); font-weight:bold;">${u.memberId || '⏳ Pending'}</td>
+              <td style="padding:12px;">${u.englishName}</td>
+              <td style="padding:12px;">${u.mobileNumber || 'N/A'}</td>
+              <td style="padding:12px;"><span style="color:${statusColor}; font-weight:bold;">● ${u.status.toUpperCase()}</span></td>
+              <td style="padding:12px; text-align:right; display:flex; gap:5px; justify-content:flex-end;">
+                <button class="cyber-input btn-view" data-id="${u.id}" style="width:auto; padding:5px 10px; font-size:11px; background:rgba(0,180,216,0.2); border:1px solid var(--neon-blue); margin:0;"><i class="fas fa-eye" data-id="${u.id}"></i></button>
+                <select class="cyber-input erp-status-changer" data-id="${u.id}" style="width:auto; margin:0; padding:2px 5px; font-size:11px; background:#000; height:28px; color:#fff;">
+                  <option value="">পদক্ষেপ</option>
+                  <option value="active">Approve / Active</option>
+                  <option value="suspended">Suspend</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <button class="cyber-input btn-delete-mem" data-id="${u.id}" style="width:auto; padding:5px 10px; font-size:11px; background:var(--neon-red); border:none; margin:0;"><i class="fas fa-trash" data-id="${u.id}"></i></button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          document.querySelectorAll('.btn-view').forEach(b => b.addEventListener('click', showMemberDetailsCard));
+          document.querySelectorAll('.btn-delete-mem').forEach(b => b.addEventListener('click', deleteUserNode));
+          document.querySelectorAll('.erp-status-changer').forEach(s => s.addEventListener('change', changeMemberStatusEngine));
+        }
+
+        searchInput.addEventListener('input', renderFilteredMembers);
+        statusFilter.addEventListener('change', renderFilteredMembers);
+
+        function showMemberDetailsCard(e) {
+          const id = e.target.getAttribute('data-id');
+          const member = localMembersArray.find(m => m.id === id);
+          if (!member) return;
+
+          const modalContent = document.getElementById('modalMemberCardContent');
+          modalContent.innerHTML = `
+            <div style="display:flex; gap:15px; margin-bottom:15px; align-items:center;">
+              <img src="${member.photoUrl || '../placeholder.png'}" style="width:80px; height:80px; border-radius:50%; border:2px solid var(--neon-blue); object-fit:cover;">
+              <div>
+                <h2 style="color:#fff; font-size:18px;">${member.englishName}</h2>
+                <p style="color:var(--neon-green); font-size:12px; font-weight:bold;">ID: ${member.memberId || 'পেন্ডিং অনুমোদন'}</p>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; border-top:1px solid var(--glass-border); padding-top:10px;">
+              <p><strong>মোবাইল:</strong> ${member.mobileNumber || 'N/A'}</p>
+              <p><strong>রোল:</strong> ${(member.role || 'member').toUpperCase()}</p>
+              <p><strong>স্ট্যাটাস:</strong> ${member.status.toUpperCase()}</p>
+              <p style="grid-column: span 2;"><strong>ইমেইল:</strong> ${member.email || 'N/A'}</p>
+            </div>
+          `;
+          document.getElementById('memberDetailsModal').style.display = 'flex';
+        }
+
+        document.getElementById('closeMemberModalBtn').addEventListener('click', () => {
+          document.getElementById('memberDetailsModal').style.display = 'none';
+        });
+
+        document.getElementById('btnManualEntry').addEventListener('click', createManualMemberNode);
+      }
+
+      else if (id === 'treasury') {
+        contentRoot.innerHTML = `
+          <h2 style="font-size:18px; color:var(--neon-blue); margin-bottom:20px;">💰 এন্টারপ্রাইজ ফিন্যান্সিয়াল লেজার</h2>
+          <div style="display:grid; grid-template-columns:1fr 2fr; gap:20px; flex-wrap:wrap;">
+            <div class="cyber-glass" style="padding:20px; border-radius:8px; height:max-content;">
+              <h3 style="font-size:14px; color:var(--neon-blue); margin-bottom:15px;">নতুন ভাউচার এন্ট্রি</h3>
+              <form id="erpTreasuryForm">
+                <select id="txType" class="cyber-input" style="background:#000;"><option value="income">আয় (Income)</option><option value="expense">ব্যয় (Expense)</option></select>
+                <input type="number" id="txAmount" class="cyber-input" placeholder="টাকার পরিমাণ" required>
+                <input type="text" id="txDetails" class="cyber-input" placeholder="খাত/বিবরণ" required>
+                <button type="submit" class="cyber-input" style="background:var(--neon-blue); border:none; margin:0; font-weight:bold;">লেজারে সাবমিট করুন</button>
+              </form>
+            </div>
+            <div class="cyber-glass" style="padding:20px; border-radius:8px;">
+              <h3 style="font-size:14px; color:var(--neon-yellow); margin-bottom:15px;">📋 ট্রানজেকশন খাতা ও অনুমোদন স্ট্যাটাস</h3>
+              <div id="ledgerContainerNode" style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto;"></div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('erpTreasuryForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const type = document.getElementById('txType').value;
+          const amount = parseFloat(document.getElementById('txAmount').value);
+          const details = document.getElementById('txDetails').value;
+
+          try {
+            await addDoc(collection(db, "treasury"), {
+              type, amount, details,
+              status: type === 'expense' ? 'pending_approval' : 'verified',
+              operator: currentAdminData.englishName,
+              date: new Date().toISOString()
+            });
+            alert("ভাউচার সফলভাবে যুক্ত হয়েছে!");
+            document.getElementById('erpTreasuryForm').reset();
+          } catch (err) { alert("ব্যর্থ: " + err.message); }
+        });
+
+        onSnapshot(query(collection(db, "treasury"), orderBy("date", "desc")), (snap) => {
+          const container = document.getElementById('ledgerContainerNode');
+          container.innerHTML = snap.empty ? `<p style="font-size:12px; color:var(--text-muted);">কোনো লেনদেন পাওয়া যায়নি।</p>` : "";
+          snap.forEach(txDoc => {
+            const tx = txDoc.data();
+            const row = document.createElement('div');
+            row.className = "cyber-glass";
+            row.style.padding = "10px";
+            row.style.display = "flex";
+            row.style.justifyContent = "space-between";
+            row.style.alignItems = "center";
+            row.style.borderLeft = `3px solid ${tx.type === 'income' ? 'var(--neon-green)' : 'var(--neon-red)'}`;
+            
+            row.innerHTML = `
+              <div>
+                <p style="font-size:13px; font-weight:bold; color:#fff;">${tx.details}</p>
+                <small style="color:var(--text-muted); font-size:11px;">স্ট্যাটাস: <span style="color:var(--neon-yellow);">${tx.status.toUpperCase()}</span></small>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-weight:bold; color:${tx.type === 'income' ? 'var(--neon-green)' : 'var(--neon-red)'}">${tx.type === 'income' ? '+' : '-'} ৳${tx.amount}</span>
+                ${tx.status === 'pending_approval' && ["super_admin", "president", "secretary"].includes(currentAdminData.role) ? 
+                  `<button class="cyber-input btn-approve-tx" data-id="${txDoc.id}" style="width:auto; margin:0; padding:4px 8px; font-size:10px; background:var(--neon-green); border:none;">Approve</button>` : ''}
+              </div>
+            `;
+            container.appendChild(row);
+          });
+          document.querySelectorAll('.btn-approve-tx').forEach(b => b.addEventListener('click', approveTreasuryVoucher));
+        });
+      }
+
+      else {
+        contentRoot.innerHTML = `
+          <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
+            <i class="fas fa-microchip" style="font-size:40px; color:var(--neon-blue); margin-bottom:15px;"></i>
+            <h3 style="color:#fff; font-size:16px;">${erpModules.find(m => m.id === id).name}</h3>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">মডিউল নোডটি সফলভাবে এসপিএ (SPA) ইঞ্জিনের সাথে সংযুক্ত হয়েছে।</p>
+          </div>
+        `;
+      }
+    }
+
+    // ৪. কোর ডাটাবেজ অ্যাকশন মেকানিজম (ডাইনামিক সিরিয়াল আইডি জেনারেটর)
+    async function generateNextMemberId() {
+      const currentYear = new Date().getFullYear(); 
+      const querySnapshot = await getDocs(collection(db, "users"));
+      
+      let maxSerial = 0;
+      querySnapshot.forEach((doc) => {
+        const memberId = doc.data().memberId;
+        if (memberId && memberId.startsWith(`ROS-${currentYear}-`)) {
+          const parts = memberId.split('-');
+          const serialNum = parseInt(parts[2], 10);
+          if (serialNum > maxSerial) {
+            maxSerial = serialNum;
+          }
+        }
+      });
+      
+      const nextSerial = maxSerial + 1;
+      const paddedSerial = String(nextSerial).padStart(4, '0');
+      return `ROS-${currentYear}-${paddedSerial}`;
+    }
+
+    async function changeMemberStatusEngine(e) {
+      const id = e.target.getAttribute('data-id');
+      const newStatus = e.target.value;
+      if (!newStatus) return;
+
+      if (confirm(`আপনি কি সদস্যের স্ট্যাটাস পরিবর্তন করে "${newStatus.toUpperCase()}" করতে চান?`)) {
+        const updateData = { status: newStatus };
+        const currentMem = localMembersArray.find(m => m.id === id);
+        
+        if (newStatus === 'active' && !currentMem.memberId) {
+          updateData.memberId = await generateNextMemberId();
+        }
+
+        await updateDoc(doc(db, "users", id), updateData);
+        alert("স্ট্যাটাস ও আইডি সফলভাবে জেনারেট করা হয়েছে!");
+      }
+      e.target.value = "";
+    }
+
+    async function deleteUserNode(e) {
+      const id = e.target.getAttribute('data-id');
+      if (confirm("ডাটা চিরতরে মুছে যাবে। আপনি নিশ্চিত?")) {
+        await deleteDoc(doc(db, "users", id));
+      }
+    }
+
+    async function createManualMemberNode() {
+      const name = prompt("সদস্যের নাম (English):");
+      if (!name) return;
+      const mobile = prompt("মোবাইল নম্বর:");
+      
+      try {
+        const generatedId = await generateNextMemberId();
+        await addDoc(collection(db, "users"), {
+          englishName: name, mobileNumber: mobile, status: "active", memberId: generatedId, role: "member", createdAt: new Date().toISOString()
+        });
+        alert("সদস্য যুক্ত হয়েছে! আইডি: " + generatedId);
+      } catch (err) { alert("ত্রুটি: " + err.message); }
+    }
+
+    async function approveTreasuryVoucher(e) {
+      const id = e.target.getAttribute('data-id');
+      if (confirm("ভাউচারটি অনুমোদন করতে চান?")) {
+        await updateDoc(doc(db, "treasury", id), { status: "verified" });
+      }
+    }
+
+    // ৫. UI ইন্টারঅ্যাকশন কন্ট্রোল বাইন্ডিং
+    document.getElementById('profileTrigger').addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.style.display = profileDropdown.style.display === 'flex' ? 'none' : 'flex';
+    });
+    
+    document.addEventListener('click', () => { profileDropdown.style.display = 'none'; });
+    document.getElementById('mobileMenuToggle').addEventListener('click', () => { sidebarNode.classList.toggle('active'); });
+    document.getElementById('openPassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'flex');
+    document.getElementById('closePassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'none');
+
+    // 🔒 ৬. সিকিউরিটি কি-পাসওয়ার্ড আপডেট
+    document.getElementById('passwordUpdateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newPass = document.getElementById('newPassword').value;
+      const confPass = document.getElementById('confirmNewPassword').value;
+
+      if (newPass !== confPass) {
+        alert("পাসওয়ার্ড মিলছে না!");
+        return;
+      }
+      try {
+        await updatePassword(auth.currentUser, newPass);
+        alert("পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!");
+        passwordChangeModal.style.display = 'none';
+        document.getElementById('passwordUpdateForm').reset();
+      } catch (err) { alert("ত্রুটি: " + err.message); }
+    });
+
+    // 🚪 ৭. লগআউট মেকানিজম
+    document.getElementById('adminSignOutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm("লগআউট করতে চান?")) {
+        signOut(auth).then(() => { window.location.href = "../login.html"; });
+      }
+    });
+  </script>
+</body>
+</html>
