@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROS Member Portal</title>
+  <!-- রুট ফোল্ডারে থাকা মূল theme.css লিংক করা হচ্ছে -->
+  <link rel="stylesheet" href="../theme.css">
+  <!-- কিউআর কোড জেনারেট করার জন্য হালকা ও নির্ভরযোগ্য লাইব্রেরি -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- হেডার সেকশন -->
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+      <div>
+        <h2 style="color: #fff; margin: 0; font-size: 20px;">সদস্য পোর্টাল</h2>
+        <p style="color: var(--text-muted); font-size: 12px; margin: 0;">ROS Member Security Node</p>
+      </div>
+      <button id="memberLogoutBtn" class="cyber-btn" style="padding: 8px 15px; width: auto; background: var(--danger); font-size: 12px;">লগআউট</button>
+    </header>
+
+    <!-- প্রিমিয়াম ডিজিটাল মেম্বারশিপ আইডি কার্ড -->
+    <div class="cyber-card" style="border: 2px solid var(--secondary); background: linear-gradient(145deg, rgba(4,13,26,0.95), rgba(10,25,47,0.85)); position: relative; overflow: hidden;">
+      
+      <!-- কার্ড হেডার -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,180,216,0.25); padding-bottom: 12px;">
+        <div>
+          <h3 style="color: var(--secondary); margin: 0; font-size: 15px; letter-spacing: 0.5px;">RAJSHAHI OLYMPIAD SOCIETY</h3>
+          <small style="color: var(--accent); letter-spacing: 1px; font-size: 9px; font-weight: bold;">OFFICIAL DIGITAL ID CARD</small>
+        </div>
+      </div>
+      
+      <!-- কার্ড বডি (মেম্বার ইনফো) -->
+      <div style="display: flex; margin-top: 15px; gap: 15px; align-items: center;">
+        <div style="flex: 1;">
+          <img id="mCardPhoto" src="../placeholder.png" style="width: 85px; height: 105px; border-radius: 6px; border: 1px solid var(--secondary); object-fit: cover; background: #0a192f;">
+        </div>
+        <div style="flex: 2; display: flex; flex-direction: column; gap: 4px;">
+          <h4 id="mCardName" style="color: #fff; font-size: 16px; margin: 0;">ডাটা লোড হচ্ছে...</h4>
+          <p style="font-size: 12px; color: var(--text-muted); margin: 0;">ID: <span id="mCardMemberId" style="color: var(--accent); font-weight: bold;">...</span></p>
+          <p style="font-size: 11px; color: var(--text-muted); margin: 0; word-break: break-all;">Email: <span id="mCardEmail">...</span></p>
+          <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Phone: <span id="mCardPhone">...</span></p>
+          <span id="mStatusBadge" style="background: rgba(76,201,240,0.15); color: var(--secondary); font-size: 10px; padding: 2px 8px; border-radius: 20px; width: max-content; font-weight: bold; margin-top: 5px; border: 1px solid rgba(0,180,216,0.3);">PENDING</span>
+        </div>
+      </div>
+
+      <!-- কার্ড ফুটার এবং ভেরিফিকেশন কিউআর কোড -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; border-top: 1px solid rgba(0,180,216,0.15); padding-top: 12px;">
+        <!-- কিউআর কোড মাউন্ট পয়েন্ট -->
+        <div id="mQrcode" style="background: #fff; padding: 4px; border-radius: 4px; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;"></div>
+        <div style="text-align: right;">
+          <p style="font-size: 8px; color: var(--text-muted); margin: 0;">SECURE ENCRYPTED NODE</p>
+          <small style="color: var(--secondary); font-size: 10px; font-weight: bold;">ROS ERP v1.0</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- নোটিশ বোর্ড সেকশন -->
+    <div class="cyber-card" style="border-color: var(--accent); margin-top: 20px;">
+      <h3 style="color: var(--accent); font-size: 14px; margin-top: 0; margin-bottom: 10px;">📋 নোটিশ বোর্ড</h3>
+      <div id="noticeContent" style="font-size: 12px; color: var(--text-light); line-height: 1.5; padding: 10px; background: rgba(2,12,27,0.5); border-radius: 4px; border-left: 3px solid var(--accent);">
+        আপনার অ্যাকাউন্টটি বর্তমানে আমাদের ডাটাবেজে সক্রিয় রয়েছে। মেম্বারদের জন্য বিশেষ নির্দেশনাবলী এবং ইভেন্টের নোটিশ এখানে প্রকাশ করা হবে।
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="member-dashboard.js"></script>
+</body>
+</html>
+
