@@ -5,19 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assign Committee Member</title>
   <link rel="stylesheet" href="../theme.css">
+  <style>
+    body { margin: 0; padding: 0; display: flex; min-height: 100vh; background-color: var(--dark-bg); }
+    .sidebar { width: 240px; background: linear-gradient(180deg, rgba(2, 12, 27, 0.95), rgba(10, 25, 47, 0.9)); border-right: 1px solid rgba(0, 180, 216, 0.2); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 10; }
+    .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(0, 180, 216, 0.15); text-align: center; }
+    .sidebar-menu { list-style: none; padding: 15px 0; margin: 0; display: flex; flex-direction: column; gap: 5px; }
+    .sidebar-menu li a { display: block; padding: 12px 20px; color: var(--text-light); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; transition: all 0.3s ease; }
+    .sidebar-menu li a:hover, .sidebar-menu li a.active { background: rgba(0, 180, 216, 0.1); color: var(--secondary); border-left-color: var(--secondary); }
+    .main-content { margin-left: 240px; flex: 1; padding: 25px; box-sizing: border-box; }
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid rgba(0, 180, 216, 0.2); }
+      .main-content { margin-left: 0; padding: 15px; }
+      .sidebar-menu { flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 10px; }
+      .sidebar-menu li a { padding: 8px 12px; font-size: 12px; border-left: none; border-bottom: 2px solid transparent; }
+      .sidebar-menu li a:hover, .sidebar-menu li a.active { border-left-color: transparent; border-bottom-color: var(--secondary); }
+    }
+  </style>
 </head>
 <body>
 
-  <div class="app-container">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-      <div>
-        <h2 style="color: #fff; margin: 0; font-size: 16px;" id="targetCommitteeName">কমিটি লোড হচ্ছে...</h2>
-        <p style="color: var(--text-muted); font-size: 12px; margin: 0;">Member Designation Node</p>
-      </div>
-      <a href="committee.html" class="cyber-btn" style="padding: 8px 15px; width: auto; font-size: 12px; text-decoration: none; text-align: center;">পেছনে যান</a>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h3 style="color: var(--secondary); margin: 0; font-size: 16px;">ROS ERP ADMIN</h3>
+      <small style="color: var(--text-muted); font-size: 10px;">Core Control Node</small>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="dashboard.html">📊 মেম্বার রিকোয়েস্ট</a></li>
+      <li><a href="committee.html" class="active">👥 কমিটি ম্যানেজমেন্ট</a></li>
+      <li><a href="treasury.html">💰 ট্রেজারি ও ফান্ড খাতা</a></li>
+    </ul>
+    <div style="margin-top: auto; padding: 20px; text-align: center;">
+      <button id="adminLogoutBtn" class="cyber-btn" style="background: var(--danger); font-size: 11px; padding: 6px 12px; width: auto;">লগআউট</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header style="margin-bottom: 25px;">
+      <h2 style="color: #fff; margin: 0; font-size: 18px;" id="targetCommitteeName">কমিটি লোড হচ্ছে...</h2>
+      <p style="color: var(--text-muted); font-size: 12px; margin: 0;">Member Designation Assignment Node</p>
     </header>
 
-    <section class="cyber-card" style="border-color: var(--secondary); padding: 15px;">
+    <section class="cyber-card" style="border-color: var(--secondary); padding: 15px; margin-bottom: 20px;">
       <input type="text" id="memberSearchInput" placeholder="মেম্বারের নাম বা আইডি লিখে খুঁজুন..." style="width: 100%; padding: 12px; background: rgba(2,12,27,0.8); border: 1px solid var(--secondary); color: #fff; border-radius: 4px; font-size: 14px;">
     </section>
 
@@ -27,34 +56,12 @@
         <p style="color: var(--text-muted); font-size: 12px;">খুঁজতে টাইপ করা শুরু করুন...</p>
       </div>
     </section>
-  </div>
+  </main>
 
   <script type="module">
-    import { db, auth } from '../firebase-config.js'; // auth নিশ্চিত করুন
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-// 🔐 সিকিউরিটি গেটওয়াল: লগইন এবং রোল চেক
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    // লগইন না থাকলে লাথি মেরে লগইন পেজে পাঠাবে
-    window.location.href = "../login.html";
-    return;
-  }
-  
-  // লগইন থাকলে সে আসলেই অ্যাডমিন কিনা ডাটাবেজ থেকে চেক করবে
-  const userSnap = await getDoc(doc(db, "users", user.uid));
-  if (userSnap.exists()) {
-    const role = userSnap.data().role;
-    if (role !== "super_admin" && role !== "president" && role !== "secretary") {
-      alert("আপনার এই পেজে ঢোকার অনুমতি নেই!");
-      window.location.href = "../login.html";
-    }
-  }
-});
-    
-    import { db } from '../firebase-config.js';
+    import { db, auth } from '../firebase-config.js';
     import { doc, getDoc, collection, getDocs, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const targetCommitteeName = document.getElementById('targetCommitteeName');
     const memberSearchInput = document.getElementById('memberSearchInput');
@@ -66,12 +73,27 @@ onAuthStateChanged(auth, async (user) => {
 
     let allActiveMembers = [];
 
-    if (!committeeId) {
-      alert("কোনো বৈধ কমিটি আইডি পাওয়া যায়নি!");
-      window.location.href = "committee.html";
-    }
+    // 🔐 ১. সিকিউরিটি গেটওয়াল এবং রুট ভেরিফিকেশন
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "../login.html"; return; }
+      
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      if (userSnap.exists() && !["super_admin", "president", "secretary"].includes(userSnap.data().role)) {
+        window.location.href = "../login.html";
+        return;
+      }
 
-    // ১. ফায়ারস্টোর থেকে নির্দিষ্ট কমিটির তথ্য নিয়ে আসা
+      if (!committeeId) {
+        alert("কোনো বৈধ কমিটি আইডি পাওয়া যায়নি!");
+        window.location.href = "committee.html";
+        return;
+      }
+
+      loadCommitteeDetails();
+      cacheActiveMembers();
+    });
+
+    // ২. ফায়ারস্টোর থেকে নির্দিষ্ট কমিটির তথ্য নিয়ে আসা
     async function loadCommitteeDetails() {
       try {
         const comSnap = await getDoc(doc(db, "committees", committeeId));
@@ -85,7 +107,7 @@ onAuthStateChanged(auth, async (user) => {
       }
     }
 
-    // ২. একটিভ মেম্বারদের ডাটা ক্যাশ (Cache) করা
+    // ৩. একটিভ মেম্বারদের ডাটা ক্যাশ (Cache) করা
     async function cacheActiveMembers() {
       try {
         const q = query(collection(db, "users"), where("status", "==", "active"));
@@ -99,7 +121,7 @@ onAuthStateChanged(auth, async (user) => {
       }
     }
 
-    // ৩. ইনপুট টাইপিং এর সাথে লাইভ ফিল্টারিং মেকানিজম
+    // ৪. ইনপুট টাইপিং এর সাথে লাইভ ফিল্টারিং মেকানিজম
     memberSearchInput.addEventListener('input', (e) => {
       const keyword = e.target.value.toLowerCase().trim();
       searchResultContainer.innerHTML = "";
@@ -109,7 +131,6 @@ onAuthStateChanged(auth, async (user) => {
         return;
       }
 
-      // নাম অথবা মেম্বার আইডি ম্যাচিং করা
       const filtered = allActiveMembers.filter(member => 
         (member.englishName && member.englishName.toLowerCase().includes(keyword)) || 
         (member.memberId && member.memberId.toLowerCase().includes(keyword))
@@ -120,13 +141,10 @@ onAuthStateChanged(auth, async (user) => {
         return;
       }
 
-      // ম্যাচ হওয়া মেম্বারদের কার্ড আকারে UI-তে রেন্ডার করা
       filtered.forEach(member => {
         const card = document.createElement('div');
-        card.className = "cyber-card";
+        card.className = "cyber-card"; card.style.margin = "0"; card.style.padding = "10px";
         card.style.background = "rgba(2, 12, 27, 0.5)";
-        card.style.margin = "0";
-        card.style.padding = "10px";
         
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
@@ -135,7 +153,7 @@ onAuthStateChanged(auth, async (user) => {
               <small style="color:var(--accent); font-size:11px;">ID: ${member.memberId || 'N/A'}</small>
             </div>
             <div style="display:flex; gap:5px; align-items:center;">
-              <input type="text" placeholder="পদবী (যেমন: সাধারণ সম্পাদক)" id="desig-${member.uid}" style="padding: 6px; font-size:12px; background:#020c1b; border:1px solid rgba(0,180,216,0.3); color:#fff; border-radius:4px; width:110px;">
+              <input type="text" placeholder="পদবী (যেমন: সভাপতি)" id="desig-${member.uid}" style="padding: 6px; font-size:12px; background:#020c1b; border:1px solid rgba(0,180,216,0.3); color:#fff; border-radius:4px; width:110px;">
               <button class="cyber-btn save-desig-btn" data-uid="${member.uid}" style="width:auto; padding:6px 10px; font-size:11px; background:var(--secondary);">Confirm</button>
             </div>
           </div>
@@ -143,13 +161,12 @@ onAuthStateChanged(auth, async (user) => {
         searchResultContainer.appendChild(card);
       });
 
-      // ডাইনামিক বাটনে ক্লিকের লজিক দেওয়া
       document.querySelectorAll('.save-desig-btn').forEach(btn => {
         btn.addEventListener('click', saveDesignation);
       });
     });
 
-    // ৪. পদবী ডাটাবেজে সাবমিট করা
+    // ৫. পদবী ডাটাবেজে সাবমিট করা
     async function saveDesignation(e) {
       const memberUid = e.target.getAttribute('data-uid');
       const designationInput = document.getElementById(`desig-${memberUid}`);
@@ -161,7 +178,6 @@ onAuthStateChanged(auth, async (user) => {
       }
 
       try {
-        // ফায়ারস্টোরে ইউজারের অ্যাকাউন্টে পদবী আপডেট করা
         await updateDoc(doc(db, "users", memberUid), {
           committeeId: committeeId,
           designation: designationValue
@@ -169,22 +185,21 @@ onAuthStateChanged(auth, async (user) => {
 
         alert("পদবী সফলভাবে কমিটিতে যুক্ত করা হয়েছে!");
         
-        // ফরম ও ফিল্ড রিসেট করা
         designationInput.value = "";
         memberSearchInput.value = "";
         searchResultContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 12px;">খুঁজতে টাইপ করা শুরু করুন...</p>`;
         
-        // লোকাল মেমোরি ডেটা রিফ্রেশ করা
+        // মেমোরি ডেটা রিফ্রেশ
         cacheActiveMembers();
       } catch (error) {
         alert("পদবী সংরক্ষণে সমস্যা হয়েছে: " + error.message);
       }
     }
 
-    // পেজ রান হওয়ার সাথে সাথে ফাংশন চালুকরণ
-    loadCommitteeDetails();
-    cacheActiveMembers();
+    // লগআউট হ্যান্ডলার
+    document.getElementById('adminLogoutBtn').addEventListener('click', () => {
+      signOut(auth).then(() => { window.location.href = "../login.html"; });
+    });
   </script>
 </body>
 </html>
-
