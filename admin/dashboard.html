@@ -3,36 +3,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ROS Admin Node</title>
+  <title>ROS Admin ERP Dashboard</title>
   <link rel="stylesheet" href="../theme.css">
+  <style>
+    /* সাইডবার লেআউট আর্কিটেকচার */
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      min-height: 100vh;
+      background-color: var(--dark-bg);
+    }
+    
+    /* বাম দিকের মেনুবার */
+    .sidebar {
+      width: 240px;
+      background: linear-gradient(180deg, rgba(2, 12, 27, 0.95), rgba(10, 25, 47, 0.9));
+      border-right: 1px solid rgba(0, 180, 216, 0.2);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      z-index: 10;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(0, 180, 216, 0.15);
+      text-align: center;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 15px 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .sidebar-menu li a {
+      display: block;
+      padding: 12px 20px;
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 14px;
+      border-left: 3px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-menu li a:hover, .sidebar-menu li a.active {
+      background: rgba(0, 180, 216, 0.1);
+      color: var(--secondary);
+      border-left-color: var(--secondary);
+    }
+
+    /* ডান দিকের মেইন কনটেন্ট এরিয়া */
+    .main-content {
+      margin-left: 240px; /* সাইডবারের জায়গার জন্য */
+      flex: 1;
+      padding: 25px;
+      box-sizing: border-box;
+    }
+
+    /* মোবাইল রেসপন্সিভ সাপোর্ট */
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid rgba(0, 180, 216, 0.2); }
+      .main-content { margin-left: 0; padding: 15px; }
+      .sidebar-menu { flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 10px; }
+      .sidebar-menu li a { padding: 8px 12px; font-size: 12px; border-left: none; border-bottom: 2px solid transparent; }
+      .sidebar-menu li a:hover, .sidebar-menu li a.active { border-left-color: transparent; border-bottom-color: var(--secondary); }
+    }
+  </style>
 </head>
 <body>
 
-  <div class="app-container">
+  <!-- বাম দিকের সিস্টেম মেনুবার -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h3 style="color: var(--secondary); margin: 0; font-size: 16px; letter-spacing: 0.5px;">ROS ERP ADMIN</h3>
+      <small style="color: var(--text-muted); font-size: 10px;">Core Control Node</small>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="dashboard.html" class="active">📊 মেম্বার রিকোয়েস্ট</a></li>
+      <li><a href="committee.html">👥 কমিটি ম্যানেজমেন্ট</a></li>
+      <li><a href="treasury.html">💰 ট্রেজারি ও ফান্ড খাতা</a></li>
+    </ul>
+    <div style="margin-top: auto; padding: 20px; text-align: center;">
+      <button id="adminLogoutBtn" class="cyber-btn" style="background: var(--danger); font-size: 11px; padding: 6px 12px; width: auto;">লগআউট</button>
+    </div>
+  </aside>
+
+  <!-- ডান দিকের মূল কনটেন্ট এরিয়া (মেম্বার অ্যাপ্রুভাল মডিউল) -->
+  <main class="main-content">
     <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
       <div>
-        <h2 style="color: #fff; margin: 0;">ROS অ্যাডমিন প্যানেল</h2>
-        <p style="color: var(--text-muted); font-size: 12px; margin: 0;">Central Governance Node</p>
+        <h2 style="color: #fff; margin: 0; font-size: 20px;">পেন্ডিং মেম্বার রিকোয়েস্ট</h2>
+        <p style="color: var(--text-muted); font-size: 12px; margin: 0;">User Authentication Verification</p>
       </div>
-      <button id="logoutBtn" class="cyber-btn" style="padding: 8px 15px; width: auto; background: var(--danger); font-size: 12px;">লগআউট</button>
     </header>
 
+    <!-- পেন্ডিং ইউজারদের রিয়েল-টাইম তালিকা -->
     <section class="cyber-card" style="border-color: var(--secondary);">
-      <h3 style="color: var(--secondary); font-size: 15px; margin-top: 0; margin-bottom: 15px;">পেন্ডিং মেম্বার রিকোয়েস্ট (<span id="pendingCount">0</span>)</h3>
-      <div id="pendingContainer" style="display: flex; flex-direction: column; gap: 15px;">
-        <p style="color: var(--text-muted); font-size: 13px;" id="loadingMembersText">ডাটা লোড হচ্ছে...</p>
-        </div>
+      <h3 style="color: var(--secondary); font-size: 14px; margin-top: 0; margin-bottom: 15px;">⏳ অকাল্ট মেম্বার রিকোয়েস্ট সমুহ</h3>
+      <div id="pendingContainer" style="display: flex; flex-direction: column; gap: 12px;">
+        <p style="color: var(--text-muted); font-size: 12px;">ডাটা লোড হচ্ছে...</p>
+      </div>
     </section>
+  </main>
 
-    <section class="cyber-card" style="border-color: var(--danger);">
-      <h3 style="color: var(--danger); font-size: 15px; margin-top: 0; margin-bottom: 15px;">পাসওয়ার্ড রিসেট রিকোয়েস্ট</h3>
-      <div id="resetContainer" style="display: flex; flex-direction: column; gap: 15px;">
-        <p style="color: var(--text-muted); font-size: 13px;" id="loadingResetsText">কোনো রিকোয়েস্ট নেই।</p>
-        </div>
-    </section>
-  </div>
+  <!-- ব্যাকএন্ড কন্ট্রোল ইঞ্জিন -->
+  <script type="module">
+    import { db, auth } from '../firebase-config.js';
+    import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  <script type="module" src="admin-dashboard.js"></script>
+    const pendingContainer = document.getElementById('pendingContainer');
+    const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+
+    // 🔐 ১. সিকিউরিটি গেটওয়াল: লগইন ও রোল ভেরিফিকেশন
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "../login.html";
+        return;
+      }
+
+      try {
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+        if (userSnap.exists()) {
+          const role = userSnap.data().role;
+          if (role !== "super_admin" && role !== "president" && role !== "secretary") {
+            alert("আপনার এই প্যানেলে ঢোকার অনুমতি নেই!");
+            window.location.href = "../login.html";
+          }
+        } else {
+          window.location.href = "../login.html";
+        }
+      } catch (err) {
+        console.error("Auth security error:", err);
+      }
+    });
+
+    // 🔄 ২. রিয়েল-টাইমে পেন্ডিং মেম্বারদের ডাটা লোড করা
+    const qPending = query(collection(db, "users"), where("status", "==", "pending"));
+    onSnapshot(qPending, (snapshot) => {
+      pendingContainer.innerHTML = "";
+
+      if (snapshot.empty) {
+        pendingContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 12px;">বর্তমানে কোনো পেন্ডিং মেম্বার রিকোয়েস্ট নেই।</p>`;
+        return;
+      }
+
+      snapshot.forEach((userDoc) => {
+        const userData = userDoc.data();
+        const card = document.createElement('div');
+        card.className = "cyber-card";
+        card.style.background = "rgba(2, 12, 27, 0.4)";
+        card.style.margin = "0";
+        card.style.padding = "12px";
+
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <img src="${userData.photoUrl || '../placeholder.png'}" style="width: 45px; height: 55px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(0,180,216,0.3);">
+              <div>
+                <h4 style="margin: 0; color: #fff; font-size: 14px;">${userData.englishName}</h4>
+                <small style="color: var(--text-muted); font-size: 11px;">মোবাইল: ${userData.mobileNumber || 'N/A'}</small>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="cyber-btn approve-btn" data-id="${userDoc.id}" style="width: auto; padding: 6px 12px; font-size: 11px; background: rgba(46,196,182,0.2); border-color: #2ec4b6; color: #2ec4b6;">Approve</button>
+              <button class="cyber-btn reject-btn" data-id="${userDoc.id}" style="width: auto; padding: 6px 12px; font-size: 11px; background: rgba(230,57,70,0.2); border-color: var(--danger); color: var(--danger);">Reject</button>
+            </div>
+          </div>
+        `;
+        pendingContainer.appendChild(card);
+      });
+
+      // বাটন অ্যাকশন বাইন্ডিং
+      document.querySelectorAll('.approve-btn').forEach(btn => btn.addEventListener('click', approveMember));
+      document.querySelectorAll('.reject-btn').forEach(btn => btn.addEventListener('click', rejectMember));
+    });
+
+    // ⚡ ৩. মেম্বার অ্যাপ্রুভ করার মেকানিজম (ID জেনারেটসহ)
+    async function approveMember(e) {
+      const uid = e.target.getAttribute('data-id');
+      const randomId = "ROS-" + Math.floor(1000 + Math.random() * 9000); // অটো আইডি: ROS-5832
+      
+      if (confirm("আপনি কি এই সদস্যকে অনুমোদন করতে চান?")) {
+        try {
+          await updateDoc(doc(db, "users", uid), {
+            status: "active",
+            memberId: randomId
+          });
+          alert(`মেম্বার সফলভাবে অনুমোদিত! ইউনিক আইডি: ${randomId}`);
+        } catch (err) {
+          alert("অনুমোদনে সমস্যা হয়েছে: " + err.message);
+        }
+      }
+    }
+
+    // ❌ ৪. মেম্বার রিজেক্ট করার মেকানিজম
+    async function rejectMember(e) {
+      const uid = e.target.getAttribute('data-id');
+      if (confirm("আপনি কি এই রিকোয়েস্টটি চিরতরে বাতিল করতে চান?")) {
+        try {
+          await deleteDoc(doc(db, "users", uid));
+          alert("রিকোয়েস্টটি ডাটাবেজ থেকে মুছে ফেলা হয়েছে।");
+        } catch (err) {
+          alert("বাতিল করতে সমস্যা হয়েছে: " + err.message);
+        }
+      }
+    }
+
+    // 🚪 ৫. লগআউট
+    adminLogoutBtn.addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = "../login.html";
+      });
+    });
+  </script>
 </body>
 </html>
-
