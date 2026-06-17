@@ -32,7 +32,7 @@ function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
     </div>
   `;
 
-  // ১. সম্পূর্ণ ফায়ারবেস ডাটা এক্সপোর্ট করে JSON ডাউনলোডের লজিক
+  // ১. ডাউনলোড লজিক
   document.getElementById('btnDownloadBackupJSON').addEventListener('click', async () => {
     try {
       const backupData = {
@@ -42,7 +42,6 @@ function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
         logistics: []
       };
 
-      // ভিন্ন ভিন্ন কালেকশন থেকে ডাটা ফেচ করা
       const usersSnap = await getDocs(collection(db, "users"));
       usersSnap.forEach(d => backupData.users.push(d.data()));
 
@@ -52,7 +51,6 @@ function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
       const logisticsSnap = await getDocs(collection(db, "logistics"));
       logisticsSnap.forEach(d => backupData.logistics.push(d.data()));
 
-      // JSON ফাইল তৈরি ও ব্রাউজারে ট্রিকার করা
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
@@ -67,7 +65,7 @@ function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
     }
   });
 
-  // ২. JSON ফাইল রিড ও রিস্টোর লজিক
+  // ২. রিস্টোর ফাইল রিড লজিক
   const fileInput = document.getElementById('restoreFileInput');
   const fileStatus = document.getElementById('restoreFileStatus');
   const btnExecute = document.getElementById('btnExecuteRestore');
@@ -99,13 +97,11 @@ function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
 
   btnExecute.addEventListener('click', async () => {
     if (!parsedRestoreData) return;
-    if (confirm("⚠️ সাবধান! এই ফাইলটি রিস্টোর করলে ডাটাবেজে নতুন করে রেকর্ডগুলো রাইট হবে। আপনি কি নিশ্চিত?")) {
+    if (confirm("⚠️ আপনি কি নিশ্চিত?")) {
       try {
-        // লুপ চালিয়ে ইউজার ডাটা পুশ করা (ডেমো স্ট্রাকচার)
         if (parsedRestoreData.users && parsedRestoreData.users.length > 0) {
           for (let u of parsedRestoreData.users) {
-            // ডাটাবেজের ডুপ্লিকেট এড়াতে বা নতুন করে পুশ করতে addDoc ব্যবহার করা হলো
-            // প্রমিয়াম আপগ্রেডে এখানে আমরা মেম্বার আইডি চেক করে ওভাররাইট মেকানিজম দেবো
+            await addDoc(collection(db, "users"), u);
           }
         }
         alert("✅ ডাটাবেজ সফলভাবে রিস্টোর করা হয়েছে!");
@@ -117,4 +113,3 @@ function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
     }
   });
 }
-
