@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assign Committee Member</title>
+  <link rel="stylesheet" href="../theme.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+      <div>
+        <h2 style="color: #fff; margin: 0; font-size: 16px;" id="targetCommitteeName">কমিটি লোড হচ্ছে...</h2>
+        <p style="color: var(--text-muted); font-size: 12px; margin: 0;">Member Designation Node</p>
+      </div>
+      <a href="committee.html" class="cyber-btn" style="padding: 8px 15px; width: auto; font-size: 12px; text-decoration: none; text-align: center;">পেছনে যান</a>
+    </header>
+
+    <section class="cyber-card" style="border-color: var(--secondary); padding: 15px;">
+      <input type="text" id="memberSearchInput" placeholder="মেম্বারের নাম বা আইডি লিখে খুঁজুন..." style="width: 100%; padding: 12px; background: rgba(2,12,27,0.8); border: 1px solid var(--secondary); color: #fff; border-radius: 4px; font-size: 14px;">
+    </section>
+
+    <section class="cyber-card" style="border-color: var(--accent);">
+      <h3 style="color: var(--accent); font-size: 14px; margin-top: 0; margin-bottom: 15px;">🔍 অনুসন্ধান ফলাফল</h3>
+      <div id="searchResultContainer" style="display: flex; flex-direction: column; gap: 12px;">
+        <p style="color: var(--text-muted); font-size: 12px;">খুঁজতে টাইপ করা শুরু করুন...</p>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { db } from '../firebase-config.js';
+    import { doc, getDoc, collection, getDocs, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const targetCommitteeName = document.getElementById('targetCommitteeName');
+    const memberSearchInput = document.getElementById('memberSearchInput');
+    const searchResultContainer = document.getElementById('searchResultContainer');
+
+    // URL কোয়েরি থেকে Committee ID রিড করা
+    const urlParams = new URLSearchParams(window.location.search);
+    const committeeId = urlParams.get('id');
+
+    let allActiveMembers = [];
+
+    if (!committeeId) {
+      alert("কোনো বৈধ কমিটি আইডি পাওয়া যায়নি!");
+      window.location.href = "committee.html";
+    }
+
+    // ১. ফায়ারস্টোর থেকে নির্দিষ্ট কমিটির তথ্য নিয়ে আসা
+    async function loadCommitteeDetails() {
+      try {
+        const comSnap = await getDoc(doc(db, "committees", committeeId));
+        if (comSnap.exists()) {
+          targetCommitteeName.innerText = `${comSnap.data().committeeName} (${comSnap.data().year})`;
+        } else {
+          targetCommitteeName.innerText = "কমিটি খুঁজে পাওয়া যায়নি";
+        }
+      } catch (error) {
+        console.error("Error loading committee:", error);
+      }
+    }
+
+    // ২. একটিভ মেম্বারদের ডাটা ক্যাশ (Cache) করা
+    async function cacheActiveMembers() {
+      try {
+        const q = query(collection(db, "users"), where("status", "==", "active"));
+        const querySnapshot = await getDocs(q);
+        allActiveMembers = [];
+        querySnapshot.forEach(doc => {
+          allActiveMembers.push({ uid: doc.id, ...doc.data() });
+        });
+      } catch (error) {
+        console.error("Error caching members:", error);
+      }
+    }
+
+    // ৩. ইনপুট টাইপিং এর সাথে লাইভ ফিল্টারিং মেকানিজম
+    memberSearchInput.addEventListener('input', (e) => {
+      const keyword = e.target.value.toLowerCase().trim();
+      searchResultContainer.innerHTML = "";
+
+      if (keyword === "") {
+        searchResultContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 12px;">খুঁজতে টাইপ করা শুরু করুন...</p>`;
+        return;
+      }
+
+      // নাম অথবা মেম্বার আইডি ম্যাচিং করা
+      const filtered = allActiveMembers.filter(member => 
+        (member.englishName && member.englishName.toLowerCase().includes(keyword)) || 
+        (member.memberId && member.memberId.toLowerCase().includes(keyword))
+      );
+
+      if (filtered.length === 0) {
+        searchResultContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 12px;">কোনো মেম্বার পাওয়া যায়নি!</p>`;
+        return;
+      }
+
+      // ম্যাচ হওয়া মেম্বারদের কার্ড আকারে UI-তে রেন্ডার করা
+      filtered.forEach(member => {
+        const card = document.createElement('div');
+        card.className = "cyber-card";
+        card.style.background = "rgba(2, 12, 27, 0.5)";
+        card.style.margin = "0";
+        card.style.padding = "10px";
+        
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+            <div>
+              <h4 style="margin:0; color:#fff; font-size:13px;">${member.englishName}</h4>
+              <small style="color:var(--accent); font-size:11px;">ID: ${member.memberId || 'N/A'}</small>
+            </div>
+            <div style="display:flex; gap:5px; align-items:center;">
+              <input type="text" placeholder="পদবী (যেমন: সাধারণ সম্পাদক)" id="desig-${member.uid}" style="padding: 6px; font-size:12px; background:#020c1b; border:1px solid rgba(0,180,216,0.3); color:#fff; border-radius:4px; width:110px;">
+              <button class="cyber-btn save-desig-btn" data-uid="${member.uid}" style="width:auto; padding:6px 10px; font-size:11px; background:var(--secondary);">Confirm</button>
+            </div>
+          </div>
+        `;
+        searchResultContainer.appendChild(card);
+      });
+
+      // ডাইনামিক বাটনে ক্লিকের লজিক দেওয়া
+      document.querySelectorAll('.save-desig-btn').forEach(btn => {
+        btn.addEventListener('click', saveDesignation);
+      });
+    });
+
+    // ৪. পদবী ডাটাবেজে সাবমিট করা
+    async function saveDesignation(e) {
+      const memberUid = e.target.getAttribute('data-uid');
+      const designationInput = document.getElementById(`desig-${memberUid}`);
+      const designationValue = designationInput.value.trim();
+
+      if (designationValue === "") {
+        alert("অনুগ্রহ করে পদবীটি লিখুন!");
+        return;
+      }
+
+      try {
+        // ফায়ারস্টোরে ইউজারের অ্যাকাউন্টে পদবী আপডেট করা
+        await updateDoc(doc(db, "users", memberUid), {
+          committeeId: committeeId,
+          designation: designationValue
+        });
+
+        alert("পদবী সফলভাবে কমিটিতে যুক্ত করা হয়েছে!");
+        
+        // ফরম ও ফিল্ড রিসেট করা
+        designationInput.value = "";
+        memberSearchInput.value = "";
+        searchResultContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 12px;">খুঁজতে টাইপ করা শুরু করুন...</p>`;
+        
+        // লোকাল মেমোরি ডেটা রিফ্রেশ করা
+        cacheActiveMembers();
+      } catch (error) {
+        alert("পদবী সংরক্ষণে সমস্যা হয়েছে: " + error.message);
+      }
+    }
+
+    // পেজ রান হওয়ার সাথে সাথে ফাংশন চালুকরণ
+    loadCommitteeDetails();
+    cacheActiveMembers();
+  </script>
+</body>
+</html>
+
