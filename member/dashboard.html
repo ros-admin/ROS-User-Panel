@@ -4,15 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ROS Member Portal</title>
-  <!-- রুট ফোল্ডারে থাকা মূল theme.css লিংক করা হচ্ছে -->
   <link rel="stylesheet" href="../theme.css">
-  <!-- কিউআর কোড জেনারেট করার জন্য হালকা ও নির্ভরযোগ্য লাইব্রেরি -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
   <div class="app-container">
-    <!-- হেডার সেকশন -->
     <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
       <div>
         <h2 style="color: #fff; margin: 0; font-size: 20px;">সদস্য পোর্টাল</h2>
@@ -21,18 +18,15 @@
       <button id="memberLogoutBtn" class="cyber-btn" style="padding: 8px 15px; width: auto; background: var(--danger); font-size: 12px;">লগআউট</button>
     </header>
 
-    <!-- প্রিমিয়াম ডিজিটাল মেম্বারশিপ আইডি কার্ড -->
     <div class="cyber-card" style="border: 2px solid var(--secondary); background: linear-gradient(145deg, rgba(4,13,26,0.95), rgba(10,25,47,0.85)); position: relative; overflow: hidden;">
       
-      <!-- কার্ড হেডার -->
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,180,216,0.25); padding-bottom: 12px;">
         <div>
           <h3 style="color: var(--secondary); margin: 0; font-size: 15px; letter-spacing: 0.5px;">RAJSHAHI OLYMPIAD SOCIETY</h3>
-          <small style="color: var(--accent); letter-spacing: 1px; font-size: 9px; font-weight: bold;">OFFICIAL DIGITAL ID CARD</small>
+          <small id="mCardDesignation" style="color: var(--accent); letter-spacing: 1px; font-size: 10px; font-weight: bold; text-transform: uppercase;">OFFICIAL MEMBER</small>
         </div>
       </div>
       
-      <!-- কার্ড বডি (মেম্বার ইনফো) -->
       <div style="display: flex; margin-top: 15px; gap: 15px; align-items: center;">
         <div style="flex: 1;">
           <img id="mCardPhoto" src="../placeholder.png" style="width: 85px; height: 105px; border-radius: 6px; border: 1px solid var(--secondary); object-fit: cover; background: #0a192f;">
@@ -46,9 +40,7 @@
         </div>
       </div>
 
-      <!-- কার্ড ফুটার এবং ভেরিফিকেশন কিউআর কোড -->
       <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; border-top: 1px solid rgba(0,180,216,0.15); padding-top: 12px;">
-        <!-- কিউআর কোড মাউন্ট পয়েন্ট -->
         <div id="mQrcode" style="background: #fff; padding: 4px; border-radius: 4px; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;"></div>
         <div style="text-align: right;">
           <p style="font-size: 8px; color: var(--text-muted); margin: 0;">SECURE ENCRYPTED NODE</p>
@@ -57,7 +49,6 @@
       </div>
     </div>
 
-    <!-- নোটিশ বোর্ড সেকশন -->
     <div class="cyber-card" style="border-color: var(--accent); margin-top: 20px;">
       <h3 style="color: var(--accent); font-size: 14px; margin-top: 0; margin-bottom: 10px;">📋 নোটিশ বোর্ড</h3>
       <div id="noticeContent" style="font-size: 12px; color: var(--text-light); line-height: 1.5; padding: 10px; background: rgba(2,12,27,0.5); border-radius: 4px; border-left: 3px solid var(--accent);">
@@ -67,7 +58,95 @@
 
   </div>
 
-  <script type="module" src="member-dashboard.js"></script>
+  <script type="module">
+    import { db, auth } from '../firebase-config.js';
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const mCardName = document.getElementById('mCardName');
+    const mCardMemberId = document.getElementById('mCardMemberId');
+    const mCardEmail = document.getElementById('mCardEmail');
+    const mCardPhone = document.getElementById('mCardPhone');
+    const mCardPhoto = document.getElementById('mCardPhoto');
+    const mCardDesignation = document.getElementById('mCardDesignation');
+    const mStatusBadge = document.getElementById('mStatusBadge');
+    const mLogoutBtn = document.getElementById('memberLogoutBtn');
+    const mQrcodeContainer = document.getElementById('mQrcode');
+
+    let qrcodeInstance = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userDocRef);
+
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+
+            // ১. আইডি কার্ডের বেসিক ডাটা রেন্ডার
+            mCardName.innerText = userData.englishName || "No Name";
+            mCardMemberId.innerText = userData.memberId || "Assigning...";
+            mCardEmail.innerText = userData.email;
+            mCardPhone.innerText = userData.mobileNumber || "N/A";
+            
+            if (userData.photoUrl) {
+              mCardPhoto.src = userData.photoUrl;
+            }
+
+            // ২. ডাইনামিক পদবী লোড (যদি অ্যাডমিন কোনো পদবী দিয়ে থাকে)
+            if (userData.designation) {
+              mCardDesignation.innerText = userData.designation;
+              mCardDesignation.style.color = "var(--accent)"; // পদবী থাকলে নিয়ন হলুদ কালার হবে
+            } else {
+              mCardDesignation.innerText = "OFFICIAL MEMBER";
+              mCardDesignation.style.color = "var(--secondary)";
+            }
+
+            // ৩. স্ট্যাটাস ব্যাজ আপডেট
+            if (userData.status === "active") {
+              mStatusBadge.innerText = "ACTIVE";
+              mStatusBadge.style.background = "rgba(46, 196, 182, 0.15)";
+              mStatusBadge.style.color = "#2ec4b6";
+              mStatusBadge.style.borderColor = "rgba(46, 196, 182, 0.4)";
+            } else {
+              mStatusBadge.innerText = "PENDING";
+              mStatusBadge.style.background = "rgba(255, 159, 67, 0.15)";
+              mStatusBadge.style.color = "#ff9f43";
+              mStatusBadge.style.borderColor = "rgba(255, 159, 67, 0.4)";
+            }
+
+            // ৪. ভেরিফিকেশন কিউআর কোড আপডেট
+            const verificationUrl = `https://ros-erp.web.app/verify.html?id=${userData.memberId}`;
+            if (!qrcodeInstance) {
+              qrcodeInstance = new QRCode(mQrcodeContainer, {
+                text: verificationUrl,
+                width: 55,
+                height: 55
+              });
+            } else {
+              qrcodeInstance.clear();
+              qrcodeInstance.makeCode(verificationUrl);
+            }
+
+          } else {
+            alert("প্রোফাইল ডাটাবেজে পাওয়া যায়নি।");
+            window.location.href = "../login.html";
+          }
+        } catch (error) {
+          console.error("Error loading member dashboard:", error);
+        }
+      } else {
+        window.location.href = "../login.html";
+      }
+    });
+
+    // লগআউট
+    mLogoutBtn.addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = "../login.html";
+      });
+    });
+  </script>
 </body>
 </html>
-
