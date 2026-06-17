@@ -40,7 +40,7 @@ async function uploadToCloudinary(file) {
 // ট্রানজেকশন ভিত্তিক সিকিউর অটো মেম্বার আইডি জেনারেটর (ROS-2026-XXXX)
 async function generateNextMemberId() {
   const currentYear = 2026; 
-  const counterRef = doc(db, "system_settings", "member_counter");
+  const counterRef = doc(db, "settings", "member_counter");
   
   return await runTransaction(db, async (transaction) => {
     const counterDoc = await transaction.get(counterRef);
