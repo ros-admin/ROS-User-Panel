@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROS Safe Login Portal</title>
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+  <div class="app-container" style="margin-top: 50px;">
+    <header style="text-align: center; margin-bottom: 25px;">
+      <h2 style="color: #fff; margin: 0;">ROS গেটওয়ে লগইন</h2>
+      <p style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">Secure Node Authentication</p>
+    </header>
+
+    <form id="loginForm" class="cyber-card">
+      <div class="form-group">
+        <label>Email অথবা Member ID *</label>
+        <input type="text" id="loginIdentifier" class="cyber-input" required placeholder="ROS-2026-0001 অথবা email@domain.com">
+      </div>
+      
+      <div class="form-group">
+        <label>Password *</label>
+        <input type="password" id="loginPassword" class="cyber-input" required placeholder="••••••••">
+      </div>
+
+      <button type="submit" id="loginBtn" class="cyber-btn">পোর্টালে প্রবেশ করুন</button>
+      
+      <div style="text-align: right; margin-top: 15px;">
+        <a href="#" id="forgotPasswordLink">পাসওয়ার্ড ভুলে গেছেন?</a>
+      </div>
+    </form>
+
+    <div id="resetModal" class="cyber-card" style="display: none; border-color: var(--danger);">
+      <h3 style="color: var(--danger); font-size: 15px; margin-bottom: 15px;">পাসওয়ার্ড রিসেট রিকোয়েস্ট কিউ</h3>
+      <div class="form-group">
+        <label>আপনার Member ID অথবা Mobile Number লিখুন</label>
+        <input type="text" id="resetIdentifier" class="cyber-input" placeholder="ROS-2026-0001 / 017XXXXXXXX">
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button type="button" id="submitResetBtn" class="cyber-btn" style="background: linear-gradient(135deg, #ff4d6d, #c9184a);">রিকোয়েস্ট পাঠান</button>
+        <button type="button" id="closeModalBtn" class="cyber-btn" style="background: #2a3a52;">বন্ধ করুন</button>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 15px;">
+      <a href="index.html">নতুন মেম্বার? এখানে রেজিস্ট্রেশন করুন</a>
+    </div>
+  </div>
+
+  <script type="module" src="login.js"></script>
+</body>
+</html>
+
