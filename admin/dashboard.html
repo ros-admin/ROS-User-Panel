@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROS Admin Node</title>
+  <link rel="stylesheet" href="../theme.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+      <div>
+        <h2 style="color: #fff; margin: 0;">ROS অ্যাডমিন প্যানেল</h2>
+        <p style="color: var(--text-muted); font-size: 12px; margin: 0;">Central Governance Node</p>
+      </div>
+      <button id="logoutBtn" class="cyber-btn" style="padding: 8px 15px; width: auto; background: var(--danger); font-size: 12px;">লগআউট</button>
+    </header>
+
+    <section class="cyber-card" style="border-color: var(--secondary);">
+      <h3 style="color: var(--secondary); font-size: 15px; margin-top: 0; margin-bottom: 15px;">পেন্ডিং মেম্বার রিকোয়েস্ট (<span id="pendingCount">0</span>)</h3>
+      <div id="pendingContainer" style="display: flex; flex-direction: column; gap: 15px;">
+        <p style="color: var(--text-muted); font-size: 13px;" id="loadingMembersText">ডাটা লোড হচ্ছে...</p>
+        </div>
+    </section>
+
+    <section class="cyber-card" style="border-color: var(--danger);">
+      <h3 style="color: var(--danger); font-size: 15px; margin-top: 0; margin-bottom: 15px;">পাসওয়ার্ড রিসেট রিকোয়েস্ট</h3>
+      <div id="resetContainer" style="display: flex; flex-direction: column; gap: 15px;">
+        <p style="color: var(--text-muted); font-size: 13px;" id="loadingResetsText">কোনো রিকোয়েস্ট নেই।</p>
+        </div>
+    </section>
+  </div>
+
+  <script type="module" src="admin-dashboard.js"></script>
+</body>
+</html>
+
