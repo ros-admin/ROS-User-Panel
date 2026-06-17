@@ -84,6 +84,9 @@
   <script src="../admin/logistics.js"></script>
   <script src="../admin/treasury.js"></script>
   <script src="../admin/documents.js"></script>
+  <script src="../admin/notifications.js"></script>
+  <script src="../admin/support.js"></script>
+  <script src="../admin/idCard.js"></script>
   
   
   
@@ -206,7 +209,20 @@
                    else if (id === 'documents') {
         // ডকুমেন্ট হাব মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadDocumentsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-    }
+                 }
+                   else if (id === 'notifications') {
+        // নোটিফিকেশন মديউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadNotificationsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
+                 }
+                   else if (id === 'support') {
+        // টিকেট ও সাপোর্ট মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadSupportModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, deleteDoc);
+                   }
+                     else if (id === 'idCards') {
+        // মেম্বারশিপ কার্ড মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadIdCardsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc);
+                     }
+                    
 
 
 
