@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROS Member Registration</title>
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <header style="text-align: center; margin-bottom: 25px;">
+      <h2 style="color: #fff; margin: 0;">ROS মেম্বার রেজিস্ট্রেশন</h2>
+      <p style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">Rajshahi Olympiad Society Node</p>
+    </header>
+
+    <form id="registrationForm" class="cyber-card">
+      
+      <h3 style="color: var(--accent); font-size: 15px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,180,216,0.2); padding-bottom: 5px;">আবশ্যিক তথ্যাদি (Required Fields)</h3>
+      
+      <div class="form-group">
+        <label>বাংলায় পূর্ণ নাম *</label>
+        <input type="text" id="banglaName" class="cyber-input" required placeholder="উদা: আবির হাসান">
+      </div>
+
+      <div class="form-group">
+        <label>English Full Name *</label>
+        <input type="text" id="englishName" class="cyber-input" required placeholder="Ex: Abir Hasan">
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Father's Name *</label>
+          <input type="text" id="fatherName" class="cyber-input" required>
+        </div>
+        <div class="form-group">
+          <label>Mother's Name *</label>
+          <input type="text" id="motherName" class="cyber-input" required>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Mobile Number *</label>
+          <input type="tel" id="mobileNumber" class="cyber-input" required placeholder="017XXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="email" class="cyber-input" required placeholder="name@example.com">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Gender *</label>
+          <select id="gender" class="cyber-input" style="background-color: var(--dark-bg);" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date of Birth *</label>
+          <input type="date" id="dob" class="cyber-input" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Present Address *</label>
+        <textarea id="presentAddress" class="cyber-input" rows="2" required placeholder="গ্রাম/রোড, উপজেলা, জেলা, বিভাগ"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-container">
+          <input type="checkbox" id="sameAddressCheck"> স্থায়ী ঠিকানা বর্তমান ঠিকানার অনুরূপ
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label>Permanent Address *</label>
+        <textarea id="permanentAddress" class="cyber-input" rows="2" required></textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Education/Degree *</label>
+          <input type="text" id="education" class="cyber-input" placeholder="HSC / B.Sc" required>
+        </div>
+        <div class="form-group">
+          <label>Academic Year *</label>
+          <input type="text" id="academicYear" class="cyber-input" placeholder="2026" required>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Profession *</label>
+          <input type="text" id="profession" class="cyber-input" placeholder="Student / Job" required>
+        </div>
+        <div class="form-group">
+          <label>Institution/Workplace *</label>
+          <input type="text" id="institution" class="cyber-input" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Profile Photo (Max 512KB) *</label>
+        <input type="file" id="profilePhoto" class="cyber-input" accept="image/*" required>
+      </div>
+
+      <h3 style="color: var(--secondary); font-size: 15px; margin-bottom: 15px; margin-top: 25px; border-bottom: 1px solid rgba(0,180,216,0.2); padding-bottom: 5px;">ঐচ্ছিক তথ্যাদি (Optional Fields)</h3>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>WhatsApp Number</label>
+          <input type="tel" id="whatsappNumber" class="cyber-input">
+        </div>
+        <div class="form-group">
+          <label>Facebook Profile Link</label>
+          <input type="url" id="facebookLink" class="cyber-input" placeholder="https://facebook.com/...">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>NID / Birth Registration Number</label>
+        <input type="text" id="nidOrBrn" class="cyber-input">
+      </div>
+
+      <button type="submit" id="submitBtn" class="cyber-btn" style="margin-top: 15px;">রেজিস্ট্রেশন সাবমিট করুন</button>
+    </form>
+    
+    <div style="text-align: center; margin-top: 15px;">
+      <a href="login.html">ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন</a>
+    </div>
+  </div>
+
+  <script type="module" src="register.js"></script>
+</body>
+</html>
+
