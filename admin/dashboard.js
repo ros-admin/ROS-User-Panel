@@ -1,11 +1,9 @@
-import { db } from '../../firebase-config.js';
-import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-export function initDashboard(contentRoot, currentAdminData) {
+// ড্যাশবোর্ড মডিউলের মূল ফাংশন
+function loadDashboardModule(contentRoot, currentAdminData, db, collection, onSnapshot) {
   contentRoot.innerHTML = `
     <div class="cyber-glass" style="padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid var(--neon-blue);">
       <h2 style="font-size: 20px;">স্বাগতম, <span style="color: var(--neon-blue);">${currentAdminData.englishName}</span></h2>
-      <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">সার্ভার স্ট্যাটাস: <span style="color: var(--neon-green);">লাইভ নোড অনলাইন</span> | সময়: <span>${new Date().toLocaleDateString('bn-BD')}</span></p>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">সার্ভার স্ট্যাটাস: <span style="color: var(--neon-green);">অনলাইন</span> | তারিখ: <span>${new Date().toLocaleDateString('bn-BD')}</span></p>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
       <div class="cyber-glass" style="padding:15px; text-align:center;"><small style="color:var(--text-muted);">মোট সদস্য</small><h2 id="cTotal" style="color:var(--neon-blue); margin-top:5px;">...</h2></div>
