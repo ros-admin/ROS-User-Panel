@@ -82,10 +82,8 @@
   <script src="../admin/volunteers.js"></script>
   <script src="../admin/attendence.js"></script>
   <script src="../admin/logistics.js"></script>
-  <script src="../admin/.js"></script>
-  <script src="../admin/.js"></script>
-  <script src="../admin/.js"></script>
-  <script src="../admin/.js"></script>
+  <script src="../admin/treasury.js"></script>
+  
   
   
   <script type="module">
@@ -199,7 +197,11 @@
                else if (id === 'logistics') {
         // লজিস্টিকস মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadLogisticsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc);
-                            }   
+                }
+                 else if (id === 'treasury') {
+        // সেন্ট্রাল ট্রেজারি মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadTreasuryModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
+                 }
 
 
 
