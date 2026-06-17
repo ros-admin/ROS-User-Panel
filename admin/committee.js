@@ -57,11 +57,11 @@ onSnapshot(qCommittees, (snapshot) => {
     committeeListContainer.appendChild(card);
   });
 
-  // পদবী বণ্টন বাটনে ক্লিক করলে অ্যাকশন (পরের ধাপে আমরা এটি যুক্ত করব)
+    // পদবী বণ্টন বাটনে ক্লিক করলে মেম্বার অ্যাসাইন পেজে নিয়ে যাবে
   document.querySelectorAll('.assign-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const committeeId = e.target.getAttribute('data-id');
-      alert("কমিটি আইডি: " + committeeId + "\nপরবর্তী ধাপে আমরা এই কমিটিতে মেম্বার এসাইন করার উইন্ডো তৈরি করব।");
+      window.location.href = `assign-member.html?id=${committeeId}`;
     });
   });
 });
