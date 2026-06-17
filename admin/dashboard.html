@@ -80,6 +80,13 @@
   <script src="../admin/comHistory.js"></script>
   <script src="../admin/events.js"></script>
   <script src="../admin/volunteers.js"></script>
+  <script src="../admin/attendence.js"></script>
+  <script src="../admin/logistics.js"></script>
+  <script src="../admin/.js"></script>
+  <script src="../admin/.js"></script>
+  <script src="../admin/.js"></script>
+  <script src="../admin/.js"></script>
+  
   
   <script type="module">
     import { db, auth } from '../firebase-config.js';
@@ -185,6 +192,14 @@
         // স্বেচ্ছাসেবক মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadVolunteersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, updateDoc, deleteDoc);
               }
+                else if (id === 'attendance') {
+        // ডিজিটাল উপস্থিতি মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadAttendanceModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, collection, doc);
+                }
+               else if (id === 'logistics') {
+        // লজিস্টিকস মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadLogisticsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc);
+                            }   
 
 
 
