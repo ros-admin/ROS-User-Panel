@@ -1,4 +1,7 @@
-function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
+// সরাসরি ফায়ারবেস মডিউল ইম্পোর্টসহ স্বয়ংসম্পূর্ণ ব্যাকআপ মডিউল
+import { collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+window.loadBackupModule = function(contentRoot, db) {
   contentRoot.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
       <h2 style="font-size:18px; color:var(--neon-blue);">💾 ব্যাকআপ ও ডিজাস্টার রিকভারি স্টেশন</h2>
@@ -32,7 +35,7 @@ function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
     </div>
   `;
 
-  // ১. ডাউনলোড লজিক
+  // ১. সম্পূর্ণ ফায়ারবেস ডাটা এক্সপোর্ট করে JSON ডাউনলোডের লজিক
   document.getElementById('btnDownloadBackupJSON').addEventListener('click', async () => {
     try {
       const backupData = {
@@ -59,13 +62,13 @@ function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
       downloadAnchor.click();
       downloadAnchor.remove();
 
-      alert("✅ ব্যাকআপ ফাইল সফলভাবে জেনারেট ও ডাউনলোড হয়েছে!");
+      alert("✅ ব্যাকআপ ফাইল সফলভাবে জেনარეট ও ডাউনলোড হয়েছে!");
     } catch (err) {
       alert("ব্যাকআপ নিতে সমস্যা হয়েছে: " + err.message);
     }
   });
 
-  // ২. রিস্টোর ফাইল রিড লজিক
+  // ২. JSON ফাইল রিড ও রিস্টোর লজিক
   const fileInput = document.getElementById('restoreFileInput');
   const fileStatus = document.getElementById('restoreFileStatus');
   const btnExecute = document.getElementById('btnExecuteRestore');
@@ -97,7 +100,7 @@ function loadBackupModule(contentRoot, db, collection, getDocs, addDoc) {
 
   btnExecute.addEventListener('click', async () => {
     if (!parsedRestoreData) return;
-    if (confirm("⚠️ আপনি কি নিশ্চিত?")) {
+    if (confirm("⚠️ সাবধান! ডাটাবেজে নতুন করে রেকর্ডগুলো রাইট হবে। আপনি কি নিশ্চিত?")) {
       try {
         if (parsedRestoreData.users && parsedRestoreData.users.length > 0) {
           for (let u of parsedRestoreData.users) {
