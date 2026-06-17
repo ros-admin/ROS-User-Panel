@@ -83,6 +83,7 @@
   <script src="../admin/attendence.js"></script>
   <script src="../admin/logistics.js"></script>
   <script src="../admin/treasury.js"></script>
+  <script src="../admin/documents.js"></script>
   
   
   
@@ -202,6 +203,10 @@
         // সেন্ট্রাল ট্রেজারি মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadTreasuryModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
                  }
+                   else if (id === 'documents') {
+        // ডকুমেন্ট হাব মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadDocumentsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
+    }
 
 
 
