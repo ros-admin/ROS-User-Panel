@@ -99,8 +99,9 @@
   
   <script type="module">
     import { db, auth } from '../firebase-config.js';
-    import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 
     const erpModules = [
       { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
@@ -232,7 +233,7 @@
                        else if (id === 'qrVerify') {
         // কিউআর ভেরিফিকেশন মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadQrVerifyModule(contentRoot, db, collection, onSnapshot, doc, getDocs);
-                       }
+                      }
                          else if (id === 'reports') {
         // এন্টারপ্রাইজ রিপোর্টস মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadReportsModule(contentRoot, db, collection, onSnapshot, getDocs);
@@ -240,16 +241,16 @@
                         else if (id === 'logs') {
         // সিস্টেম অ্যাক্টিভিটি লগ মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-                        }
-                          else if (id === 'backup') {
-        // ব্যাকআপ মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+                      }
+                        else if (id === 'backup') {
+        // এখানে getDocs এবং addDoc সঠিকভাবে পাস করা হলো
         loadBackupModule(contentRoot, db, collection, getDocs, addDoc);
-                          }
-                            else if (id === 'settings') {
-        // গ্লোবাল সেটিংস মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+                        else if (id === 'settings') {
+        // এখানে onSnapshot, doc, updateDoc এবং আমাদের নতুন ইম্পোর্ট করা setDoc পাস করা হলো
         loadSettingsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, setDoc);
-                            }
-                    
+              }
+        
 
 
 
