@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROS Committee Management</title>
+  <link rel="stylesheet" href="../theme.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+      <div>
+        <h2 style="color: #fff; margin: 0; font-size: 18px;">কমিটি ম্যানেজমেন্ট</h2>
+        <p style="color: var(--text-muted); font-size: 12px; margin: 0;">ROS Structure Node</p>
+      </div>
+      <a href="dashboard.html" class="cyber-btn" style="padding: 8px 15px; width: auto; font-size: 12px; text-decoration: none; text-align: center;">ড্যাশবোর্ড</a>
+    </header>
+
+    <!-- নতুন কমিটি তৈরির ফর্ম -->
+    <section class="cyber-card" style="border-color: var(--secondary);">
+      <h3 style="color: var(--secondary); font-size: 15px; margin-top: 0; margin-bottom: 15px;">🆕 নতুন কমিটি তৈরি করুন</h3>
+      <form id="committeeForm" style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <label style="color: var(--text-light); font-size: 12px; display: block; margin-bottom: 5px;">কমিটির নাম (যেমন: কার্যনির্বাহী কমিটি ২০২৬)</label>
+          <input type="text" id="comName" placeholder="কমিটির নাম লিখুন" required style="width: 100%; padding: 10px; background: rgba(2,12,27,0.6); border: 1px solid var(--text-muted); color: #fff; border-radius: 4px;">
+        </div>
+        <div>
+          <label style="color: var(--text-light); font-size: 12px; display: block; margin-bottom: 5px;">মেয়াদ/বছর</label>
+          <input type="text" id="comYear" placeholder="উদা: 2026-2027" required style="width: 100%; padding: 10px; background: rgba(2,12,27,0.6); border: 1px solid var(--text-muted); color: #fff; border-radius: 4px;">
+        </div>
+        <button type="submit" class="cyber-btn" style="margin-top: 5px; background: linear-gradient(135deg, #4cc9f0, #00b4d8);">কমিটি সক্রিয় করুন</button>
+      </form>
+    </section>
+
+    <!-- বর্তমান কমিটিসমূহের তালিকা -->
+    <section class="cyber-card" style="border-color: var(--accent);">
+      <h3 style="color: var(--accent); font-size: 15px; margin-top: 0; margin-bottom: 15px;">📋 বর্তমান কমিটিসমূহ</h3>
+      <div id="committeeListContainer" style="display: flex; flex-direction: column; gap: 12px;">
+        <p style="color: var(--text-muted); font-size: 13px;">লোডিং হচ্ছে...</p>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="committee.js"></script>
+</body>
+</html>
+
