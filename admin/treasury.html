@@ -5,91 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ROS Treasury Admin</title>
   <link rel="stylesheet" href="../theme.css">
+  <style>
+    body { margin: 0; padding: 0; display: flex; min-height: 100vh; background-color: var(--dark-bg); }
+    .sidebar { width: 240px; background: linear-gradient(180deg, rgba(2, 12, 27, 0.95), rgba(10, 25, 47, 0.9)); border-right: 1px solid rgba(0, 180, 216, 0.2); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 10; }
+    .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(0, 180, 216, 0.15); text-align: center; }
+    .sidebar-menu { list-style: none; padding: 15px 0; margin: 0; display: flex; flex-direction: column; gap: 5px; }
+    .sidebar-menu li a { display: block; padding: 12px 20px; color: var(--text-light); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; transition: all 0.3s ease; }
+    .sidebar-menu li a:hover, .sidebar-menu li a.active { background: rgba(0, 180, 216, 0.1); color: var(--secondary); border-left-color: var(--secondary); }
+    .main-content { margin-left: 240px; flex: 1; padding: 25px; box-sizing: border-box; }
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid rgba(0, 180, 216, 0.2); }
+      .main-content { margin-left: 0; padding: 15px; }
+      .sidebar-menu { flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 10px; }
+      .sidebar-menu li a { padding: 8px 12px; font-size: 12px; border-left: none; border-bottom: 2px solid transparent; }
+      .sidebar-menu li a:hover, .sidebar-menu li a.active { border-left-color: transparent; border-bottom-color: var(--secondary); }
+    }
+  </style>
 </head>
 <body>
 
-  <div class="app-container">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-      <div>
-        <h2 style="color: #fff; margin: 0; font-size: 18px;">ট্রেজারি ও ফান্ড নোড</h2>
-        <p style="color: var(--text-muted); font-size: 12px; margin: 0;">Central Financial Ledger</p>
-      </div>
-      <a href="dashboard.html" class="cyber-btn" style="padding: 8px 15px; width: auto; font-size: 12px; text-decoration: none; text-align: center;">ড্যাশবোর্ড</a>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h3 style="color: var(--secondary); margin: 0; font-size: 16px;">ROS ERP ADMIN</h3>
+      <small style="color: var(--text-muted); font-size: 10px;">Core Control Node</small>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="dashboard.html">📊 মেম্বার রিকোয়েস্ট</a></li>
+      <li><a href="committee.html">👥 কমিটি ম্যানেজমেন্ট</a></li>
+      <li><a href="treasury.html" class="active">💰 ট্রেজারি ও ফান্ড খাতা</a></li>
+    </ul>
+    <div style="margin-top: auto; padding: 20px; text-align: center;">
+      <button id="adminLogoutBtn" class="cyber-btn" style="background: var(--danger); font-size: 11px; padding: 6px 12px; width: auto;">লগআউট</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header style="margin-bottom: 25px;">
+      <h2 style="color: #fff; margin: 0; font-size: 20px;">ট্রেজারি ও ফান্ড নোড</h2>
+      <p style="color: var(--text-muted); font-size: 12px; margin: 0;">Central Financial Ledger</p>
     </header>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
       <div class="cyber-card" style="margin:0; padding:10px; text-align:center; border-color: var(--success);">
         <small style="color: var(--success); font-size: 10px;">মোট আয়</small>
-        <h3 id="totalIncome" style="margin:5px 0 0 0; color:#fff; font-size:16px;">৳০</h3>
+        <h3 id="totalIncome" style="margin:5px 0 0 0; color:#fff; font-size:15px;">৳০</h3>
       </div>
       <div class="cyber-card" style="margin:0; padding:10px; text-align:center; border-color: var(--danger);">
         <small style="color: var(--danger); font-size: 10px;">মোট ব্যয়</small>
-        <h3 id="totalExpense" style="margin:5px 0 0 0; color:#fff; font-size:16px;">৳০</h3>
+        <h3 id="totalExpense" style="margin:5px 0 0 0; color:#fff; font-size:15px;">৳০</h3>
       </div>
       <div class="cyber-card" style="margin:0; padding:10px; text-align:center; border-color: var(--secondary);">
         <small style="color: var(--secondary); font-size: 10px;">নেট ফান্ড</small>
-        <h3 id="netBalance" style="margin:5px 0 0 0; color:var(--accent); font-size:16px;">৳০</h3>
+        <h3 id="netBalance" style="margin:5px 0 0 0; color:var(--accent); font-size:15px;">৳০</h3>
       </div>
     </div>
 
-    <section class="cyber-card" style="border-color: var(--secondary);">
-      <h3 style="color: var(--secondary); font-size: 14px; margin-top: 0; margin-bottom: 15px;">💸 নতুন লেনদেনলিপিবদ্ধ করুন</h3>
+    <section class="cyber-card" style="border-color: var(--secondary); margin-bottom: 20px;">
+      <h3 style="color: var(--secondary); font-size: 14px; margin-top: 0; margin-bottom: 15px;">💸 নতুন লেনদেন লিপিবদ্ধ করুন</h3>
       <form id="treasuryForm" style="display: flex; flex-direction: column; gap: 12px;">
-        <div class="grid-2">
-          <div>
-            <label style="color: var(--text-light); font-size: 12px; display: block; margin-bottom: 5px;">লেনদেনের ধরণ *</label>
-            <select id="txType" class="cyber-input" style="background: var(--dark-bg); padding: 10px;" required>
-              <option value="income">আয় (Income)</option>
-              <option value="expense">ব্যয় (Expense)</option>
-            </select>
-          </div>
-          <div>
-            <label style="color: var(--text-light); font-size: 12px; display: block; margin-bottom: 5px;">পরিমাণ (টাকা) *</label>
-            <input type="number" id="txAmount" class="cyber-input" placeholder="৳উদা: ৫০০" required style="padding: 10px;">
-          </div>
-        </div>
-        <div>
-          <label style="color: var(--text-light); font-size: 12px; display: block; margin-bottom: 5px;">খাত/বিবরণ *</label>
-          <input type="text" id="txDetails" class="cyber-input" placeholder="উদা: মার্চ মাসের চাঁদা অথবা ব্যানার প্রিন্ট" required style="padding: 10px;">
-        </div>
-        <button type="submit" class="cyber-btn" style="background: linear-gradient(135deg, #00b4d8, #0077b6); margin-top: 5px;">লেজারে সেভ করুন</button>
+        <select id="txType" class="cyber-input" style="background: var(--dark-bg); padding: 10px;" required>
+          <option value="income">আয় (Income)</option>
+          <option value="expense">ব্যয় (Expense)</option>
+        </select>
+        <input type="number" id="txAmount" class="cyber-input" placeholder="টাকার পরিমাণ" required style="padding: 10px;">
+        <input type="text" id="txDetails" class="cyber-input" placeholder="খাত/বিবরণ" required style="padding: 10px;">
+        <button type="submit" class="cyber-btn" style="background: linear-gradient(135deg, #00b4d8, #0077b6);">লেজারে সেভ করুন</button>
       </form>
     </section>
 
     <section class="cyber-card" style="border-color: var(--accent);">
       <h3 style="color: var(--accent); font-size: 14px; margin-top: 0; margin-bottom: 15px;">📜 সাম্প্রতিক লেনদেনের খাতা</h3>
-      <div id="ledgerContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;">
+      <div id="ledgerContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto;">
         <p style="color: var(--text-muted); font-size: 12px;">ডাটা লোড হচ্ছে...</p>
       </div>
     </section>
-  </div>
+  </main>
 
   <script type="module">
-    import { db, auth } from '../firebase-config.js'; // auth নিশ্চিত করুন
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-// 🔐 সিকিউরিটি গেটওয়াল: লগইন এবং রোল চেক
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    // লগইন না থাকলে লাথি মেরে লগইন পেজে পাঠাবে
-    window.location.href = "../login.html";
-    return;
-  }
-  
-  // লগইন থাকলে সে আসলেই অ্যাডমিন কিনা ডাটাবেজ থেকে চেক করবে
-  const userSnap = await getDoc(doc(db, "users", user.uid));
-  if (userSnap.exists()) {
-    const role = userSnap.data().role;
-    if (role !== "super_admin" && role !== "president" && role !== "secretary") {
-      alert("আপনার এই পেজে ঢোকার অনুমতি নেই!");
-      window.location.href = "../login.html";
-    }
-  }
-});
-    
-    import { db } from '../firebase-config.js';
-    import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { db, auth } from '../firebase-config.js';
+    import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const treasuryForm = document.getElementById('treasuryForm');
     const ledgerContainer = document.getElementById('ledgerContainer');
@@ -97,103 +93,58 @@ onAuthStateChanged(auth, async (user) => {
     const totalExpenseEl = document.getElementById('totalExpense');
     const netBalanceEl = document.getElementById('netBalance');
 
-    // ১. ফায়ারস্টোরে নতুন ট্রানজেকশন এন্ট্রি করা
-    treasuryForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const type = document.getElementById('txType').value;
-      const amount = parseFloat(document.getElementById('txAmount').value);
-      const details = document.getElementById('txDetails').value.trim();
-
-      try {
-        await addDoc(collection(db, "treasury"), {
-          type: type,
-          amount: amount,
-          details: details,
-          date: new Date().toISOString()
-        });
-
-        alert("লেনদেন সফলভাবে খাতায় যুক্ত হয়েছে!");
-        treasuryForm.reset();
-      } catch (error) {
-        alert("ডাটা সেভ করতে ত্রুটি: " + error.message);
+    // 🔐 সিকিউরিটি গেটওয়াল
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "../login.html"; return; }
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      if (userSnap.exists() && !["super_admin", "president", "secretary"].includes(userSnap.data().role)) {
+        window.location.href = "../login.html";
       }
     });
 
-    // ২. রিয়েল-টাইমে লেনদেন খাতা ও সামারি গণনা করা
-    const qLedger = query(collection(db, "treasury"), orderBy("date", "desc"));
-    onSnapshot(qLedger, (snapshot) => {
-      ledgerContainer.innerHTML = "";
-      
-      let totalIncome = 0;
-      let totalExpense = 0;
+    treasuryForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await addDoc(collection(db, "treasury"), {
+          type: document.getElementById('txType').value,
+          amount: parseFloat(document.getElementById('txAmount').value),
+          details: document.getElementById('txDetails').value.trim(),
+          date: new Date().toISOString()
+        });
+        alert("লেনদেন যুক্ত হয়েছে!");
+        treasuryForm.reset();
+      } catch (err) { alert(err.message); }
+    });
 
-      if (snapshot.empty) {
-        ledgerContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 12px;">এখনো কোনো লেনদেন রেকর্ড করা হয়নি।</p>`;
-        totalIncomeEl.innerText = "৳০";
-        totalExpenseEl.innerText = "৳০";
-        netBalanceEl.innerText = "৳০";
-        return;
-      }
-
-      snapshot.forEach((txDoc) => {
+    onSnapshot(query(collection(db, "treasury"), orderBy("date", "desc")), (snapshot) => {
+      ledgerContainer.innerHTML = snapshot.empty ? `<p style="color: var(--text-muted); font-size: 12px;">কোনো লেনদেন নেই।</p>` : "";
+      let income = 0, expense = 0;
+      snapshot.forEach(txDoc => {
         const tx = txDoc.data();
-        
-        // সামারি ক্যালকুলেশন
-        if (tx.type === "income") {
-          totalIncome += tx.amount;
-        } else {
-          totalExpense += tx.amount;
-        }
-
-        // লাইভ ট্রানজেকশন রো (Row) তৈরি
+        if (tx.type === "income") income += tx.amount; else expense += tx.amount;
         const row = document.createElement('div');
-        row.style.display = "flex";
-        row.style.justifyContent = "space-between";
-        row.style.alignItems = "center";
-        row.style.padding = "8px 12px";
-        row.style.background = "rgba(2, 12, 27, 0.6)";
-        row.style.borderRadius = "4px";
+        row.style.display = "flex"; row.style.justifyContent = "space-between"; row.style.alignItems = "center";
+        row.style.padding = "8px 12px"; row.style.background = "rgba(2, 12, 27, 0.6)"; row.style.borderRadius = "4px";
         row.style.borderLeft = tx.type === "income" ? "3px solid var(--success)" : "3px solid var(--danger)";
-
         row.innerHTML = `
           <div>
-            <p style="margin:0; color:#fff; font-size:12px; font-weight:600;">${tx.details}</p>
+            <p style="margin:0; color:#fff; font-size:12px;">${tx.details}</p>
             <small style="color:var(--text-muted); font-size:10px;">${new Date(tx.date).toLocaleDateString('bn-BD')}</small>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:13px; font-weight:bold; color: ${tx.type === 'income' ? 'var(--success)' : 'var(--danger)'}">
-              ${tx.type === 'income' ? '+' : '-'} ৳${tx.amount}
-            </span>
-            <button class="delete-tx-btn" data-id="${txDoc.id}" style="background:none; border:none; color:var(--danger); font-size:14px; cursor:pointer;">×</button>
+            <span style="font-size:12px; font-weight:bold; color: ${tx.type === 'income' ? 'var(--success)' : 'var(--danger)'}">${tx.type === 'income' ? '+' : '-'} ৳${tx.amount}</span>
+            <button class="delete-tx-btn" data-id="${txDoc.id}" style="background:none; border:none; color:var(--danger); font-size:14px;">×</button>
           </div>
         `;
         ledgerContainer.appendChild(row);
       });
-
-      // স্ক্রিনে সামারি ভ্যালু প্রিন্ট করা
-      totalIncomeEl.innerText = `৳${totalIncome}`;
-      totalExpenseEl.innerText = `৳${totalExpense}`;
-      netBalanceEl.innerText = `৳${totalIncome - totalExpense}`;
-
-      // ডিলিট বাটনের অ্যাকশন দেওয়া
-      document.querySelectorAll('.delete-tx-btn').forEach(btn => {
-        btn.addEventListener('click', deleteTransaction);
-      });
+      totalIncomeEl.innerText = `৳${income}`; totalExpenseEl.innerText = `৳${expense}`; netBalanceEl.innerText = `৳${income - expense}`;
+      document.querySelectorAll('.delete-tx-btn').forEach(btn => btn.addEventListener('click', async e => {
+        if (confirm("মুছে ফেলবেন?")) await deleteDoc(doc(db, "treasury", e.target.getAttribute('data-id')));
+      }));
     });
 
-    // ৩. ভুল এন্ট্রি ডিলিট করার মেকানিজম
-    async function deleteTransaction(e) {
-      const id = e.target.getAttribute('data-id');
-      if (confirm("আপনি কি এই লেনদেনটি খাতা থেকে মুছে ফেলতে চান?")) {
-        try {
-          await deleteDoc(doc(db, "treasury", id));
-          alert("লেনদেনটি মুছে ফেলা হয়েছে।");
-        } catch (err) {
-          alert("মুছে ফেলতে সমস্যা হয়েছে: " + err.message);
-        }
-      }
-    }
+    document.getElementById('adminLogoutBtn').addEventListener('click', () => signOut(auth).then(() => window.location.href = "../login.html"));
   </script>
 </body>
 </html>
