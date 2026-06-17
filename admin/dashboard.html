@@ -72,14 +72,15 @@
     </div>
   </div>
 
+  <script src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/navigation.js"></script>
+
+  <script src="../admin/dashboard.js"></script>
+  <script src="../admin/members.js"></script>
+
   <script type="module">
     import { db, auth } from '../firebase-config.js';
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    // 📥 ডাইনামিক আলাদা জাভাস্ক্রিপ্ট ফাইল ইমপোর্ট
-    import { initDashboard } from '../admin/dashboard.js';
-    import { initMembers } from './modules/members.js';
 
     const erpModules = [
       { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
@@ -152,34 +153,35 @@
       });
     }
 
-    // 🚀 সেন্ট্রাল রাউটার নোড (আলাদা ফাইলের ফাংশন রান করবে)
+    // 🚀 সেন্ট্রাল সুইচ রাউটার (যা মডিউল ফাইলের ফাংশনকে রান করায়)
     function switchModuleView(id) {
       contentRoot.innerHTML = "";
 
       if (id === 'dashboard') {
-        initDashboard(contentRoot, currentAdminData);
+        // ড্যাশবোর্ড মডিউলের ফাংশন কল
+        loadDashboardModule(contentRoot, currentAdminData, db, collection, onSnapshot);
       } 
       else if (id === 'members') {
-        initMembers(contentRoot);
+        // মেম্বার মডিউলের ফাংশন কল
+        loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc);
       } 
       else {
         contentRoot.innerHTML = `
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
             <i class="fas fa-microchip" style="font-size:40px; color:var(--neon-blue); margin-bottom:15px;"></i>
             <h3>${erpModules.find(m => m.id === id).name}</h3>
-            <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">মডিউল ফাইলটি admin/modules/ ফোল্ডারে যুক্ত করার জন্য স্ট্যান্ডবাই মোডে আছে।</p>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">মডিউল ফাইলটি এক্সটার্নাল স্ক্রিপ্ট হিসেবে যুক্ত করার জন্য স্ট্যান্ডবাই মোডে আছে।</p>
           </div>
         `;
       }
     }
 
-    // পাসওয়ার্ড পরিবর্তন ও ইভেন্ট কন্ট্রোল
-    document.getElementById('profileTrigger').addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.style.display = profileDropdown.style.display === 'flex' ? 'none' : 'flex'; });
+    profileTrigger.addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.style.display = profileDropdown.style.display === 'flex' ? 'none' : 'flex'; });
     document.addEventListener('click', () => { profileDropdown.style.display = 'none'; });
-    document.getElementById('mobileMenuToggle').addEventListener('click', () => { sidebarNode.classList.toggle('active'); });
+    mobileMenuToggle.addEventListener('click', () => { sidebarNode.classList.toggle('active'); });
     document.getElementById('openPassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'flex');
     document.getElementById('closePassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'none');
-
+    
     document.getElementById('passwordUpdateForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const newPass = document.getElementById('newPassword').value;
@@ -187,10 +189,7 @@
       try { await updatePassword(auth.currentUser, newPass); alert("পাসওয়ার্ড আপডেটেড!"); passwordChangeModal.style.display = 'none'; } catch (err) { alert(err.message); }
     });
 
-    document.getElementById('adminSignOutBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      if (confirm("লগআউট করতে চান?")) signOut(auth).then(() => { window.location.href = "../login.html"; });
-    });
+    document.getElementById('adminSignOutBtn').addEventListener('click', () => { if (confirm("লগআউট করবেন?")) signOut(auth).then(() => { window.location.href = "../login.html"; }); });
   </script>
 </body>
 </html>
