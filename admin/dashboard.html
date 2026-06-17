@@ -87,6 +87,11 @@
   <script src="../admin/notifications.js"></script>
   <script src="../admin/support.js"></script>
   <script src="../admin/idCard.js"></script>
+  <script src="../admin/qrVerify.js"></script>
+  <script src="../admin/reports.js"></script>
+  <script src="../admin/logs.js"></script>
+  
+  
   
   
   
@@ -107,7 +112,7 @@
       { id: 'treasury', name: '💰 সেন্ট্রাল ট্রেজারি' },
       { id: 'documents', name: '📁 ডকুমেন্ট হাব' },
       { id: 'notifications', name: '🔔 নোটিফিকেশন সেন্টার' },
-      { id: 'messages', name: '💬 মেসেজ ও সাপোর্ট টিকিট' },
+      { id: 'support', name: '💬 মেসেজ ও সাপোর্ট টিকিট' },
       { id: 'idCards', name: '🪪 মেম্বারশিপ কার্ড জোন' },
       { id: 'qrVerify', name: '🔍 QR কোড ভেরিфикации' },
       { id: 'reports', name: '📈 এন্টারপ্রাইজ রিপোর্টস' },
@@ -222,6 +227,18 @@
         // মেম্বারশিপ কার্ড মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
         loadIdCardsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc);
                      }
+                       else if (id === 'qrVerify') {
+        // কিউআর ভেরিফিকেশন মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadQrVerifyModule(contentRoot, db, collection, onSnapshot, doc, getDocs);
+                       }
+                         else if (id === 'reports') {
+        // এন্টারপ্রাইজ রিপোর্টস মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadReportsModule(contentRoot, db, collection, onSnapshot, getDocs);
+                     }
+                        else if (id === 'logs') {
+        // সিস্টেম অ্যাক্টিভিটি লগ মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+        loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
+                        }
                     
 
 
