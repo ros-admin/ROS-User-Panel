@@ -266,7 +266,7 @@
       if (moduleId === 'profile') {
         loadProfileModule(spaContentRoot, db, auth, doc, onSnapshot, signOut);
       } else if (moduleId === 'updateInfo') {
-        loadUpdateInfoModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc);
+loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp);
       } else if (moduleId === 'myRequests') {
         loadMyRequestsModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc);
       }
