@@ -1,7 +1,7 @@
-// ROS Nexus - Enterprise Member Update Info Module (Parallel Lock Engine)
-function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc) {
+// ROS Nexus - Enterprise Member Update Info Module (Parallel Lock Engine with 1MB Size Limit & Timestamp)
+function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp) {
   
-  // ১. মডিউলের জন্য ডেডিকেটেড নেক্সাস ইউআই এবং নোটিফিকেশন স্টাইল ইনজেকশন
+  // ১. মডিউলের জন্য ডেডিকেটেড সাইবারপাঙ্ক ইউআই এবং নোটিফিকেশন স্টাইল ইনজেকশন
   contentRoot.innerHTML = `
     <style>
       /* কোর ফ্রেমওয়ার্ক ও কন্টেইনার */
@@ -97,7 +97,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       .nexus-btn-primary { background: var(--secondary); color: #030712; box-shadow: 0 0 15px rgba(0, 245, 255, 0.2); }
       .nexus-btn-primary:hover { background: #fff; box-shadow: 0 0 20px #fff; }
 
-      /* রেস্পন্সিভ মিডিয়া কোয়েরি (মোবাইলে সিঙ্গেল কলাম) */
+      /* রেস্পন্সিভ মিডিয়া কোয়েরি */
       @media (max-width: 992px) {
         .update-form-grid { grid-template-columns: repeat(2, 1fr); }
         .form-field-box.span-2, .form-field-box.span-4 { grid-column: span 2; }
@@ -113,12 +113,10 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     <section style="padding: 10px; box-sizing: border-box;">
       <div class="update-matrix-card">
         
-        <!-- ১. ছবি পরিবর্তন পেন্ডিং ব্যানার -->
         <div class="lock-status-banner banner-blue" id="photoLockBanner">
           <i class="fas fa-camera fa-spin"></i> আপনার একটি ছবি পরিবর্তনের আবেদন ইতোমধ্যে অনুমোদনের অপেক্ষায় রয়েছে। অনুগ্রহ করে অপেক্ষা করুন।
         </div>
 
-        <!-- ২. তথ্য পরিবর্তন পেন্ডিং ব্যানার -->
         <div class="lock-status-banner banner-red" id="infoLockBanner">
           <i class="fas fa-user-shield fa-spin"></i> আপনার একটি তথ্য পরিবর্তনের আবেদন ইতোমধ্যে অনুমোদনের অপেক্ষায় রয়েছে। অনুগ্রহ করে অপেক্ষা করুন।
         </div>
@@ -128,14 +126,12 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
             <img src="../placeholder.png" id="updAvatarImg" class="prof-edit-avatar">
           </div>
           
-          <!-- ছবি পরিবর্তন লিংক ট্রিগার -->
           <div class="change-photo-trigger" id="photoTriggerBtn"><i class="fas fa-camera"></i> ছবি পরিবর্তন করুন</div>
           <input type="file" id="hiddenGalleryInput" accept="image/*" style="display: none;">
           
           <div class="update-reg-badge" id="updMemberIdBadge">ROS-NEXUS</div>
         </div>
 
-        <!-- তথ্য পরিবর্তনের মূল ফর্ম -->
         <form id="cyberUpdateForm">
           <div class="update-section-title"><i class="fas fa-user-astronaut"></i> ব্যক্তিগত বিবরণ (Personal Matrix)</div>
           <div class="update-form-grid">
@@ -238,7 +234,6 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       </div>
     </section>
 
-    <!-- ডাবল কনফার্মেশন মোডাল উইন্ডো -->
     <div class="confirm-popup-overlay" id="cyberConfirmPopup">
       <div class="confirm-popup-card">
         <h4 id="popupPromptText">আপনি কি নিশ্চিত?</h4>
@@ -267,7 +262,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
   let isPhotoLocked = false;
   let isInfoLocked = false;
   let tempBase64Image = null; 
-  let confirmationType = ""; // "photo" অথবা "data"
+  let confirmationType = ""; 
 
   if (!currentUser) { window.location.href = "../login.html"; return; }
 
@@ -276,7 +271,6 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     if (snapshot.exists()) {
       const d = snapshot.data();
 
-      // ক) ফটো লক লজিক ইমপ্লিমেন্টেশন
       if (d.imageApprovalStatus === "pending") {
         isPhotoLocked = true;
         photoLockBanner.style.display = "flex";
@@ -287,7 +281,6 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         photoTriggerBtn.classList.remove('locked-state');
       }
 
-      // খ) তথ্য পরিবর্তন লক লজিক ইমপ্লিমেন্টেশন
       if (d.infoApprovalStatus === "pending") {
         isInfoLocked = true;
         infoLockBanner.style.display = "flex";
@@ -298,19 +291,17 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         updSubmitBtn.disabled = false;
       }
 
-      // প্রোফাইল ফটো এবং আইডি রেন্ডারিং
       document.getElementById('updAvatarImg').src = d.photoUrl || '../placeholder.png';
       document.getElementById('updMemberIdBadge').innerText = d.memberId || "ROS-MEMBER";
 
-      // ফর্ম ফিল্ড ম্যাপিং এবং ডাইনামিক ফিল্ড লকিং (profile.js অনুযায়ী ফিল্ড নাম ফিক্সড)
       const fields = [
         ['updEnglishName', d.englishName], ['updBanglaName', d.banglaName],
         ['updFatherName', d.fatherName], ['updMotherName', d.motherName],
         ['updDob', d.dob], ['updGender', d.gender || "Male"],
         ['updNidOrBrn', d.nidOrBrn], ['updInstitution', d.institution],
-        ['updEducation', d.education], ['updAcademicYear', d.academicYear], // ফিক্সড: academicYear
+        ['updEducation', d.education], ['updAcademicYear', d.academicYear], 
         ['updProfession', d.profession], ['updMobileNumber', d.mobileNumber],
-        ['updWhatsappNumber', d.whatsappNumber], // ফিক্সড: whatsappNumber
+        ['updWhatsappNumber', d.whatsappNumber], 
         ['updFacebookLink', d.facebookLink],
         ['updPresentAddress', d.presentAddress], ['updPermanentAddress', d.permanentAddress]
       ];
@@ -319,7 +310,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         const el = document.getElementById(id);
         if(el) {
           el.value = val || "";
-          el.disabled = isInfoLocked; // তথ্য পরিবর্তনের আবেদন পেন্ডিং থাকলে ইনপুট লক হবে
+          el.disabled = isInfoLocked; 
         }
       });
 
@@ -338,10 +329,19 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     hiddenGalleryInput.click();
   });
 
-  // গ্যালারি থেকে ছবি সিলেক্ট রিসিভার
+  // ৫. ফাইল সাইজ ট্র্যাকিং ও ইভেন্ট হ্যান্ডলার ইঞ্জিন (১ মেগাবাইট লিমিট ভ্যালিডেশন)
   hiddenGalleryInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // ১ মেগাবাইটের সর্বোচ্চ বাইট সাইজ হিসাব (1 MB = 1024 * 1024 Bytes)
+    const maxSizeBytes = 1 * 1024 * 1024; 
+
+    if (file.size > maxSizeBytes) {
+      alert("⚠️ ফাইল সাইজ অনেক বড়! সর্বোচ্চ ১ মেগাবাইট (1 MB) সাইজের ছবি আপলোড করা যাবে। অনুগ্রহ করে ছোট সাইজের ছবি সিলেক্ট করুন।");
+      hiddenGalleryInput.value = ""; // ইনপুট রিসেট করা হলো
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -353,7 +353,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     reader.readAsDataURL(file);
   });
 
-  // ৫. স্বাধীন তথ্য পরিবর্তন সাবমিশন মেকানিজম
+  // ৬. স্বাধীন তথ্য পরিবর্তন সাবমিশন মেকানিজম
   cyberUpdateForm.addEventListener('submit', (e) => {
     e.preventDefault();
     if (isInfoLocked) {
@@ -366,22 +366,23 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     cyberConfirmPopup.style.display = "flex";
   });
 
-    // ৬. ডাবল অ্যাকশন মোডাল ট্রিগার ম্যানেজার
   popupCancelBtn.addEventListener('click', () => {
     cyberConfirmPopup.style.display = "none";
     hiddenGalleryInput.value = ""; 
     tempBase64Image = null;
   });
 
+   // ৭. সার্ভার টাইমস্ট্যাম্প সহ ডাটা সাবমিট প্রসেস
   popupConfirmBtn.addEventListener('click', async () => {
     cyberConfirmPopup.style.display = "none";
 
-    // ছবি সাবমিট প্রসেস
+    // ছবি সাবমিট করার সময়স্ট্যাম্প ট্র্যাকিং
     if (confirmationType === "photo" && tempBase64Image) {
       try {
         await updateDoc(doc(db, "users", currentUser.uid), {
           tempPendingPhoto: tempBase64Image,
-          imageApprovalStatus: "pending"
+          imageApprovalStatus: "pending",
+          photoRequestedAt: serverTimestamp() // ফটো আবেদনের নির্দিষ্ট সময় স্টোর করা হলো
         });
         alert("🔒 আপনার ছবি পরিবর্তনের আবেদনটি এডমিন/সভাপতি/সেক্রেটারির কাছে পৌঁছেছে। অনুমোদনের জন্য অনুগ্রহ করে অপেক্ষা করুন।");
       } catch (err) {
@@ -389,7 +390,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       }
     } 
     
-    // তথ্য সাবমিট প্রসেস (profile.js এর ফিল্ড নেম স্ট্রাকচার অনুযায়ী পে-লোড সাবমিশন)
+    // তথ্য সাবমিট করার সময়স্ট্যাম্প ট্র্যাকিং
     else if (confirmationType === "data") {
       const pendingDataPayload = {
         tempPendingData: {
@@ -402,15 +403,16 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           nidOrBrn: document.getElementById('updNidOrBrn').value.trim(),
           institution: document.getElementById('updInstitution').value.trim(),
           education: document.getElementById('updEducation').value.trim(),
-          academicYear: document.getElementById('updAcademicYear').value.trim(), // ফিক্সড নাম
+          academicYear: document.getElementById('updAcademicYear').value.trim(), 
           profession: document.getElementById('updProfession').value.trim(),
           mobileNumber: document.getElementById('updMobileNumber').value.trim(),
-          whatsappNumber: document.getElementById('updWhatsappNumber').value.trim(), // ফিক্সড নাম
+          whatsappNumber: document.getElementById('updWhatsappNumber').value.trim(), 
           facebookLink: document.getElementById('updFacebookLink').value.trim(),
           presentAddress: document.getElementById('updPresentAddress').value.trim(),
           permanentAddress: document.getElementById('updPermanentAddress').value.trim()
         },
-        infoApprovalStatus: "pending"
+        infoApprovalStatus: "pending",
+        infoRequestedAt: serverTimestamp() // তথ্য পরিবর্তনের আবেদনের নির্দিষ্ট সময় স্টোর করা হলো
       };
 
       try {
