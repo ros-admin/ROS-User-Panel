@@ -10,25 +10,25 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
         box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif;
       }
       
-      /* আপগ্রেডেড লোগো সেকশন (1000362864.jpg এর সমস্যা সমাধান) */
+      /* আপগ্রেডেড লোগো সেকশন (গ্লাস গ্লো ব্যাকগ্রাউন্ড সহ বড় সাইজ) */
       .nexus-brand-header { 
-        text-align: center; margin-bottom: 35px; padding: 20px;
-        background: radial-gradient(circle, rgba(0, 245, 255, 0.05) 0%, transparent 70%);
+        text-align: center; margin-bottom: 35px; padding: 25px;
+        background: radial-gradient(circle, rgba(0, 245, 255, 0.08) 0%, transparent 70%);
       }
       .nexus-logo { 
-        max-width: 320px; width: 100%; height: auto; 
-        filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.3)) brightness(1.2); 
+        max-width: 340px; width: 100%; height: auto; 
+        filter: drop-shadow(0 0 25px rgba(0, 245, 255, 0.35)) brightness(1.25); 
       }
       
       /* প্রোফাইল মেইন কার্ড */
       .nexus-hero-identity { 
         display: flex; flex-direction: column; align-items: center; text-align: center; 
-        margin-bottom: 35px; background: rgba(5, 15, 32, 0.4); padding: 30px; 
-        border-radius: 20px; border: 1px solid rgba(0, 245, 255, 0.08);
+        margin-bottom: 35px; background: rgba(5, 15, 32, 0.45); padding: 30px; 
+        border-radius: 20px; border: 1px solid rgba(0, 245, 255, 0.1);
       }
       .nexus-avatar-frame { 
-        width: 130px; height: 130px; border: 2px solid var(--secondary); padding: 5px; 
-        background: #030a16; border-radius: 50%; box-shadow: 0 0 30px rgba(0, 245, 255, 0.2); 
+        width: 135px; height: 135px; border: 2px solid var(--secondary); padding: 5px; 
+        background: #030a16; border-radius: 50%; box-shadow: 0 0 30px rgba(0, 245, 255, 0.25); 
         margin-bottom: 15px; 
       }
       .nexus-avatar-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
@@ -47,26 +47,26 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
       .nexus-stat-tag.highlight i { color: var(--accent); }
       .nexus-stat-tag.highlight strong { color: var(--accent); }
       
-      /* অ্যাডভান্সড ড্রপডাউন/অ্যাকর্ডিয়ন বক্স ডিজাইন */
+      /* নীল কালারের থিমড মেইন বক্স (অ্যাডভান্সড ড্রপডাউন) */
       .nexus-dropdown-box { 
-        background: rgba(4, 15, 32, 0.55); border: 1px solid rgba(0, 245, 255, 0.1); 
-        border-radius: 14px; margin-bottom: 20px; overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: border-color 0.3s;
+        background: rgba(4, 15, 32, 0.55); border: 1px solid rgba(0, 245, 255, 0.25); 
+        border-radius: 14px; margin-bottom: 22px; overflow: hidden;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4); transition: border-color 0.3s;
       }
-      .nexus-dropdown-box.active { border-color: rgba(0, 245, 255, 0.3); }
+      .nexus-dropdown-box.active { border-color: var(--secondary); box-shadow: 0 0 20px rgba(0, 245, 255, 0.15); }
       
       .nexus-dropdown-trigger { 
-        padding: 20px 25px; background: rgba(6, 20, 43, 0.8); 
+        padding: 20px 25px; background: rgba(6, 20, 43, 0.85); 
         display: flex; justify-content: space-between; align-items: center; 
         cursor: pointer; user-select: none; transition: background 0.3s;
       }
-      .nexus-dropdown-trigger:hover { background: rgba(0, 245, 255, 0.03); }
+      .nexus-dropdown-trigger:hover { background: rgba(0, 245, 255, 0.04); }
       .nexus-trigger-title { font-size: 15px; font-weight: 700; color: var(--secondary); text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 12px; }
       .nexus-trigger-title i { color: var(--accent); }
       .nexus-trigger-arrow { color: var(--text-muted); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 18px; }
       .nexus-dropdown-box.active .nexus-trigger-arrow { transform: rotate(180deg); color: var(--secondary); }
       
-      /* ড্রপডাউন কনটেন্ট বডি */
+      /* ড্রপডাউন ওপেন মেকানিজম */
       .nexus-dropdown-content { 
         max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
         background: rgba(3, 10, 22, 0.4);
@@ -74,18 +74,19 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
       .nexus-dropdown-box.active .nexus-dropdown-content { max-height: 1200px; }
       .nexus-inner-padding { padding: 25px; display: flex; flex-direction: column; gap: 18px; }
       
-      /* রো এবং রেস্পন্সিভ নিয়ন গ্লো ইন্ডিভিজুয়াল ফিল্ড বক্স */
+      /* ডেস্কটপ গ্রিড ও ইন্ডিভিজুয়াল ফিল্ড বক্স */
       .nexus-row { display: flex; gap: 18px; width: 100%; box-sizing: border-box; }
       .nexus-field-cell { 
-        flex: 1; background: rgba(5, 17, 37, 0.7); border: 1px solid rgba(255, 255, 255, 0.04); 
-        padding: 14px 20px; border-radius: 10px; transition: all 0.3s ease; box-sizing: border-box;
+        flex: 1; background: rgba(5, 17, 37, 0.75); border: 1px solid rgba(255, 255, 255, 0.04); 
+        padding: 15px 20px; border-radius: 10px; transition: all 0.3s ease; box-sizing: border-box;
       }
-      /* ফিল্ডের ওপর ক্লিক/হোভার করলে মেলা থিমের আলাদা গ্লো */
+      
+      /* ফিল্ডে ক্লিক/হোভার করলে আলাদাভাবে থিমড গ্লো মেকানিজম */
       .nexus-field-cell:hover, .nexus-field-cell:focus-within { 
         border-color: var(--secondary); 
-        background: rgba(0, 245, 255, 0.02);
-        box-shadow: 0 0 15px rgba(0, 245, 255, 0.12), inset 0 0 8px rgba(0, 245, 255, 0.05);
-        transform: translateY(-1px);
+        background: rgba(0, 245, 255, 0.03);
+        box-shadow: 0 0 18px rgba(0, 245, 255, 0.18), inset 0 0 8px rgba(0, 245, 255, 0.08);
+        transform: translateY(-2px);
       }
       
       .nexus-field-cell small { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
@@ -96,7 +97,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
       
       .status-active-glow { color: var(--neon-green) !important; font-weight: 700; text-shadow: 0 0 10px rgba(0, 245, 212, 0.2); }
 
-      /* মোবাইল রেস্পন্সিভ গাইডলাইন বাস্তবায়ন */
+      /* মোবাইল রেস্পন্সিভ রুলস (প্রতি লাইনে একটি ফিল্ড) */
       @media (max-width: 768px) {
         .nexus-row { flex-direction: column; gap: 14px; }
         .nexus-inner-padding { padding: 16px; gap: 14px; }
@@ -195,7 +196,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
                 <p id="profGridProfession">-</p>
               </div>
             </div>
-            <!-- একাউন্টের ধরন ও স্ট্যাটাস এক লাইনে -->
+            <!-- অ্যাকাউন্টের ধরন ও অ্যাকাউন্টের স্ট্যাটাস এক লাইনে -->
             <div class="nexus-row">
               <div class="nexus-field-cell">
                 <small><i class="fas fa-user-tag"></i> অ্যাকাউন্টের ধরন (Role)</small>
@@ -264,7 +265,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
     </div>
   `;
 
-  // ২. গ্লোবাল ড্রপডাউন টগল ফাংশন (উইন্ডো অবজেক্টে সেট করা হয়েছে যাতে এইচটিএমএল থেকে কল করা যায়)
+  // ২. গ্লোবাল ড্রপডাউন টগল ফাংশন (ক্লিক না করা পর্যন্ত অটোমেটিক বন্ধ হবে না)
   window.toggleNexusDropdown = function(boxId) {
     const element = document.getElementById(boxId);
     if (element) {
@@ -292,7 +293,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
         document.getElementById('profGridGender').innerText = d.gender || "নির্দিষ্ট নয়";
         document.getElementById('profGridNidBrn').innerText = d.nidOrBrn || "প্রদান করা হয়নি";
         
-        // গ) ড্রপডাউন ২: শিক্ষা ও পেশা ম্যাপিং
+        // গ) ড্রপডাউন ২: শিক্ষা ও পেশা ম্যাপিং (ব্র্যাকেট নোটেশন দিয়ে Academic Year ১০০% ফিক্সড)
         document.getElementById('profGridInstitution').innerText = d.institution || "তথ্য পাওয়া যায়নি";
         document.getElementById('profGridEducation').innerText = d.education || "N/A";
         document.getElementById('profGridAcademicYear').innerText = d['Academic Year'] || "N/A";
@@ -300,7 +301,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
         document.getElementById('profGridRole').innerText = d.role || "MEMBER";
         document.getElementById('profGridStatus').innerText = d.status || "ACTIVE";
 
-        // ঘ) ড্রপডাউন ৩: যোগাযোগ ডাটা ম্যাপিং (আপনার বানান ফিক্স সহ)
+        // ঘ) ড্রপডাউন ৩: যোগাযোগ ডাটা ম্যাপিং (ব্র্যাকেট নোটেশন দিয়ে whatsapp Number ১০০% ফিক্সড)
         document.getElementById('profGridMobile').innerText = d.mobileNumber || "তথ্য নেই";
         document.getElementById('profGridWhatsapp').innerText = d['whatsapp Number'] || "তথ্য নেই";
         document.getElementById('profGridEmail').innerText = d.email || "তথ্য নেই";
