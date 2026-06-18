@@ -62,7 +62,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       .timeline-axis { display: flex; flex-direction: column; gap: 24px; position: relative; }
       .timeline-node { position: relative; animation: fadeInUp 0.4s ease; }
       
-      /* বুলেট ডট */
+      /* bullet dot */
       .timeline-bullet { 
         position: absolute; left: -35px; top: 2px; width: 14px; height: 14px; 
         border-radius: 50%; background: #1f2937; border: 2px solid #4b5563; 
@@ -71,7 +71,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       
       .node-active .timeline-bullet { background: #030712; border-color: var(--neon-blue); box-shadow: 0 0 12px var(--neon-blue), 0 0 0 4px #0b111f; }
       .node-submitted .timeline-bullet { border-color: #0077b6; background: #0077b6; }
-      .node-resubmitted .timeline-bullet { border-color: var(--neon-blue); background: var(--neon-blue); }
+      .node-resubmitted .timeline-bullet { border-color: var(--neon-blue); background: var(--neon-blue); box-shadow: 0 0 8px var(--neon-blue); }
       .node-pending .timeline-bullet { border-color: #00b4d8; background: #00b4d8; }
       .node-approved .timeline-bullet { border-color: var(--neon-green); background: var(--neon-green); box-shadow: 0 0 12px var(--neon-green), 0 0 0 4px #0b111f; }
       .node-rejected .timeline-bullet { border-color: var(--neon-red); background: var(--neon-red); box-shadow: 0 0 12px var(--neon-red), 0 0 0 4px #0b111f; }
@@ -140,9 +140,9 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
 
   if (!currentUser) return;
 
-  // নিখুঁত টাইম বক্স জেনারেটর (প্রত্যেক স্ট্যাটাসে সময় দেখানোর ফিক্স)
+  // নিখুঁত টাইম বক্স জেনারেটর (মিলি সেকেন্ড সহ রেন্ডারিং ফিক্স)
   const renderTimeBox = (timestampField) => {
-    if (!timestampField) return `<div class="time-box"><i class="far fa-clock"></i> প্রক্রিয়া সেশন রানিং</div>`;
+    if (!timestampField) return `<div class="time-box"><i class="far fa-clock"></i> লাইভ সেশন প্রসেসিং</div>`;
     const d = timestampField.toDate ? timestampField.toDate() : new Date(timestampField);
     return `<div class="time-box"><i class="far fa-calendar-alt"></i> ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} — <i class="far fa-clock"></i> ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}</div>`;
   };
@@ -153,7 +153,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
   };
 
-  // ২. রিয়েল-টাইম ডাটাবেজ লিসেনার (৩ মাসের কন্ডিশন নেই - সম্পূর্ণ স্থায়ী)
+  // ২. রিয়েল-টাইম ডাটাবেজ লিসেনার (৩ মাসের কোনো ডিলিট কন্ডিশন নেই - সম্পূর্ণ স্থায়ী)
   onSnapshot(doc(db, "users", currentUser.uid), (snapshot) => {
     if (!snapshot.exists()) return;
     const uData = snapshot.data();
@@ -169,13 +169,13 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
 
       let statusText = "পেন্ডিং";
       let badgeClass = "status-pending";
-      let progressHeightPercent = 40; 
+      let progressHeightPercent = 35; 
       let progressFillModifier = "";
 
       if (uData.infoApprovalStatus === "waiting") {
         statusText = "হোল্ড (স্থগিত)";
         badgeClass = "status-waiting";
-        progressHeightPercent = 70;
+        progressHeightPercent = 65;
       } else if (uData.infoApprovalStatus === "approved") {
         statusText = "অনুমোদিত";
         badgeClass = "status-approved";
@@ -189,9 +189,13 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       }
 
       let nodesArray = [];
-      const infoCount = uData.infoHoldCount || 0;
+      
+      // ডাইনামিক হিস্ট্রি ট্র্যাকিং ফ্ল্যাগস (পেন্ডিং ও সাবমিট ফ্লো হারানোর স্থায়ী ফিক্স)
+      const hasFirstHold = !!(uData.infoFirstHoldAt || uData.infoFirstRejectReason);
+      const hasSecondHold = !!(uData.infoSecondHoldAt || uData.infoSecondRejectReason || (uData.infoHoldCount >= 2 && uData.infoApprovalStatus === "waiting"));
+      const isResubmitted = !!(uData.infoResubmittedAt) || (uData.infoApprovalStatus === "pending" && hasFirstHold);
 
-      // ১. Submitted ধাপ (সব অবস্থায় থাকবে)
+      // ১. Submitted ধাপ (সব অবস্থায় স্থির থাকবে)
       nodesArray.push(`
         <div class="timeline-node node-submitted">
           <div class="timeline-bullet"></div>
@@ -203,7 +207,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         </div>
       `);
 
-      // ২. Pending ধাপ (আবেদন পেন্ডিং, হোল্ড, রিজেক্ট বা অ্যাপ্রুভ যাই হোক—পেন্ডিং ধাপটি এবং তার সময় ফিক্সড থাকবে)
+      // ২. Pending (প্রথম ধাপ)
       nodesArray.push(`
         <div class="timeline-node node-pending">
           <div class="timeline-bullet"></div>
@@ -216,7 +220,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       `);
 
       // ৩. প্রথম হোল্ড ফ্লো (Hold -> Resubmitted -> Pending)
-      if (infoCount >= 1 || uData.infoApprovalStatus === "waiting") {
+      if (hasFirstHold || uData.infoApprovalStatus === "waiting") {
         nodesArray.push(`
           <div class="timeline-node node-hold">
             <div class="timeline-bullet"></div>
@@ -229,8 +233,9 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           </div>
         `);
 
-        // যদি ইউজার ১ম বার হোল্ডের পর সাবমিট করে দেয় (রিসাবমিটেড স্টেট)
-        if (infoCount >= 1) {
+        // যদি ১ম বার হোল্ডের পর ইউজার সাবমিট করে দেয় (Resubmitted ট্র্যাকিং অন)
+        if (isResubmitted) {
+          progressHeightPercent = 55;
           nodesArray.push(`
             <div class="timeline-node node-resubmitted">
               <div class="timeline-bullet"></div>
@@ -241,22 +246,60 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
               </div>
             </div>
           `);
+
+          // রিসাবমিটের পরের পেন্ডিং দশা
+          nodesArray.push(`
+            <div class="timeline-node node-pending">
+              <div class="timeline-bullet"></div>
+              <div class="timeline-content content-pending">
+                <h5>Pending</h5>
+                <p>আপনার আবেদন প্রশাসকের পর্যালোচনার অপেক্ষায় রয়েছে।</p>
+                ${renderTimeBox(uData.infoRequestedAt || uData.infoResubmittedAt)}
+              </div>
+            </div>
+          `);
         }
       }
 
-      // ৪. দ্বিতীয় হোল্ড ফ্লো (Again Hold -> Again Resubmitted)
-      if (infoCount >= 2) {
+      // ৪. দ্বিতীয় হোল্ড ফ্লো (Again Hold -> Again Resubmitted -> Pending)
+      if (hasSecondHold) {
         nodesArray.push(`
           <div class="timeline-node node-hold">
             <div class="timeline-bullet"></div>
             <div class="timeline-content content-hold">
               <h5>Again Hold</h5>
               <p>আপনার আবেদন সাময়িকভাবে স্থগিত রাখা হয়েছে।</p>
-              <div class="reason-display-box hold-style"><strong>Hold Reason:</strong> ${uData.infoRejectReason || "পুনরায় সংশোধন প্রয়োজন।"}</div>
-              ${renderTimeBox(uData.infoActionAt)}
+              <div class="reason-display-box hold-style"><strong>Hold Reason:</strong> ${uData.infoSecondRejectReason || uData.infoRejectReason || "পুনরায় সংশোধন প্রয়োজন।"}</div>
+              ${renderTimeBox(uData.infoSecondHoldAt || uData.infoActionAt)}
             </div>
           </div>
         `);
+
+        // যদি ২য় বার হোল্ডের পর পুনরায় সাবমিট করা হয়ে থাকে
+        if (uData.infoSecondResubmittedAt || (uData.infoApprovalStatus === "pending" && uData.infoHoldCount >= 2)) {
+          progressHeightPercent = 80;
+          nodesArray.push(`
+            <div class="timeline-node node-resubmitted">
+              <div class="timeline-bullet"></div>
+              <div class="timeline-content content-resubmitted">
+                <h5>Again Resubmitted</h5>
+                <p>আপনি সংশোধিত তথ্য পুনরায় জমা দিয়েছেন।</p>
+                ${renderTimeBox(uData.infoSecondResubmittedAt || uData.infoRequestedAt)}
+              </div>
+            </div>
+          `);
+
+          nodesArray.push(`
+            <div class="timeline-node node-pending">
+              <div class="timeline-bullet"></div>
+              <div class="timeline-content content-pending">
+                <h5>Pending</h5>
+                <p>আপনার আবেদন প্রশাসকের পর্যালোচনার অপেক্ষায় রয়েছে।</p>
+                ${renderTimeBox(uData.infoRequestedAt || uData.infoSecondResubmittedAt)}
+              </div>
+            </div>
+          `);
+        }
       }
 
       // ৫. Approved ফাইনাল স্টেট
@@ -273,7 +316,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         `);
       }
 
-      // ৬. Rejected ফাইনাল স্টেট
+      // 𝖻. Rejected ফাইনাল স্টেট
       if (uData.infoApprovalStatus === "rejected") {
         nodesArray.push(`
           <div class="timeline-node node-rejected node-active">
@@ -317,7 +360,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     }
 
     // ==========================================
-    // খ) প্রোফাইল ছবি পরিবর্তন আবেদন প্রসেসিং (IMAGE REQUEST)
+    // খ) প্রোফাইল ছবি পরিবর্তন আবেদন প্রсеসিং (IMAGE REQUEST)
     // ==========================================
     if (uData.imageApprovalStatus && uData.imageApprovalStatus !== "") {
       let isImgCurrent = uData.imageApprovalStatus === "submit" || uData.imageApprovalStatus === "pending";
@@ -345,7 +388,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
 
       let imgNodes = [];
 
-      // ১. সাবমিট স্টেট
+        // ১. সাবমিট স্টেট
       imgNodes.push(`
         <div class="timeline-node node-submitted">
           <div class="timeline-bullet"></div>
@@ -357,7 +400,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         </div>
       `);
 
-      // ২. পেন্ডিং স্টেট (সব সময় স্থির থাকবে)
+      // ২. পেন্ডিং স্টেট
       imgNodes.push(`
         <div class="timeline-node node-pending">
           <div class="timeline-bullet"></div>
@@ -456,7 +499,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       currentRoot.innerHTML = renderCardEngine(currentCards);
     }
 
-    // আর্কাইভড সফল/পুরাতন ইতিহাস রেন্ডার
+    // архивড সফল/পুরাতন ইতিহাস রেন্ডার
     if (previousCards.length === 0) {
       previousRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-archive" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> পুরাতন আর্কাইভ হিস্ট্রি খালি।</div>`;
     } else {
