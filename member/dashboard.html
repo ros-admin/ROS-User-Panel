@@ -139,13 +139,13 @@
 
   <div class="nexus-modal" id="passwordModalNode">
     <div class="modal-body cyber-glass">
-      <h3 style="color: var(--neon-yellow); margin-bottom: 15px; font-size: 16px;"><i class="fas fa-shield-alt"></i> পাসওয়ার্ড পরিবর্তন</h3>
+      <h3 style="color: var(--neon-yellow); margin-bottom: 15px; font-size: 16px;"><i class="fas fa-shield-alt"></i> <span id="passModalTitle">পাসওয়ার্ড পরিবর্তন</span></h3>
       <form id="directPasswordForm">
         <input type="password" id="newPassInput" class="cyber-input" placeholder="নতুন পাসওয়ার্ড লিখুন" required>
         <input type="password" id="confirmPassInput" class="cyber-input" placeholder="পুনরায় পাসওয়ার্ডটি নিশ্চিত করুন" required>
         <div style="display: flex; justify-content: flex-end;">
           <button type="button" class="btn-cyber-sec" id="closePassModalBtn">বাতিল</button>
-          <button type="submit" class="btn-cyber-prime" style="background: var(--neon-yellow);">সরাসরি আপডেট করুন</button>
+          <button type="submit" class="btn-cyber-prime" style="background: var(--neon-yellow);" id="btnSubmitPassword">সরাসরি আপডেট করুন</button>
         </div>
       </form>
     </div>
@@ -158,8 +158,11 @@
 
   <script type="module">
     import { db, auth } from '../firebase-config.js';
-    import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // গ্লোবাল স্টেট হোল্ডার
+    let forcePasswordChangeMode = false;
 
     // ডোমেস্টিক এলিমেন্ট সিলেক্টর
     const threeDotMenuToggle = document.getElementById('threeDotMenuToggle');
@@ -169,6 +172,9 @@
     const profileDropdown = document.getElementById('profileDropdown');
     const systemToastNode = document.getElementById('systemToastNode');
     const toastMessage = document.getElementById('toastMessage');
+    const passwordModalNode = document.getElementById('passwordModalNode');
+    const closePassModalBtn = document.getElementById('closePassModalBtn');
+    const passModalTitle = document.getElementById('passModalTitle');
 
     // টোস্ট নোটিফিকেশন ট্র্যাকার
     function triggerNotification(msg, isSuccess = true) {
@@ -180,21 +186,27 @@
 
     // ১. থ্রি-ডট মেনুবার স্লাইড টগল লজিক
     threeDotMenuToggle.addEventListener('click', (e) => {
+      if (forcePasswordChangeMode) {
+        triggerNotification("নিরাপত্তার স্বার্থে প্রথমে আপনার পাসওয়ার্ডটি পরিবর্তন করে নিন।", false);
+        return;
+      }
       e.stopPropagation();
       sidebarNode.classList.toggle('collapsed');
       spaContentRoot.classList.toggle('expanded');
-      // মোবাইলের জন্য এক্সট্রা ক্লাস টগল
       sidebarNode.classList.toggle('active');
     });
 
     // ২. প্রোফাইল ড্রপডাউন মেনু কন্ট্রোলার 
     profileTrigger.addEventListener('click', (e) => {
+      if (forcePasswordChangeMode) {
+        triggerNotification("পাসওয়ার্ড পরিবর্তন না করা পর্যন্ত এই মেনু লক থাকবে।", false);
+        return;
+      }
       e.stopPropagation();
       profileDropdown.style.display = profileDropdown.style.display === 'flex' ? 'none' : 'flex';
     });
     document.addEventListener('click', () => {
       profileDropdown.style.display = 'none';
-      // মোবাইল স্ক্রিনে বাইরে ক্লিক করলে মেনুবার বন্ধ হবে
       if(window.innerWidth <= 768) {
         sidebarNode.classList.remove('active');
       }
@@ -210,16 +222,16 @@
     const applicationSection = document.getElementById('applicationSection');
 
     function switchView(activeLink, activeSection) {
-      // সব লিঙ্ক থেকে একটিভ ক্লাস রিমুভ
+      if (forcePasswordChangeMode) {
+        triggerNotification("দয়া করে প্রথমে প্রাথমিক পাসওয়ার্ড পরিবর্তন করুন।", false);
+        return;
+      }
       document.querySelectorAll('.sidebar-menu .menu-item').forEach(li => li.classList.remove('active'));
-      // সব সেকশন হাইড
       document.querySelectorAll('.module-viewport').forEach(sec => sec.style.display = 'none');
       
-      // কারেন্ট মডিউল একটিভ ও শো করা
       activeLink.classList.add('active');
       activeSection.style.display = 'block';
 
-      // মোবাইল স্ক্রিন হলে মেনু সিলেকশনের পর মেনুবার অটোমেটিক স্লাইড আউট হবে
       if(window.innerWidth <= 768) {
         sidebarNode.classList.remove('active');
       }
@@ -234,18 +246,37 @@
     onAuthStateChanged(auth, (user) => {
       if (!user) { window.location.href = "../login.html"; return; }
       
-      // ফায়ারস্টোর থেকে রিয়েল-টাইম ডাটা লিসেনার
       onSnapshot(doc(db, "users", user.uid), (snapshot) => {
         if (snapshot.exists()) {
           const memberData = snapshot.data();
           
-          // হেডার নোডে ডাটা বাইন্ডিং (মেম্বার ধরণ ও ছবি)
+          // মেম্বার রোল ও পিকচার বাইন্ডিং
           document.getElementById('topNavRole').innerText = (memberData.role || "MEMBER").toUpperCase();
           document.getElementById('topNavAvatar').src = memberData.photoUrl || '../placeholder.png';
           
-          // ড্রপডাউন নোডে নাম ও ইমেইল বাইন্ডিং
+          // ড্রপডাউন ইনফো ফিলিং
           document.getElementById('dropMemberName').innerText = memberData.englishName || "সদস্য নাম";
           document.getElementById('dropMemberEmail').innerText = user.email;
+
+          // --- প্রথমবার লগইন এবং পাসওয়ার্ড পরিবর্তন বাধ্যবাধকতা লজিক ---
+          // ফায়ারস্টোর ফিল্ড 'isFirstLogin' যদি ট্রু থাকে, সরাসরি পাসওয়ার্ড পরিবর্তনের মডাল ওপেন হবে
+          if (memberData.isFirstLogin === true) {
+            forcePasswordChangeMode = true;
+            
+            // মডিউল এরিয়া ও মেনুবার পুরোপুরি কলাপ্স/হাইড করে দেওয়া
+            sidebarNode.classList.add('collapsed');
+            spaContentRoot.classList.add('expanded');
+            
+            // মোডাল কাস্টমাইজেশন (বাতিল বাটন হাইড করা ও এলার্ট টাইটেল)
+            passModalTitle.innerHTML = `<span style="color:var(--neon-red)"><i class="fas fa-exclamation-triangle"></i> প্রথমবার লগইন: নতুন পাসওয়ার্ড সেট করুন</span>`;
+            closePassModalBtn.style.display = 'none'; // বাতিল করার সুযোগ নেই
+            passwordModalNode.style.display = 'flex';
+          } else {
+            forcePasswordChangeMode = false;
+            closePassModalBtn.style.display = 'inline-block';
+            passModalTitle.innerHTML = `<i class="fas fa-shield-alt"></i> পাসওয়ার্ড পরিবর্তন করুন`;
+          }
+
         } else {
           alert("ডাটাবেজে আপনার সদস্য প্রোফাইল খুঁজে পাওয়া যায়নি!");
           signOut(auth);
@@ -255,9 +286,12 @@
 
 
     // ৫. পাসওয়ার্ড পরিবর্তন সেকশন লজিক (সরাসরি নো-অ্যাপ্রুভাল)
-    const passwordModalNode = document.getElementById('passwordModalNode');
-    document.getElementById('openPassModalBtn').addEventListener('click', () => passwordModalNode.style.display = 'flex');
-    document.getElementById('closePassModalBtn').addEventListener('click', () => {
+    document.getElementById('openPassModalBtn').addEventListener('click', () => {
+      if(forcePasswordChangeMode) return;
+      passwordModalNode.style.display = 'flex';
+    });
+    
+    closePassModalBtn.addEventListener('click', () => {
       passwordModalNode.style.display = 'none';
       document.getElementById('directPasswordForm').reset();
     });
@@ -267,23 +301,40 @@
       const nPass = document.getElementById('newPassInput').value;
       const cPass = document.getElementById('confirmPassInput').value;
 
+      if (nPass === "ROS@1234") {
+        triggerNotification("আপনি প্রাথমিক পাসওয়ার্ডটি পুনরায় ব্যবহার করতে পারবেন না!", false);
+        return;
+      }
+
       if (nPass !== cPass) {
         triggerNotification("পাসওয়ার্ড দুটি মিলছে না, পুনরায় যাচাই করুন!", false);
         return;
       }
 
       try {
+        // ফায়ারবেস অথেনটিকেশনে পাসওয়ার্ড পরিবর্তন
         await updatePassword(auth.currentUser, nPass);
-        triggerNotification("আপনার সিকিউরিটি পাসওয়ার্ডটি সফলভাবে সরাসরি আপডেট করা হয়েছে।");
+        
+        // যদি এটি প্রথমবার লগইন হয়ে থাকে, তবে ফায়ারস্টোরে 'isFirstLogin: false' আপডেট করা হবে
+        if (forcePasswordChangeMode) {
+          await updateDoc(doc(db, "users", auth.currentUser.uid), {
+            isFirstLogin: false
+          });
+          forcePasswordChangeMode = false;
+          sidebarNode.classList.remove('collapsed'); // মেনুবার পুনরায় সচল করা
+          spaContentRoot.classList.remove('expanded');
+        }
+
+        triggerNotification("আপনার সিকিউরিটি পাসওয়ার্ডটি সফলভাবে আপডেট করা হয়েছে।");
         passwordModalNode.style.display = 'none';
         document.getElementById('directPasswordForm').reset();
       } catch (err) {
-        alert("পাসওয়ার্ড আপডেটে সমস্যা: " + err.message);
+        alert("পাসওয়ার্ড আপডেটে সমস্যা (রিসেন্ট লগইন প্রয়োজন হতে পারে): " + err.message);
       }
     });
 
 
-    // ৬. ১০০% ওয়ার্কিং লগআউট মডিউল লজিক
+    // ৬. লগআউট মডিউল লজিক
     document.getElementById('memberSignOutBtn').addEventListener('click', (e) => {
       e.preventDefault();
       if (confirm("আপনি কি নিশ্চিত যে এই সেশনটি শেষ করে লগআউট করতে চান?")) {
