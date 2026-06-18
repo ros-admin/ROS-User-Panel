@@ -1,251 +1,312 @@
 // প্রোফাইল মডিউলের মূল ফাংশন
 function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
   
-  // ১. আল্ট্রা-ইউনিক হ্যালোগ্রাফিক ড্যাশবোর্ড ইন্টারফেস ও সিএসএস রেন্ডার
+  // ১. ড্রপডাউন ড্যাশবোর্ড ইন্টারফেস ও স্টাইল রেন্ডার
   contentRoot.innerHTML = `
     <style>
-      /* কোর হ্যালোগ্রাফিক কন্টেইনার */
-      .cyber-hologram-container { 
-        max-width: 1050px; width: 100%; margin: 0 auto; padding: 45px 35px; border-radius: 24px; 
-        position: relative; overflow: hidden; background: rgba(5, 15, 32, 0.65); 
-        backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
-        border: 1px solid rgba(0, 245, 255, 0.15); 
-        box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6), inset 0 0 40px rgba(0, 245, 255, 0.02); 
-        box-sizing: border-box; 
+      /* কোর ফ্রেমওয়ার্ক */
+      .nexus-profile-wrapper { 
+        max-width: 1000px; width: 100%; margin: 0 auto; padding: 30px 20px; 
+        box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif;
       }
       
-      /* টপ ফিউচারিস্টিক এনার্জি বার */
-      .cyber-hologram-container::before { 
-        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; 
-        background: linear-gradient(90deg, var(--secondary), var(--accent), var(--secondary)); 
-        box-shadow: 0 20px 30px var(--secondary);
+      /* আপগ্রেডেড লোগো সেকশন (1000362864.jpg এর সমস্যা সমাধান) */
+      .nexus-brand-header { 
+        text-align: center; margin-bottom: 35px; padding: 20px;
+        background: radial-gradient(circle, rgba(0, 245, 255, 0.05) 0%, transparent 70%);
+      }
+      .nexus-logo { 
+        max-width: 320px; width: 100%; height: auto; 
+        filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.3)) brightness(1.2); 
       }
       
-      .brand-display-center { text-align: center; margin-bottom: 45px; position: relative; }
-      .brand-display-center img { max-width: 250px; width: 100%; height: auto; filter: drop-shadow(0 0 15px rgba(0, 245, 255, 0.25)); }
-      .laser-separator { height: 1px; width: 180px; background: linear-gradient(90deg, transparent, var(--accent), transparent); margin: 18px auto 0 auto; }
-      
-      /* প্রোফাইল নোড এবং নিয়ন রিং */
-      .holo-profile-identity { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 40px; }
-      .core-avatar-ring { 
-        width: 150px; height: 150px; border: 2px dashed rgba(0, 245, 255, 0.4); padding: 8px; 
-        background: rgba(3, 10, 22, 0.8); border-radius: 50%; box-shadow: 0 0 40px rgba(0, 245, 255, 0.15); 
-        margin-bottom: 20px; transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1); position: relative;
+      /* প্রোফাইল মেইন কার্ড */
+      .nexus-hero-identity { 
+        display: flex; flex-direction: column; align-items: center; text-align: center; 
+        margin-bottom: 35px; background: rgba(5, 15, 32, 0.4); padding: 30px; 
+        border-radius: 20px; border: 1px solid rgba(0, 245, 255, 0.08);
       }
-      .core-avatar-ring:hover { transform: scale(1.06); border: 2px solid var(--accent); box-shadow: 0 0 50px rgba(255, 183, 3, 0.3); }
-      .core-avatar-ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+      .nexus-avatar-frame { 
+        width: 130px; height: 130px; border: 2px solid var(--secondary); padding: 5px; 
+        background: #030a16; border-radius: 50%; box-shadow: 0 0 30px rgba(0, 245, 255, 0.2); 
+        margin-bottom: 15px; 
+      }
+      .nexus-avatar-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
       
-      .holo-id-badge { 
-        background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(0, 245, 255, 0.02)); 
-        color: var(--secondary); border: 1px solid rgba(0, 245, 255, 0.3); 
-        padding: 6px 26px; border-radius: 50px; font-size: 14px; font-weight: 700; letter-spacing: 2.5px; margin-bottom: 18px; 
-        text-shadow: 0 0 10px rgba(0, 245, 255, 0.5); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      .nexus-uid-badge { 
+        background: rgba(0, 245, 255, 0.08); color: var(--secondary); 
+        border: 1px solid rgba(0, 245, 255, 0.25); padding: 5px 20px; 
+        border-radius: 30px; font-size: 13px; font-weight: 700; letter-spacing: 2px; margin-bottom: 12px; 
+      }
+      .nexus-name-en { font-size: 28px; font-weight: 700; color: #ffffff; margin-bottom: 4px; }
+      .nexus-name-bn { font-size: 16px; color: var(--accent); font-weight: 500; margin-bottom: 15px; }
+      
+      .nexus-stats-cluster { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+      .nexus-stat-tag { font-size: 12px; background: rgba(6, 20, 43, 0.8); border: 1px solid rgba(0, 245, 255, 0.1); padding: 6px 16px; border-radius: 8px; color: var(--text-muted); }
+      .nexus-stat-tag strong { color: #fff; }
+      .nexus-stat-tag.highlight i { color: var(--accent); }
+      .nexus-stat-tag.highlight strong { color: var(--accent); }
+      
+      /* অ্যাডভান্সড ড্রপডাউন/অ্যাকর্ডিয়ন বক্স ডিজাইন */
+      .nexus-dropdown-box { 
+        background: rgba(4, 15, 32, 0.55); border: 1px solid rgba(0, 245, 255, 0.1); 
+        border-radius: 14px; margin-bottom: 20px; overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: border-color 0.3s;
+      }
+      .nexus-dropdown-box.active { border-color: rgba(0, 245, 255, 0.3); }
+      
+      .nexus-dropdown-trigger { 
+        padding: 20px 25px; background: rgba(6, 20, 43, 0.8); 
+        display: flex; justify-content: space-between; align-items: center; 
+        cursor: pointer; user-select: none; transition: background 0.3s;
+      }
+      .nexus-dropdown-trigger:hover { background: rgba(0, 245, 255, 0.03); }
+      .nexus-trigger-title { font-size: 15px; font-weight: 700; color: var(--secondary); text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 12px; }
+      .nexus-trigger-title i { color: var(--accent); }
+      .nexus-trigger-arrow { color: var(--text-muted); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 18px; }
+      .nexus-dropdown-box.active .nexus-trigger-arrow { transform: rotate(180deg); color: var(--secondary); }
+      
+      /* ড্রপডাউন কনটেন্ট বডি */
+      .nexus-dropdown-content { 
+        max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        background: rgba(3, 10, 22, 0.4);
+      }
+      .nexus-dropdown-box.active .nexus-dropdown-content { max-height: 1200px; }
+      .nexus-inner-padding { padding: 25px; display: flex; flex-direction: column; gap: 18px; }
+      
+      /* রো এবং রেস্পন্সিভ নিয়ন গ্লো ইন্ডিভিজুয়াল ফিল্ড বক্স */
+      .nexus-row { display: flex; gap: 18px; width: 100%; box-sizing: border-box; }
+      .nexus-field-cell { 
+        flex: 1; background: rgba(5, 17, 37, 0.7); border: 1px solid rgba(255, 255, 255, 0.04); 
+        padding: 14px 20px; border-radius: 10px; transition: all 0.3s ease; box-sizing: border-box;
+      }
+      /* ফিল্ডের ওপর ক্লিক/হোভার করলে মেলা থিমের আলাদা গ্লো */
+      .nexus-field-cell:hover, .nexus-field-cell:focus-within { 
+        border-color: var(--secondary); 
+        background: rgba(0, 245, 255, 0.02);
+        box-shadow: 0 0 15px rgba(0, 245, 255, 0.12), inset 0 0 8px rgba(0, 245, 255, 0.05);
+        transform: translateY(-1px);
       }
       
-      .holo-main-name { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 6px; letter-spacing: 0.5px; }
-      .holo-sub-name { font-size: 18px; color: var(--accent); font-weight: 600; margin-bottom: 25px; }
+      .nexus-field-cell small { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+      .nexus-field-cell small i { color: var(--secondary); opacity: 0.8; }
+      .nexus-field-cell p { font-size: 14.5px; font-weight: 600; color: rgba(255, 255, 255, 0.95); margin: 0; word-break: break-all; }
+      .nexus-field-cell p a { color: var(--secondary); text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+      .nexus-field-cell p a:hover { color: var(--accent); text-shadow: 0 0 8px rgba(255,183,3,0.3); }
       
-      .holo-timeline-cluster { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
-      .holo-tag { font-size: 12px; background: rgba(6, 20, 43, 0.6); border: 1px solid rgba(0, 245, 255, 0.1); padding: 8px 20px; border-radius: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; }
-      .holo-tag strong { color: #fff; font-weight: 600; }
-      .gold-glow i { color: var(--accent); filter: drop-shadow(0 0 5px var(--accent)); }
-      .gold-glow strong { color: var(--accent) !important; }
-      
-      /* হ্যালোগ্রাফিক সেকশন টাইটেল */
-      .holo-section-header { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--secondary); margin: 45px 0 22px 0; display: flex; align-items: center; gap: 15px; font-weight: 700; }
-      .holo-section-header i { color: var(--accent); font-size: 14px; }
-      .holo-section-header::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(0, 245, 255, 0.2), transparent); }
-      
-      /* ইনফো স্ট্রিপস গ্রিড লেআউট (অন্যরকম ডিজাইন) */
-      .holo-data-matrix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-      .holo-data-cell { 
-        background: rgba(4, 15, 32, 0.45); border: 1px solid rgba(255, 255, 255, 0.03); 
-        padding: 16px 22px; border-radius: 12px; position: relative; transition: all 0.3s ease; box-sizing: border-box; 
-      }
-      /* বাম পাশের ইউনিক লাইভ সিগন্যাল ডট */
-      .holo-data-cell::before {
-        content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-        width: 3px; height: 40%; background: transparent; border-radius: 0 4px 4px 0; transition: 0.3s;
-      }
-      .holo-data-cell:hover::before { background: var(--secondary); box-shadow: 0 0 10px var(--secondary); }
-      .holo-data-cell:hover { border-color: rgba(0, 245, 255, 0.15); background: rgba(6, 20, 43, 0.7); transform: translateX(3px); }
-      
-      .holo-data-cell small { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-      .holo-data-cell small i { color: var(--secondary); font-size: 11px; opacity: 0.7; }
-      .holo-data-cell p { font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.9); word-break: break-all; }
-      .holo-data-cell p a { color: var(--secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
-      .holo-data-cell p a:hover { color: var(--accent); text-shadow: 0 0 8px rgba(255, 183, 3, 0.4); }
-      
-      .cell-span-2 { grid-column: span 2; }
-      .cell-span-4 { grid-column: span 4; }
-      .holo-active-status { color: var(--neon-green) !important; font-weight: 700; text-transform: uppercase; text-shadow: 0 0 10px rgba(0, 245, 212, 0.3); }
+      .status-active-glow { color: var(--neon-green) !important; font-weight: 700; text-shadow: 0 0 10px rgba(0, 245, 212, 0.2); }
 
-      /* রেসপনসিভ মিডিয়া কোয়েরি */
-      @media (max-width: 992px) {
-        .holo-data-matrix { grid-template-columns: repeat(2, 1fr); }
-        .cell-span-2, .cell-span-4 { grid-column: span 2; }
-      }
+      /* মোবাইল রেস্পন্সিভ গাইডলাইন বাস্তবায়ন */
       @media (max-width: 768px) {
-        .cyber-hologram-container { padding: 35px 20px; }
-      }
-      @media (max-width: 480px) {
-        .cyber-hologram-container { padding: 25px 15px; border-radius: 16px; }
-        .holo-data-matrix { grid-template-columns: 1fr; gap: 14px; }
-        .cell-span-2, .cell-span-4 { grid-column: span 1; }
-        .holo-main-name { font-size: 26px; }
-        .holo-sub-name { font-size: 16px; }
-        .holo-timeline-cluster { flex-direction: column; gap: 10px; }
+        .nexus-row { flex-direction: column; gap: 14px; }
+        .nexus-inner-padding { padding: 16px; gap: 14px; }
+        .nexus-dropdown-trigger { padding: 16px 20px; }
+        .nexus-brand-header { margin-bottom: 20px; }
       }
     </style>
 
-    <section class="module-viewport" style="padding: 5px; box-sizing: border-box;">
-      <div class="cyber-hologram-container">
-        
-        <!-- লোগো ব্র্যান্ডিং এরিয়া -->
-        <div class="brand-display-center">
-          <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/Assets/Logo/ROS%20Logo%20Title%20.png" alt="ROS Logo">
-          <div class="laser-separator"></div>
-        </div>
-
-        <!-- মেম্বার ইনফো প্রোফাইল নোড -->
-        <div class="holo-profile-identity">
-          <div class="core-avatar-ring">
-            <img src="../placeholder.png" id="profCardAvatar">
-          </div>
-          
-          <div class="holo-id-badge" id="profCardMemberId">ROS-CONNECTING</div>
-          
-          <h2 class="holo-main-name" id="profCardEngName">সদস্যের নাম</h2>
-          <h4 class="holo-sub-name" id="profCardBngName">বাংলা নাম</h4>
-          
-          <div class="holo-timeline-cluster">
-            <span class="holo-tag"><i class="fas fa-fingerprint" style="color:var(--secondary);"></i> নোড অ্যাক্টিভেশন: <strong id="profCardJoinDate">--/--/----</strong></span>
-            <span class="holo-tag gold-glow"><i class="fas fa-satellite-dish"></i> সিস্টেম এজ: <strong id="profCardTotalDays">0</strong> সাইকেল</span>
-          </div>
-        </div>
-
-        <!-- ম্যাট্রিক্স পার্ট ১: ব্যক্তিগত বিবরণ -->
-        <div class="holo-section-header"><i class="fas fa-database"></i> Personal Matrix (ব্যক্তিগত বিবরণ)</div>
-        <div class="holo-data-matrix">
-          <div class="holo-data-cell cell-span-2">
-            <small><i class="fas fa-user-shield"></i> পিতার নাম (Father's Name)</small>
-            <p id="profGridFather">লোড হচ্ছে...</p>
-          </div>
-          <div class="holo-data-cell cell-span-2">
-            <small><i class="fas fa-user-astronaut"></i> মাতার নাম (Mother's Name)</small>
-            <p id="profGridMother">লোড হচ্ছে...</p>
-          </div>
-          <div class="holo-data-cell">
-            <small><i class="fas fa-calendar-alt"></i> জন্ম তারিখ (DOB)</small>
-            <p id="profGridDob">--/--/----</p>
-          </div>
-          <div class="holo-data-cell">
-            <small><i class="fas fa-venus-mars"></i> লিঙ্গ (Gender)</small>
-            <p id="profGridGender">--</p>
-          </div>
-          <div class="holo-data-cell cell-span-2">
-            <small><i class="fas fa-id-card"></i> NID / জন্ম নিবন্ধন নম্বর</small>
-            <p id="profGridNidBrn">-</p>
-          </div>
-        </div>
-
-        <!-- ম্যাট্রিক্স পার্ট ২: একাডেমিক ও রোল ডাটা -->
-        <div class="holo-section-header"><i class="fas fa-graduation-cap"></i> Academic & Core Module (শিক্ষা ও পেশা)</div>
-        <div class="holo-data-matrix">
-          <div class="holo-data-cell cell-span-2">
-            <small><i class="fas fa-university"></i> শিক্ষা প্রতিষ্ঠান (Institution)</small>
-            <p id="profGridInstitution">লোড হচ্ছে...</p>
-          </div>
-          <div class="holo-data-cell">
-            <small><i class="fas fa-book-open"></i> শ্রেণী/যোগ্যতা (Education)</small>
-            <p id="profGridEducation">-</p>
-          </div>
-          <div class="holo-data-cell">
-            <small><i class="fas fa-clock"></i> শিক্ষাবর্ষ (Academic Year)</small>
-            <p id="profGridAcademicYear">-</p>
-          </div>
-          <div class="holo-data-cell cell-span-2">
-            <small><i class="fas fa-briefcase"></i> পেশা (Profession)</small>
-            <p id="profGridProfession">-</p>
-          </div>
-          <div class="holo-data-cell">
-            <small><i class="fas fa-user-tag"></i> সিস্টেম রোল (Role)</small>
-            <p id="profGridRole" style="color: var(--secondary); text-transform: uppercase;">-</p>
-          </div>
-          <div class="holo-data-cell">
-            <small><i class="fas fa-shield-alt"></i> কনসোল স্ট্যাটাস</small>
-            <p id="profGridStatus" class="holo-active-status">ACTIVE</p>
-          </div>
-        </div>
-
-        <!-- ম্যাট্রিক্স পার্ট ৩: যোগাযোগ চ্যানেল -->
-        <div class="holo-section-header"><i class="fas fa-network-wired"></i> Communication Channels (যোগাযোগ মাধ্যম)</div>
-        <div class="holo-data-matrix">
-          <div class="holo-data-cell">
-            <small><i class="fas fa-phone-alt"></i> মোবাইল নম্বর</small>
-            <p id="profGridMobile">-</p>
-          </div>
-          <div class="holo-data-cell">
-            <small><i class="fab fa-whatsapp"></i> হোয়াটসঅ্যাপ নম্বর</small>
-            <p id="profGridWhatsapp">-</p>
-          </div>
-          <div class="holo-data-cell cell-span-2">
-            <small><i class="fas fa-envelope"></i> রেজিস্টার্ড ইমেইল</small>
-            <p id="profGridEmail">-</p>
-          </div>
-          <div class="holo-data-cell cell-span-4">
-            <small><i class="fab fa-facebook"></i> ফেসবুক প্রোফাইল গেটওয়ে</small>
-            <p id="profGridFacebook">-</p>
-          </div>
-          <div class="holo-data-cell cell-span-2">
-            <small><i class="fas fa-map-marker-alt"></i> বর্তমান ঠিকানা (Present Address)</small>
-            <p id="profGridPresentAddress">লোড হচ্ছে...</p>
-          </div>
-          <div class="holo-data-cell cell-span-2">
-            <small><i class="fas fa-home"></i> স্থায়ী ঠিকানা (Permanent Address)</small>
-            <p id="profGridPermanentAddress">লোড হচ্ছে...</p>
-          </div>
-        </div>
-
+    <div class="nexus-profile-wrapper">
+      
+      <!-- টপ লোগো গেটওয়ে -->
+      <div class="nexus-brand-header">
+        <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/Assets/Logo/ROS%20Logo%20Title%20.png" alt="ROS Logo" class="nexus-logo">
       </div>
-    </section>
+
+      <!-- কোর মেম্বার আইডি ও ইনফো প্যানেল -->
+      <div class="nexus-hero-identity">
+        <div class="nexus-avatar-frame">
+          <img src="../placeholder.png" id="profCardAvatar">
+        </div>
+        <div class="nexus-uid-badge" id="profCardMemberId">ROS-CONNECTING</div>
+        <h2 class="nexus-name-en" id="profCardEngName">সদস্যের নাম</h2>
+        <h4 class="nexus-name-bn" id="profCardBngName">বাংলা নাম</h4>
+        
+        <div class="nexus-stats-cluster">
+          <span class="nexus-stat-tag"><i class="fas fa-fingerprint"></i> নোড অ্যাক্টিভেশন: <strong id="profCardJoinDate">--/--/----</strong></span>
+          <span class="nexus-stat-tag highlight"><i class="fas fa-satellite-dish"></i> সিস্টেম এজ: <strong id="profCardTotalDays">0</strong> সাইকেল</span>
+        </div>
+      </div>
+
+      <!-- ড্রপডাউন ১: ব্যক্তিগত বিবরণ -->
+      <div class="nexus-dropdown-box" id="dropBoxPersonal">
+        <div class="nexus-dropdown-trigger" onclick="toggleNexusDropdown('dropBoxPersonal')">
+          <div class="nexus-trigger-title"><i class="fas fa-user-astronaut"></i> Personal Matrix (ব্যক্তিগত বিবরণ)</div>
+          <div class="nexus-trigger-arrow"><i class="fas fa-chevron-down"></i></div>
+        </div>
+        <div class="nexus-dropdown-content">
+          <div class="nexus-inner-padding">
+            <!-- মা বাবার নাম এক লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-user-shield"></i> পিতার নাম (Father's Name)</small>
+                <p id="profGridFather">লোড হচ্ছে...</p>
+              </div>
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-user-tie"></i> মাতার নাম (Mother's Name)</small>
+                <p id="profGridMother">লোড হচ্ছে...</p>
+              </div>
+            </div>
+            <!-- জন্ম তারিখ, লিঙ্গ, এনআইডি এক লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-calendar-alt"></i> জন্ম তারিখ (DOB)</small>
+                <p id="profGridDob">--/--/----</p>
+              </div>
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-venus-mars"></i> লিঙ্গ (Gender)</small>
+                <p id="profGridGender">--</p>
+              </div>
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-id-card"></i> NID / জন্ম নিবন্ধন নম্বর</small>
+                <p id="profGridNidBrn">-</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ড্রপডাউন ২: শিক্ষা ও পেশা -->
+      <div class="nexus-dropdown-box" id="dropBoxAcademic">
+        <div class="nexus-dropdown-trigger" onclick="toggleNexusDropdown('dropBoxAcademic')">
+          <div class="nexus-trigger-title"><i class="fas fa-graduation-cap"></i> Academic & Role (শিক্ষা ও পেশা)</div>
+          <div class="nexus-trigger-arrow"><i class="fas fa-chevron-down"></i></div>
+        </div>
+        <div class="nexus-dropdown-content">
+          <div class="nexus-inner-padding">
+            <!-- শিক্ষা প্রতিষ্ঠান এক লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-university"></i> শিক্ষা প্রতিষ্ঠান / কর্মস্থলের নাম (Institution)</small>
+                <p id="profGridInstitution">লোড হচ্ছে...</p>
+              </div>
+            </div>
+            <!-- শিক্ষাগত যোগ্যতা, শিক্ষাবর্ষ, পেশা এক লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-book-open"></i> শিক্ষাগত যোগ্যতা (Education)</small>
+                <p id="profGridEducation">-</p>
+              </div>
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-clock"></i> শিক্ষাবর্ষ (Academic Year)</small>
+                <p id="profGridAcademicYear">-</p>
+              </div>
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-briefcase"></i> পেশা (Profession)</small>
+                <p id="profGridProfession">-</p>
+              </div>
+            </div>
+            <!-- একাউন্টের ধরন ও স্ট্যাটাস এক লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-user-tag"></i> অ্যাকাউন্টের ধরন (Role)</small>
+                <p id="profGridRole" style="color: var(--secondary); text-transform: uppercase;">-</p>
+              </div>
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-toggle-on"></i> অ্যাকাউন্টের স্ট্যাটাস</small>
+                <p id="profGridStatus" class="status-active-glow">ACTIVE</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ড্রপডাউন ৩: যোগাযোগ মাধ্যম -->
+      <div class="nexus-dropdown-box" id="dropBoxContact">
+        <div class="nexus-dropdown-trigger" onclick="toggleNexusDropdown('dropBoxContact')">
+          <div class="nexus-trigger-title"><i class="fas fa-network-wired"></i> Communication (যোগাযোগ মাধ্যম)</div>
+          <div class="nexus-trigger-arrow"><i class="fas fa-chevron-down"></i></div>
+        </div>
+        <div class="nexus-dropdown-content">
+          <div class="nexus-inner-padding">
+            <!-- মোবাইল ও হোয়াটসঅ্যাপ নম্বর এক লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-phone-alt"></i> মোবাইল নম্বর</small>
+                <p id="profGridMobile">-</p>
+              </div>
+              <div class="nexus-field-cell">
+                <small><i class="fab fa-whatsapp"></i> হোয়াটসঅ্যাপ নম্বর</small>
+                <p id="profGridWhatsapp">-</p>
+              </div>
+            </div>
+            <!-- ইমেইল এড্রেস এক লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-envelope"></i> ইমেইল এড্রেস</small>
+                <p id="profGridEmail">-</p>
+              </div>
+            </div>
+            <!-- ফেসবুক আইডি লিংক এক লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fab fa-facebook-square"></i> ফেসবুক প্রোফাইল গেটওয়ে</small>
+                <p id="profGridFacebook">-</p>
+              </div>
+            </div>
+            <!-- বর্তমান ঠিকানা আলাদা লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-map-marker-alt"></i> বর্তমান ঠিকানা (Present Address)</small>
+                <p id="profGridPresentAddress">লোড হচ্ছে...</p>
+              </div>
+            </div>
+            <!-- স্থায়ী ঠিকানা আলাদা লাইনে -->
+            <div class="nexus-row">
+              <div class="nexus-field-cell">
+                <small><i class="fas fa-home"></i> স্থায়ী ঠিকানা (Permanent Address)</small>
+                <p id="profGridPermanentAddress">লোড হচ্ছে...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   `;
 
-  // ২. ফায়ারবেস রিয়েল-টাইম অন-স্ম্যাপশট লুপ (আপনার দেওয়া হুবহু ফিল্ড নেম অনুযায়ী ম্যাপিং)
+  // ২. গ্লোবাল ড্রপডাউন টগল ফাংশন (উইন্ডো অবজেক্টে সেট করা হয়েছে যাতে এইচটিএমএল থেকে কল করা যায়)
+  window.toggleNexusDropdown = function(boxId) {
+    const element = document.getElementById(boxId);
+    if (element) {
+      element.classList.toggle('active');
+    }
+  };
+
+  // ৩. ফায়ারবেস রিয়েল-টাইম ডাটা বাইন্ডিং লুপ
   const currentUser = auth.currentUser;
   if (currentUser) {
     onSnapshot(doc(db, "users", currentUser.uid), (snapshot) => {
       if (snapshot.exists()) {
         const d = snapshot.data();
 
-        // ক) প্রোফাইল মেইন ব্যানার ম্যাপিং 
+        // ক) প্রোফাইল টপ কার্ড ডাটা ম্যাপিং
         document.getElementById('profCardAvatar').src = d.photoUrl || '../placeholder.png';
         document.getElementById('profCardMemberId').innerText = d.memberId || "ROS-NEXUS";
         document.getElementById('profCardEngName').innerText = d.englishName || "সদস্য নাম";
         document.getElementById('profCardBngName').innerText = d.banglaName || "";
 
-        // খ) ব্যক্তিগত তথ্য সেকশন ম্যাপিং
+        // খ) ড্রপডাউন ১: ব্যক্তিগত তথ্য ম্যাপিং
         document.getElementById('profGridFather').innerText = d.fatherName || "তথ্য পাওয়া যায়নি";
         document.getElementById('profGridMother').innerText = d.motherName || "তথ্য পাওয়া যায়নি";
         document.getElementById('profGridDob').innerText = d.dob || "তথ্য নেই";
         document.getElementById('profGridGender').innerText = d.gender || "নির্দিষ্ট নয়";
         document.getElementById('profGridNidBrn').innerText = d.nidOrBrn || "প্রদান করা হয়নি";
         
-        // গ) শিক্ষা ও পেশা ম্যাপিং (Academic Year ফিক্সড)
+        // গ) ড্রপডাউন ২: শিক্ষা ও পেশা ম্যাপিং
         document.getElementById('profGridInstitution').innerText = d.institution || "তথ্য পাওয়া যায়নি";
         document.getElementById('profGridEducation').innerText = d.education || "N/A";
         document.getElementById('profGridAcademicYear').innerText = d['Academic Year'] || "N/A";
         document.getElementById('profGridProfession').innerText = d.profession || "N/A";
-        document.getElementById('profGridRole').innerText = d.role || "member";
-        document.getElementById('profGridStatus').innerText = d.status || "active";
+        document.getElementById('profGridRole').innerText = d.role || "MEMBER";
+        document.getElementById('profGridStatus').innerText = d.status || "ACTIVE";
 
-        // ঘ) নেটওয়ার্ক ও যোগাযোগ ম্যাপিং (presentAddress এবং whatsapp Number স্পেস ফিক্সড)
+        // ঘ) ড্রপডাউন ৩: যোগাযোগ ডাটা ম্যাপিং (আপনার বানান ফিক্স সহ)
         document.getElementById('profGridMobile').innerText = d.mobileNumber || "তথ্য নেই";
         document.getElementById('profGridWhatsapp').innerText = d['whatsapp Number'] || "তথ্য নেই";
         document.getElementById('profGridEmail').innerText = d.email || "তথ্য নেই";
         
         if (d.facebookLink && d.facebookLink.trim() !== "") {
-          document.getElementById('profGridFacebook').innerHTML = `<a href="${d.facebookLink}" target="_blank"><i class="fas fa-external-link-alt"></i> প্রোফাইল নেটওয়ার্ক ওপেন করুন</a>`;
+          document.getElementById('profGridFacebook').innerHTML = `<a href="${d.facebookLink}" target="_blank"><i class="fas fa-external-link-alt"></i> প্রোফাইল কানেক্ট করুন</a>`;
         } else {
           document.getElementById('profGridFacebook').innerText = "লিংক যুক্ত করা হয়নি";
         }
@@ -253,7 +314,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
         document.getElementById('profGridPresentAddress').innerText = d.presentAddress || "ঠিকানা খালি";
         document.getElementById('profGridPermanentAddress').innerText = d.permanentAddress || "ঠিকানা খালি";
 
-        // ঙ) ফায়ারবেস টাইমস্ট্যাম্প / অবজেক্ট থেকে ডেটা রেন্ডারিং ও মেম্বারশিপ লাইভ ট্র্যাকিং 
+        // ঙ) রেজিস্ট্রেশন ডেট ও সিস্টেম সাইকেল ক্যালকুলেশন
         if (d.createdAt) {
           const joinDate = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
           
@@ -269,7 +330,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
           document.getElementById('profCardTotalDays').innerText = totalDays;
         }
       } else {
-        alert("আপনার প্রোফাইল ম্যাট্রিক্স ডাটাবেজে খুঁজে পাওয়া যায়নি!");
+        alert("আপনার প্রোফাইল ডাটাবেজে খুঁজে পাওয়া যায়নি!");
         signOut(auth);
       }
     });
