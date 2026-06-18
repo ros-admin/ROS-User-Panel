@@ -15,6 +15,11 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', 'Orbitron', sans-serif; }
     body { background-color: var(--cyber-bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
     .cyber-glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+    
+    /* হেডার ও রেসপন্সিভ লেআউট ফিক্স */
+    .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
+    .mobile-menu-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: #fff; padding: 10px 14px; border-radius: 4px; cursor: pointer; display: none; }
+    
     .erp-wrapper { display: flex; flex: 1; position: relative; margin-top: 60px; margin-bottom: 50px; }
     .sidebar-nav { width: 280px; height: calc(100vh - 110px); position: fixed; top: 60px; left: 0; display: flex; flex-direction: column; z-index: 99; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; }
     .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid var(--glass-border); }
@@ -22,20 +27,18 @@
     .sidebar-menu { list-style: none; padding: 15px 0; }
     .menu-item a { display: flex; align-items: center; padding: 12px 20px; color: var(--text-muted); text-decoration: none; font-size: 14px; border-left: 4px solid transparent; transition: all 0.3s ease; }
     .menu-item a:hover, .menu-item.active a { color: #fff; background: rgba(0, 180, 216, 0.1); border-left-color: var(--neon-blue); text-shadow: 0 0 8px var(--neon-blue); }
-    .main-content-node { margin-left: 280px; flex: 1; padding: 30px; min-height: calc(100vh - 110px); transition: all 0.4s ease; }
-    .admin-profile-trigger { position: absolute; top: -50px; right: 20px; z-index: 1000; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    
+    .main-content-node { margin-left: 280px; flex: 1; padding: 30px; min-height: calc(100vh - 110px); transition: all 0.4s ease; overflow-x: auto; }
+    .admin-profile-trigger { cursor: pointer; display: flex; align-items: center; gap: 10px; position: relative; }
     .admin-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--neon-blue); box-shadow: 0 0 10px rgba(0, 180, 216, 0.4); object-fit: cover; }
-    .profile-dropdown { position: absolute; top: 50px; right: 0; width: 220px; border-radius: 8px; padding: 10px 0; display: none; flex-direction: column; }
+    .profile-dropdown { position: absolute; top: 50px; right: 0; width: 220px; border-radius: 8px; padding: 10px 0; display: none; flex-direction: column; z-index: 1001; }
     .dropdown-info { padding: 10px 20px; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
     .profile-dropdown a { padding: 10px 20px; color: var(--text-muted); text-decoration: none; font-size: 13px; transition: 0.2s; }
     .profile-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    .mobile-menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: var(--glass-bg); border: 1px solid var(--glass-border); color: #fff; padding: 10px; border-radius: 4px; cursor: pointer; }
     
-    /* উন্নত ইউনিক মডাল ডিজাইন */
+    /* মডাল ও ইনপুট */
     .nexus-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
     .modal-body { width: 90%; max-width: 450px; padding: 30px; border-radius: 12px; border: 1px solid rgba(0, 180, 216, 0.4); box-shadow: 0 0 30px rgba(0, 180, 216, 0.2); }
-    
-    /* ইউনিক ইনপুট র্যাপার */
     .input-group-cyber { position: relative; margin-bottom: 20px; display: flex; align-items: center; }
     .input-group-cyber i.prefix-icon { position: absolute; left: 15px; color: var(--neon-blue); font-size: 14px; }
     .cyber-input-premium { width: 100%; padding: 12px 40px 12px 45px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; outline: none; transition: all 0.3s ease; font-size: 14px; letter-spacing: 1.5px; }
@@ -43,20 +46,29 @@
     .toggle-password-btn { position: absolute; right: 15px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
     .toggle-password-btn:hover { color: var(--neon-blue); }
 
-    @media (max-width: 992px) { .sidebar-nav { left: -280px; height: calc(100vh - 60px); top: 60px; } .sidebar-nav.active { left: 0; } .main-content-node { margin-left: 0; padding: 15px; } .mobile-menu-btn { display: block; } .admin-profile-trigger { top: 15px; right: 15px; } }
+    /* মিডিয়া কোয়েরি - মোবাইল ভিউ ফিক্স */
+    @media (max-width: 992px) { 
+      .mobile-menu-btn { display: block; } 
+      .sidebar-nav { left: -280px; height: calc(100vh - 60px); top: 60px; } 
+      .sidebar-nav.active { left: 0; } 
+      .main-content-node { margin-left: 0; padding: 15px; padding-top: 20px; } 
+    }
   </style>
 </head>
 <body id="nexusCoreBody" style="display: none;">
 
-  <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
-
-  <div class="admin-profile-trigger" id="profileTrigger">
-    <span id="headerAdminRole" style="font-size: 11px; color: var(--neon-green); font-weight: bold;">SECURE NODE</span>
-    <img src="../placeholder.png" id="topAdminAvatar" class="admin-avatar">
-    <div class="profile-dropdown cyber-glass" id="profileDropdown">
-      <div class="dropdown-info"><h4 id="dropAdminName">লোড হচ্ছে...</h4><small id="dropAdminEmail">admin@ros.org</small></div>
-      <a href="#" id="openPassModalBtn"><i class="fas fa-key"></i> পাসওয়ার্ড পরিবর্তন</a>
-      <a href="#" id="adminSignOutBtn" style="color: var(--neon-red);"><i class="fas fa-sign-out-alt"></i> লগআউট</a>
+  <!-- রেসপন্সিভ টপ হেডার বার -->
+  <div class="top-bar cyber-glass">
+    <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+    <div style="flex-grow: 1;"></div>
+    <div class="admin-profile-trigger" id="profileTrigger">
+      <span id="headerAdminRole" style="font-size: 11px; color: var(--neon-green); font-weight: bold;">SECURE NODE</span>
+      <img src="../placeholder.png" id="topAdminAvatar" class="admin-avatar">
+      <div class="profile-dropdown cyber-glass" id="profileDropdown">
+        <div class="dropdown-info"><h4 id="dropAdminName">লোড হচ্ছে...</h4><small id="dropAdminEmail">admin@ros.org</small></div>
+        <a href="#" id="openPassModalBtn"><i class="fas fa-key"></i> পাসওয়ার্ড পরিবর্তন</a>
+        <a href="#" id="adminSignOutBtn" style="color: var(--neon-red);"><i class="fas fa-sign-out-alt"></i> লগআউট</a>
+      </div>
     </div>
   </div>
 
@@ -135,10 +147,10 @@
   
   <script type="module">
     import { db, auth } from '../firebase-config.js';
-    import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    // এখানে query এবং where মেথড দুটি সফলভাবে ইম্পোর্ট করা হলো ডাটা লোড সচল করার জন্য
+    import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // এখানে কমা (,) না থাকার কারণে ব্ল্যাংক স্ক্রিন আসছিল, এখন তা ঠিক করা হয়েছে।
     const erpModules = [
       { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
       { id: 'members', name: '👥 সদস্য ম্যানেজমেন্ট' },
@@ -302,8 +314,8 @@
         loadSettingsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, setDoc);
       }
       else if (id === 'adminRequests') {
-        // এখানে ফায়ারবেসের কোয়েরি মেথডগুলো গ্লোবালি বা ইমপোর্টে সঠিকভাবে ডিফাইন করা থাকতে হবে।
-        loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, collection);
+        // এখানে query এবং where ডিফাইন করা ছিল যা ওপরে সফলভাবে ইম্পোর্ট করা হয়েছে।
+        loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, collection, query, where);
       }
       else {
         contentRoot.innerHTML = `
