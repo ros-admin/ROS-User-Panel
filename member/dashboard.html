@@ -88,7 +88,6 @@
     
     .erp-wrapper { display: flex; flex: 1; margin-top: 70px; height: calc(100vh - 70px); position: relative; }
     
-    /* সাইডবার রি-ডিজাইন */
     .sidebar-nav { width: 270px; height: 100%; border-right: 1px solid rgba(0, 245, 255, 0.08); display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; overflow-y: auto; }
     .sidebar-header { padding: 22px 24px 12px 24px; font-size: 10px; letter-spacing: 2px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
     .sidebar-menu { list-style: none; padding: 10px 0; flex: 1; }
@@ -104,7 +103,6 @@
     .menu-item.open .arrow-icon { transform: rotate(180deg); color: var(--secondary); }
     .menu-item a i { width: 20px; text-align: center; font-size: 16px; color: var(--secondary); }
 
-    /* সাবমেনু স্মুথ আর্কিটেকচার */
     .submenu-list { list-style: none; padding-left: 15px; background: rgba(2, 10, 22, 0.3); display: none; margin-top: 2px; }
     .submenu-item { margin: 2px 0; }
     .submenu-item a { padding: 10px 16px; font-size: 13px; color: #64748b; border-radius: 6px; }
@@ -113,7 +111,6 @@
     
     .main-content-node { flex: 1; padding: 30px; overflow-y: auto; position: relative; background: radial-gradient(circle at 50% 10%, rgba(0, 245, 255, 0.02) 0%, transparent 70%); }
     
-    /* সিকিউরিটি মডাল */
     .cyber-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 10, 22, 0.8); backdrop-filter: blur(10px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .cyber-modal-card { width: 100%; max-width: 420px; padding: 30px; border-radius: 16px; border: 1px solid rgba(0, 245, 255, 0.2); box-shadow: 0 0 50px rgba(0, 245, 255, 0.1); }
     .cyber-modal-card h3 { font-size: 18px; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff; display: flex; align-items: center; gap: 10px; }
@@ -140,7 +137,6 @@
 </head>
 <body>
 
-  <!-- টপ নেভিগেশন স্টেশন -->
   <header class="header-station cyber-glass">
     <div style="display: flex; align-items: center; gap: 15px;">
       <button class="mobile-menu-toggle" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
@@ -162,14 +158,13 @@
     </div>
   </header>
 
-  <!-- কোর লেআউট কন্টেইনার -->
   <div class="erp-wrapper">
     <aside class="sidebar-nav cyber-glass" id="sidebarNode">
       <div class="sidebar-header">MEMBER MATRIX</div>
       <ul class="sidebar-menu">
         
         <li class="menu-item active" id="menuProfileLink" data-id="profile">
-          <a href="#"><i class="fas fa-columns"></i> ওভারভিউ প্রোফাইল</a>
+          <a href="#"><i class="fas fa-columns"></i> ওভারভিউ প্রোфাইল</a>
         </li>
         
         <li class="menu-item" id="parentDropdownMenu">
@@ -193,7 +188,6 @@
     <main class="main-content-node" id="spaContentRoot"></main>
   </div>
 
-  <!-- পাসওয়ার্ড পরিবর্তন সিকিউরিটি মডাল -->
   <div class="cyber-modal-overlay" id="passwordChangeModal">
     <div class="cyber-modal-card cyber-glass">
       <h3><i class="fas fa-shield-alt" style="color: var(--secondary);"></i> পাসওয়ার্ড কনফিগারেশন</h3>
@@ -219,8 +213,9 @@
   <script src="../member/myRequest.js"></script>
 
   <script type="module">
+    // ফায়ারবেস থেকে serverTimestamp ইমপোর্ট করা হলো (যা আগে মিসিং ছিল)
     import { db, auth } from '../firebase-config.js';
-    import { doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { doc, onSnapshot, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const sidebarNode = document.getElementById('sidebarNode');
@@ -266,7 +261,8 @@
       if (moduleId === 'profile') {
         loadProfileModule(spaContentRoot, db, auth, doc, onSnapshot, signOut);
       } else if (moduleId === 'updateInfo') {
-loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp);
+        // ফিক্সড: contentRoot কে spaContentRoot করা হয়েছে এবং serverTimestamp সফলভাবে পাঠানো হচ্ছে
+        loadUpdateInfoModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp);
       } else if (moduleId === 'myRequests') {
         loadMyRequestsModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc);
       }
