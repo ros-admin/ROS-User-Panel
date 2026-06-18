@@ -1,14 +1,15 @@
 // প্রোফাইল মডিউলের মূল ফাংশন
 function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
   
-  // ১. প্রোফাইল মডিউলের এইচটিএমএল এবং আল্ট্রা-প্রিমিয়াম সাইবারপাঙ্ক CSS রেন্ডার
+  // ১. প্রোফাইল মডিউলের এইচটিএমএল এবং আল্ট্রা-রেসপনসিভ সাইবারপাঙ্ক CSS রেন্ডার
   contentRoot.innerHTML = `
     <style>
-      .profile-matrix-card { max-width: 1000px; margin: 0 auto; padding: 40px; border-radius: 16px; position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+      /* কোর লেআউট স্টাইল */
+      .profile-matrix-card { max-width: 1000px; width: 100%; margin: 0 auto; padding: 40px; border-radius: 16px; position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); box-sizing: border-box; }
       .profile-matrix-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, var(--neon-blue), var(--neon-yellow), transparent); }
       
       .profile-org-header { text-align: center; margin-bottom: 30px; }
-      .org-logo-img { max-width: 260px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 180, 216, 0.3)); }
+      .org-logo-img { max-width: 260px; width: 100%; height: auto; filter: drop-shadow(0 0 8px rgba(0, 180, 216, 0.3)); }
       .cyber-yellow-line { height: 2px; width: 40%; background: linear-gradient(90deg, transparent, var(--neon-blue), transparent); margin: 12px auto 0 auto; box-shadow: 0 0 10px var(--neon-blue); }
       
       .profile-identity-hub { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 25px; }
@@ -34,7 +35,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
       
       /* গ্রিড ও বক্স লেআউট */
       .profile-details-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-      .info-metric-box { background: rgba(3, 7, 18, 0.4); border: 1px solid rgba(255,255,255,0.04); padding: 14px 18px; border-radius: 8px; transition: all 0.25s ease; }
+      .info-metric-box { background: rgba(3, 7, 18, 0.4); border: 1px solid rgba(255,255,255,0.04); padding: 14px 18px; border-radius: 8px; transition: all 0.25s ease; box-sizing: border-box; }
       .info-metric-box:hover { border-color: rgba(0, 180, 216, 0.3); background: rgba(0, 180, 216, 0.02); transform: translateY(-1px); }
       .info-metric-box small { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
       .info-metric-box small i { color: var(--neon-blue); font-size: 11px; width: 14px; text-align: center; }
@@ -46,18 +47,32 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
       .span-4 { grid-column: span 4; }
       .status-badge { color: var(--neon-green) !important; text-shadow: 0 0 8px rgba(46, 196, 182, 0.3); text-transform: uppercase; }
 
+      /* মোবাইল এবং ট্যাবলেটের জন্য আল্ট্রা-রেসপনসিভ ফিক্স */
       @media (max-width: 992px) {
         .profile-details-grid { grid-template-columns: repeat(2, 1fr); }
         .span-2, .span-4 { grid-column: span 2; }
       }
-      @media (max-width: 576px) {
-        .profile-details-grid { grid-template-columns: 1fr; }
+      
+      @media (max-width: 768px) {
+        .profile-matrix-card { padding: 30px 20px; border-radius: 12px; }
+      }
+
+      @media (max-width: 480px) {
+        .profile-matrix-card { 
+          padding: 20px 12px; /* প্যাডিং কমানো হয়েছে যেন স্ক্রিনের বাইরে না যায় */
+          margin: 0; 
+          border-radius: 8px;
+          width: 100% !important;
+        }
+        .profile-details-grid { grid-template-columns: 1fr; gap: 12px; }
         .span-2, .span-4 { grid-column: span 1; }
-        .profile-matrix-card { padding: 25px 15px; }
+        .prof-eng-name { font-size: 22px; }
+        .prof-bg-name { font-size: 16px; }
+        .membership-timeline-node { flex-direction: column; gap: 8px; align-items: center; }
       }
     </style>
 
-    <section class="module-viewport">
+    <section class="module-viewport" style="padding: 10px; box-sizing: border-box;">
       <div class="profile-matrix-card">
         
         <!-- লোগো হেডার -->
@@ -84,7 +99,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
           </div>
         </div>
 
-        <!-- ১. ব্যক্তিগত তথ্য সেকশন (Personal Matrix) -->
+        <!-- ১. ব্যক্তিগত তথ্য সেকশন -->
         <div class="section-block-title"><i class="fas fa-user"></i> ব্যক্তিগত বিবরণ (Personal Matrix)</div>
         <div class="profile-details-grid">
           <div class="info-metric-box span-2">
@@ -109,7 +124,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
           </div>
         </div>
 
-        <!-- ২. শিক্ষা ও পেশা সেকশন (Academic & Profession) -->
+        <!-- ২. শিক্ষা ও পেশা সেকশন -->
         <div class="section-block-title"><i class="fas fa-graduation-cap"></i> শিক্ষা ও পেশা (Academic & Career)</div>
         <div class="profile-details-grid">
           <div class="info-metric-box span-2">
@@ -134,11 +149,11 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
           </div>
           <div class="info-metric-box">
             <small><i class="fas fa-toggle-on"></i> অ্যাকাউন্ট স্ট্যাটাস</small>
-            <p id="profGridStatus" class="status-badge">Active</p>
+            <p id="profGridStatus" class="status-badge">active</p>
           </div>
         </div>
 
-        <!-- ৩. যোগাযোগ ও ঠিকানা সেকশন (Contact & Network) -->
+        <!-- ৩. যোগাযোগ ও ঠিকানা সেকশন -->
         <div class="section-block-title"><i class="fas fa-address-book"></i> যোগাযোগ মাধ্যম (Contact & Network)</div>
         <div class="profile-details-grid">
           <div class="info-metric-box">
@@ -176,7 +191,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
   if (currentUser) {
     onSnapshot(doc(db, "users", currentUser.uid), (snapshot) => {
       if (snapshot.exists()) {
-        const d = snapshot.data(); // d = memberData object
+        const d = snapshot.data();
 
         // ক) প্রোফাইল হেডার ডাটা বাইন্ডিং 
         document.getElementById('profCardAvatar').src = d.photoUrl || '../placeholder.png';
@@ -184,7 +199,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
         document.getElementById('profCardEngName').innerText = d.englishName || "সদস্য নাম";
         document.getElementById('profCardBngName').innerText = d.banglaName || "";
 
-        // খ) গ্রিড ডিটেইলস ডাটা বাইন্ডিং (আপনার দেওয়া ২২টি ফিল্ডের ম্যাপিং)
+        // খ) গ্রিড ডিটেইলস ডাটা বাইন্ডিং
         document.getElementById('profGridFather').innerText = d.fatherName || "তথ্য পাওয়া যায়নি";
         document.getElementById('profGridMother').innerText = d.motherName || "তথ্য পাওয়া যায়নি";
         document.getElementById('profGridDob').innerText = d.dob || "তথ্য নেই";
@@ -202,7 +217,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
         document.getElementById('profGridWhatsapp').innerText = d.whatsappNumber || "তথ্য নেই";
         document.getElementById('profGridEmail').innerText = d.email || "তথ্য নেই";
         
-        // ফেসবুক লিংকটিকে ক্লিকযোগ্য (Clickable Link) বানানোর লজিক
+        // ফেসবুক লিংক চেকিং লজিক
         if (d.facebookLink && d.facebookLink.trim() !== "") {
           document.getElementById('profGridFacebook').innerHTML = `<a href="${d.facebookLink}" target="_blank"><i class="fas fa-external-link-alt"></i> প্রোফাইল ভিজিট করুন</a>`;
         } else {
@@ -212,7 +227,7 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
         document.getElementById('profGridPresentAddress').innerText = d.presentAddress || "ঠিকানা খালি";
         document.getElementById('profGridPermanentAddress').innerText = d.permanentAddress || "ঠিকানা খালি";
 
-        // গ) মেম্বারশিপ সময়কাল এবং দিন গণনা (createdAt থেকে)
+        // গ) মেম্বারশিপ সময়কাল দিন গণনা (createdAt থেকে)
         if (d.createdAt) {
           const joinDate = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
           
