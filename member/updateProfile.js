@@ -4,7 +4,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
   // ১. মডিউলের জন্য ডেডিকেটেড সাইবারপাঙ্ক ইউআই এবং নোটিফিকেশন স্টাইল ইনজেকশন
   contentRoot.innerHTML = `
     <style>
-      .update-matrix-card { max-width: 1000px; width: 100%; margin: 0 auto; padding: 40px; border-radius: 16px; position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+      .update-matrix-card { max-width: 1000px; width: 100%; margin: 0 auto; padding: 40px; border-radius: 16px; position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; color: #fff; }
       .update-matrix-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, #fbbf24, #00b4d8, transparent); }
       
       /* ছবি ও গ্যালারি ট্রিগার নোড */
@@ -23,7 +23,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
       .update-matrix-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
       .form-field-node { display: flex; flex-direction: column; gap: 6px; }
       .form-field-node.span-full { grid-column: span 2; }
-      .form-field-node label { font-size: 13px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+      .form-field-node label { font-size: 13px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; }
       .matrix-input { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 12px 14px; color: #fff; font-size: 14px; transition: 0.3s; width: 100%; box-sizing: border-box; }
       .matrix-input:focus { outline: none; border-color: #00b4d8; box-shadow: 0 0 10px rgba(0, 180, 216, 0.2); background: rgba(0,0,0,0.5); }
       .matrix-input:disabled { background: rgba(255,255,255,0.02); color: #6b7280; cursor: not-allowed; border-color: transparent; }
@@ -121,7 +121,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
         </div>
         <div class="form-field-node">
           <label>WhatsApp Number</label>
-          <input type="tel" id="updWhitespace" class="matrix-input" id="updWhatsappNumber">
+          <input type="tel" id="updWhatsappNumber" class="matrix-input">
         </div>
         <div class="form-field-node">
           <label>Facebook Profile Link</label>
@@ -145,9 +145,9 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
   `;
 
   // ২. ডম অবজেক্ট রেফারেন্স ম্যাপিং
-  const currentUser = auth.currentUser;
+  const currentUser = auth ? auth.currentUser : null;
   if (!currentUser) {
-    contentRoot.innerHTML = `<div style="color:#f87171; text-align:center; padding:50px;">🚫 অনুগ্রহ করে আগে লগইন করুন।</div>`;
+    contentRoot.innerHTML = `<div style="color:#f87171; text-align:center; padding:50px; font-weight:bold;">🚫 অনুগ্রহ করে আগে লগইন করুন বা সেশন চেক করুন।</div>`;
     return;
   }
 
@@ -167,156 +167,158 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
 
   let tempBase64Image = null;
 
+  // ব্যাকআপ টাইমস্ট্যাম্প জেনারেটর (সার্ভার টাইমস্ট্যাম্প ক্র্যাশ এড়াতে)
+  function getTimeStamp() {
+    return (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date();
+  }
+
   // ৩. রিয়েল-টাইম ডাটাবেজ সিঙ্ক লুপ (Realtime Listener Engine)
   onSnapshot(doc(db, "users", currentUser.uid), (snapshot) => {
     if (!snapshot.exists()) return;
     const data = snapshot.data();
 
     // বর্তমান প্রোফাইল ছবি সেটআপ
-    if (!tempBase64Image) {
+    if (!tempBase64Image && updAvatarPreview) {
       updAvatarPreview.src = data.photoUrl || '../placeholder.png';
     }
 
-    // ইনপুট ভ্যালু লোড করা (ইউজার যদি ওল্ড ডাটা এডিট করতে চায়)
-    document.getElementById('updEnglishName').value = data.englishName || "";
-    document.getElementById('updBanglaName').value = data.banglaName || "";
-    document.getElementById('updFatherName').value = data.fatherName || "";
-    document.getElementById('updMotherName').value = data.motherName || "";
-    document.getElementById('updDob').value = data.dob || "";
-    document.getElementById('updGender').value = data.gender || "";
-    document.getElementById('updNidOrBrn').value = data.nidOrBrn || "";
-    document.getElementById('updInstitution').value = data.institution || "";
-    document.getElementById('updEducation').value = data.education || "";
-    document.getElementById('updAcademicYear').value = data.academicYear || "";
-    document.getElementById('updProfession').value = data.profession || "";
-    document.getElementById('updMobileNumber').value = data.mobileNumber || "";
-    const whatsappInput = document.getElementById('updWhatsappNumber') || document.getElementById('updWhitespace');
-    if(whatsappInput) whatsappInput.value = data.whatsappNumber || "";
-    document.getElementById('updFacebookLink').value = data.facebookLink || "";
-    document.getElementById('updPresentAddress').value = data.presentAddress || "";
-    document.getElementById('updPermanentAddress').value = data.permanentAddress || "";
+    // ইনপুট ভ্যালু নিরাপদ উপায়ে লোড করা
+    if(document.getElementById('updEnglishName')) document.getElementById('updEnglishName').value = data.englishName || "";
+    if(document.getElementById('updBanglaName')) document.getElementById('updBanglaName').value = data.banglaName || "";
+    if(document.getElementById('updFatherName')) document.getElementById('updFatherName').value = data.fatherName || "";
+    if(document.getElementById('updMotherName')) document.getElementById('updMotherName').value = data.motherName || "";
+    if(document.getElementById('updDob')) document.getElementById('updDob').value = data.dob || "";
+    if(document.getElementById('updGender')) document.getElementById('updGender').value = data.gender || "";
+    if(document.getElementById('updNidOrBrn')) document.getElementById('updNidOrBrn').value = data.nidOrBrn || "";
+    if(document.getElementById('updInstitution')) document.getElementById('updInstitution').value = data.institution || "";
+    if(document.getElementById('updEducation')) document.getElementById('updEducation').value = data.education || "";
+    if(document.getElementById('updAcademicYear')) document.getElementById('updAcademicYear').value = data.academicYear || "";
+    if(document.getElementById('updProfession')) document.getElementById('updProfession').value = data.profession || "";
+    if(document.getElementById('updMobileNumber')) document.getElementById('updMobileNumber').value = data.mobileNumber || "";
+    if(document.getElementById('updWhatsappNumber')) document.getElementById('updWhatsappNumber').value = data.whatsappNumber || "";
+    if(document.getElementById('updFacebookLink')) document.getElementById('updFacebookLink').value = data.facebookLink || "";
+    if(document.getElementById('updPresentAddress')) document.getElementById('updPresentAddress').value = data.presentAddress || "";
+    if(document.getElementById('updPermanentAddress')) document.getElementById('updPermanentAddress').value = data.permanentAddress || "";
 
     // 🔒 লক লজিক এবং নোটিশ ট্র্যাকিং ইঞ্জিন
-    // ক) ছবি লক স্ক্রিন কন্ডিশন
     if (data.imageApprovalStatus === "pending") {
-      photoPendingNotice.style.display = "flex";
-      updGalleryTriggerBtn.disabled = true;
-      updGalleryTriggerBtn.style.opacity = "0.5";
+      if(photoPendingNotice) photoPendingNotice.style.display = "flex";
+      if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = true; updGalleryTriggerBtn.style.opacity = "0.5"; }
     } else {
-      photoPendingNotice.style.display = "none";
-      updGalleryTriggerBtn.disabled = false;
-      updGalleryTriggerBtn.style.opacity = "1";
+      if(photoPendingNotice) photoPendingNotice.style.display = "none";
+      if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = false; updGalleryTriggerBtn.style.opacity = "1"; }
     }
 
     if (data.imageApprovalStatus === "rejected") {
-      photoRejectReasonText.innerText = `❌ ছবি রিজেক্টের কারণ: ${data.imageRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
-      photoRejectNotice.style.display = "flex";
-    } else { photoRejectNotice.style.display = "none"; }
+      if(photoRejectReasonText) photoRejectReasonText.innerText = `❌ ছবি রিজেক্টের কারণ: ${data.imageRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
+      if(photoRejectNotice) photoRejectNotice.style.display = "flex";
+    } else { if(photoRejectNotice) photoRejectNotice.style.display = "none"; }
 
-    // খ) ইনফো লক স্ক্রিন কন্ডিশন
     if (data.infoApprovalStatus === "pending") {
-      infoPendingNotice.style.display = "flex";
-      matrixSaveBtn.disabled = true;
+      if(infoPendingNotice) infoPendingNotice.style.display = "flex";
+      if(matrixSaveBtn) matrixSaveBtn.disabled = true;
       toggleFormInputs(true);
     } else {
-      infoPendingNotice.style.display = "none";
-      matrixSaveBtn.disabled = false;
+      if(infoPendingNotice) infoPendingNotice.style.display = "none";
+      if(matrixSaveBtn) matrixSaveBtn.disabled = false;
       toggleFormInputs(false);
     }
 
     if (data.infoApprovalStatus === "rejected") {
-      infoRejectReasonText.innerText = `❌ তথ্য রিজেক্টের কারণ: ${data.infoRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
-      infoRejectNotice.style.display = "flex";
+      if(infoRejectReasonText) infoRejectReasonText.innerText = `❌ তথ্য রিজেক্টের কারণ: ${data.infoRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
+      if(infoRejectNotice) infoRejectNotice.style.display = "flex";
     } else if (data.infoApprovalStatus === "waiting") {
-      infoRejectReasonText.innerText = `⚠️ তথ্য হোল্ডের কারণ: ${data.infoRejectReason || 'আপনার তথ্য হোল্ডে রাখা হয়েছে, সংশোধন করুন।'}`;
-      infoRejectNotice.style.display = "flex";
-    } else { infoRejectNotice.style.display = "none"; }
+      if(infoRejectReasonText) infoRejectReasonText.innerText = `⚠️ তথ্য হোল্ডের কারণ: ${data.infoRejectReason || 'আপনার তথ্য হোল্ডে রাখা হয়েছে, সংশোধন করুন।'}`;
+      if(infoRejectNotice) infoRejectNotice.style.display = "flex";
+    } else { if(infoRejectNotice) infoRejectNotice.style.display = "none"; }
   });
 
   function toggleFormInputs(isLock) {
+    if(!updateMatrixForm) return;
     const inputs = updateMatrixForm.querySelectorAll('.matrix-input');
     inputs.forEach(input => input.disabled = isLock);
   }
 
-  // ৪. লোকাল গ্যালারি থেকে ছবি নিয়ে ১ মেগাবাইট কন্ডিশন ও সাবমিশন লক ট্র্যাকিং
-  updGalleryTriggerBtn.addEventListener('click', () => hiddenGalleryInput.click());
+  // ৪. লোকাল গ্যালারি থেকে ছবি নিয়ে সাবমিশন ট্র্যাকিং
+  if(updGalleryTriggerBtn && hiddenGalleryInput) {
+    updGalleryTriggerBtn.addEventListener('click', () => hiddenGalleryInput.click());
 
-  hiddenGalleryInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    hiddenGalleryInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    // ১ মেগাবাইট বা ১০২৪ KB ফাইল সাইজ বাউন্ডারি গার্ড
-    if (file.size > 1024 * 1024) {
-      alert("⚠️ ফাইল সাইজ ১ মেগাবাইটের বেশি! অনুগ্রহ করে ছোট সাইজের ছবি আপলোড করুন।");
-      hiddenGalleryInput.value = "";
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = async () => {
-      tempBase64Image = reader.result;
-      updAvatarPreview.src = tempBase64Image;
-
-      if (confirm("আপনি কি নতুন ছবিটি এডমিনের অনুমোদনের জন্য সাবমিট করতে চান?")) {
-        try {
-          // ছবি সাবমিট করার সাথে অফিশিয়াল serverTimestamp() সংরক্ষণ করা হলো
-          await updateDoc(doc(db, "users", currentUser.uid), {
-            tempPendingPhoto: tempBase64Image,
-            imageApprovalStatus: "pending",
-            imageActionAt: serverTimestamp() // ফটো সাবমিট এর সঠিক সার্ভার টাইম
-          });
-          alert("🎉 নতুন ছবি সফলভাবে সাবমিট হয়েছে। এডমিন অনুমোদনের অপেক্ষা করুন।");
-        } catch (err) {
-          alert("দুঃখিত, ছবি রিকোয়েস্ট পাঠানো যায়নি!");
-        }
-      } else {
-        tempBase64Image = null;
+      if (file.size > 1024 * 1024) {
+        alert("⚠️ ফাইল সাইজ ১ মেগাবাইটের বেশি! অনুগ্রহ করে ছোট সাইজের ছবি আপলোড করুন।");
         hiddenGalleryInput.value = "";
+        return;
       }
-    };
-    reader.readAsDataURL(file);
-  });
 
-  // ৫. ইনফো ডাটা ফর্ম সাবমিশন লকিং মেকানিজম এবং সার্ভার টাইমস্ট্যাম্প ফিক্স
-  updateMatrixForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+      const reader = new FileReader();
+      reader.onload = async () => {
+        tempBase64Image = reader.result;
+        if(updAvatarPreview) updAvatarPreview.src = tempBase64Image;
 
-    const whatsappInput = document.getElementById('updWhatsappNumber') || document.getElementById('updWhitespace');
-
-    if (confirm("আপনি কি নিশ্চিতভাবে এই নতুন তথ্যসমূহ অনুমোদনের জন্য পাঠাতে চান?")) {
-      const pendingDataPayload = {
-        tempPendingData: {
-          englishName: document.getElementById('updEnglishName').value.trim(),
-          banglaName: document.getElementById('updBanglaName').value.trim(),
-          fatherName: document.getElementById('updFatherName').value.trim(),
-          motherName: document.getElementById('updMotherName').value.trim(),
-          dob: document.getElementById('updDob').value.trim(),
-          gender: document.getElementById('updGender').value,
-          nidOrBrn: document.getElementById('updNidOrBrn').value.trim(),
-          institution: document.getElementById('updInstitution').value.trim(),
-          education: document.getElementById('updEducation').value.trim(),
-          academicYear: document.getElementById('updAcademicYear').value.trim(),
-          profession: document.getElementById('updProfession').value.trim(),
-          mobileNumber: document.getElementById('updMobileNumber').value.trim(),
-          whatsappNumber: whatsappInput ? whatsappInput.value.trim() : "",
-          facebookLink: document.getElementById('updFacebookLink').value.trim(),
-          presentAddress: document.getElementById('updPresentAddress').value.trim(),
-          permanentAddress: document.getElementById('updPermanentAddress').value.trim()
-        },
-        infoApprovalStatus: "pending",
-        infoActionAt: serverTimestamp() // তথ্য সাবমিট করার অফিশিয়াল সার্ভার টাইমস্ট্যাম্প
+        if (confirm("আপনি কি নতুন ছবিটি এডমিনের অনুমোদনের জন্য সাবমিট করতে চান?")) {
+          try {
+            await updateDoc(doc(db, "users", currentUser.uid), {
+              tempPendingPhoto: tempBase64Image,
+              imageApprovalStatus: "pending",
+              imageActionAt: getTimeStamp()
+            });
+            alert("🎉 নতুন ছবি সফলভাবে সাবমিট হয়েছে। এডমিন অনুমোদনের অপেক্ষা করুন।");
+          } catch (err) {
+            alert("দুঃখিত, ছবি রিকোয়েস্ট পাঠানো যায়নি!");
+          }
+        } else {
+          tempBase64Image = null;
+          hiddenGalleryInput.value = "";
+          if(updAvatarPreview) updAvatarPreview.src = "../placeholder.png";
+        }
       };
+      reader.readAsDataURL(file);
+    });
+  }
 
-      try {
-        await updateDoc(doc(db, "users", currentUser.uid), pendingDataPayload);
-        alert("🔒 আপনার প্রোফাইলের তথ্য পরিবর্তনের আবেদনটি এডমিন/সভাপতি/সেক্রেটারির কাছে পৌঁছেছে। অনুমোদনের জন্য অনুগ্রহ করে অপেক্ষা করুন।");
-      } catch (err) {
-        console.error(err);
-        alert("দুঃখিত, তথ্য রিকোয়েস্ট সাবমিট হয়নি। আবার চেষ্টা করুন।");
+  // ৫. ইনফো ডাটা ফর্ম সাবমিশন মেকানিজম
+  if(updateMatrixForm) {
+    updateMatrixForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (confirm("আপনি কি নিশ্চিতভাবে এই নতুন তথ্যসমূহ অনুমোদনের জন্য পাঠাতে চান?")) {
+        const pendingDataPayload = {
+          tempPendingData: {
+            englishName: document.getElementById('updEnglishName') ? document.getElementById('updEnglishName').value.trim() : "",
+            banglaName: document.getElementById('updBanglaName') ? document.getElementById('updBanglaName').value.trim() : "",
+            fatherName: document.getElementById('updFatherName') ? document.getElementById('updFatherName').value.trim() : "",
+            motherName: document.getElementById('updMotherName') ? document.getElementById('updMotherName').value.trim() : "",
+            dob: document.getElementById('updDob') ? document.getElementById('updDob').value.trim() : "",
+            gender: document.getElementById('updGender') ? document.getElementById('updGender').value : "",
+            nidOrBrn: document.getElementById('updNidOrBrn') ? document.getElementById('updNidOrBrn').value.trim() : "",
+            institution: document.getElementById('updInstitution') ? document.getElementById('updInstitution').value.trim() : "",
+            education: document.getElementById('updEducation') ? document.getElementById('updEducation').value.trim() : "",
+            academicYear: document.getElementById('updAcademicYear') ? document.getElementById('updAcademicYear').value.trim() : "",
+            profession: document.getElementById('updProfession') ? document.getElementById('updProfession').value.trim() : "",
+            mobileNumber: document.getElementById('updMobileNumber') ? document.getElementById('updMobileNumber').value.trim() : "",
+            whatsappNumber: document.getElementById('updWhatsappNumber') ? document.getElementById('updWhatsappNumber').value.trim() : "",
+            facebookLink: document.getElementById('updFacebookLink') ? document.getElementById('updFacebookLink').value.trim() : "",
+            presentAddress: document.getElementById('updPresentAddress') ? document.getElementById('updPresentAddress').value.trim() : "",
+            permanentAddress: document.getElementById('updPermanentAddress') ? document.getElementById('updPermanentAddress').value.trim() : ""
+          },
+          infoApprovalStatus: "pending",
+          infoActionAt: getTimeStamp()
+        };
+
+        try {
+          await updateDoc(doc(db, "users", currentUser.uid), pendingDataPayload);
+          alert("🔒 আপনার প্রোফাইলের তথ্য পরিবর্তনের আবেদনটি এডমিন প্যানেলে পৌঁছেছে। অনুমোদনের জন্য অপেক্ষা করুন।");
+        } catch (err) {
+          console.error(err);
+          alert("দুঃখিত, তথ্য রিকোয়েস্ট সাবমিট হয়নি। আবার চেষ্টা করুন।");
+        }
       }
-    }
-    
-    hiddenGalleryInput.value = "";
-    tempBase64Image = null;
-  });
+      
+      if(hiddenGalleryInput) hiddenGalleryInput.value = "";
+      tempBase64Image = null;
+    });
+  }
 }
