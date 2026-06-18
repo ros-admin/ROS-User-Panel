@@ -100,7 +100,6 @@
   </div>
 
   <script>
-    // পাসওয়ার্ড ভিউ অন/অফ করার গ্লোবাল হেল্পার ফাংশন
     function togglePassVisibility(inputId, iconEl) {
       const input = document.getElementById(inputId);
       if (input.type === "password") {
@@ -139,6 +138,7 @@
     import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+    // এখানে কমা (,) না থাকার কারণে ব্ল্যাংক স্ক্রিন আসছিল, এখন তা ঠিক করা হয়েছে।
     const erpModules = [
       { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
       { id: 'members', name: '👥 সদস্য ম্যানেজমেন্ট' },
@@ -157,9 +157,8 @@
       { id: 'reports', name: '📈 এন্টারপ্রাইজ রিপোর্টস' },
       { id: 'logs', name: '🔐 সিস্টেম অ্যাক্টিভিটি লগ' },
       { id: 'backup', name: '💾 ব্যাকআপ ও রিস্টোর' },
-      { id: 'settings', name: '⚙️ গ্লোবাল সিস্টেম সেটিংস' }
+      { id: 'settings', name: '⚙️ গ্লোবাল সিস্টেম সেটিংস' },
       { id: 'adminRequests', name: '<i class="fas fa-tasks"></i> তথ্য পরিবর্তনের আবেদন' }
-      
     ];
 
     const menuContainer = document.getElementById('centralMenuContainer');
@@ -169,9 +168,8 @@
     const passwordChangeModal = document.getElementById('passwordChangeModal');
     let currentAdminData = null;
 
-    // --- ফিচার ১: অটোমেটিক ইন-অ্যাক্টিভিটি লগআউট সিস্টেম ---
     let inactivityTimeout;
-    const INACTIVITY_TIME = 3 * 60 * 1000; // ৩ মিনিট (মিলিসেকেন্ডে), আপনার প্রয়োজনমত চেঞ্জ করতে পারেন।
+    const INACTIVITY_TIME = 3 * 60 * 1000; 
 
     function triggerAutoLogout() {
       alert("নিষ্ক্রিয়তার কারণে আপনার সেশনটি শেষ হয়ে গেছে। পুনরায় লগইন করুন।");
@@ -180,13 +178,11 @@
 
     function resetInactivityTimer() {
       clearTimeout(inactivityTimeout);
-      // ব্যবহারকারী লগইন অবস্থায় থাকলেই কেবল টাইমার চলবে
       if (auth.currentUser) {
         inactivityTimeout = setTimeout(triggerAutoLogout, INACTIVITY_TIME);
       }
     }
 
-    // ব্যবহারকারীর অ্যাক্টিভিটি ট্র্যাকিং ইভেন্ট লিসেনারস
     function startTrackingInactivity() {
       window.addEventListener('mousemove', resetInactivityTimer);
       window.addEventListener('keypress', resetInactivityTimer);
@@ -202,7 +198,6 @@
       window.removeEventListener('click', resetInactivityTimer);
       clearTimeout(inactivityTimeout);
     }
-    // -----------------------------------------------------
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { 
@@ -218,8 +213,6 @@
           initSidebarMenu();
           switchModuleView('dashboard'); 
           document.getElementById('nexusCoreBody').style.display = 'flex';
-          
-          // সফল লগইন এর পর অটো লগআউট মনিটরিং শুরু
           startTrackingInactivity();
         } else {
           alert("অনাধিকার প্রবেশ নিষিদ্ধ!"); window.location.href = "../login.html";
@@ -254,12 +247,10 @@
       });
     }
 
-    // 🚀 সেন্ট্রাল সুইচ রাউটার
     function switchModuleView(id) {
       contentRoot.innerHTML = "";
 
       if (id === 'dashboard') {
-        // ড্যাশবোর্ড মডিউলের আপডেটেড ফাংশন কল (অ্যাকশন প্যারামিটারসহ)
         loadDashboardModule(contentRoot, currentAdminData, db, collection, onSnapshot, doc, updateDoc, deleteDoc);
       } 
       else if (id === 'members') {
@@ -310,12 +301,10 @@
       else if (id === 'settings') {
         loadSettingsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, setDoc);
       }
-       else if (id === 'adminRequests') {
-  loadAdminRequestsModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc, collection, query, where);
-       }
-         
-
-        
+      else if (id === 'adminRequests') {
+        // এখানে ফায়ারবেসের কোয়েরি মেথডগুলো গ্লোবালি বা ইমপোর্টে সঠিকভাবে ডিফাইন করা থাকতে হবে।
+        loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, collection);
+      }
       else {
         contentRoot.innerHTML = `
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
