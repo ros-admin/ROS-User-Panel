@@ -65,13 +65,11 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
     </style>
 
     <div class="admin-req-container">
-      <!-- মডিউল কোর হেডার ট্র্যাকিং -->
       <div class="req-tab-switcher">
         <button class="req-tab-btn active" id="tabPhotoBtn"><i class="fas fa-camera"></i> ছবি পরিবর্তনের আবেদন (<span id="photoReqCount">0</span>)</button>
         <button class="req-tab-btn" id="tabInfoBtn"><i class="fas fa-user-edit"></i> তথ্য পরিবর্তনের আবেদন (<span id="infoReqCount">0</span>)</button>
       </div>
 
-      <!-- প্যানেল ১: ছবি পরিবর্তনের রিকোয়েস্ট টেবিল -->
       <div class="req-panel-node active" id="panelPhotoRequest">
         <div class="cyber-table-wrapper">
           <table class="cyber-req-table">
@@ -91,7 +89,6 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
         </div>
       </div>
 
-      <!-- প্যানেল ২: তথ্য পরিবর্তনের রিকোয়েস্ট টেবিল -->
       <div class="req-panel-node" id="panelInfoRequest">
         <div class="cyber-table-wrapper">
           <table class="cyber-req-table">
@@ -112,7 +109,6 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
       </div>
     </div>
 
-    <!-- গ্লোবাল সাইড-বাই-সাইড কম্পারিসন মোডাল উইন্ডো -->
     <div class="matrix-modal-overlay" id="globalMatrixModal">
       <div class="matrix-modal-card">
         <button class="modal-close-trigger" id="closeMatrixModal"><i class="fas fa-times"></i></button>
@@ -124,17 +120,16 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
       </div>
     </div>
 
-    <!-- গ্লোবাল রিজেক্ট/হোল্ড এর কারণ ইনপুট নেওয়ার সাব-মোডাল -->
     <div class="reason-modal-overlay" id="reasonPromptModal">
       <div class="cyber-modal-card cyber-glass" style="max-width:400px; width:100%;">
         <h3 id="reasonModalTitle">⚠️ কারণ উল্লেখ করুন</h3>
         <div class="form-group-node" style="margin-top:15px;">
           <label>মেম্বার প্যানেলে প্রদর্শনের জন্য কারণটি বিস্তারিত লিখুন:</label>
-          <textarea id="actionReasonText" class="cyber-input" rows="3" placeholder="উদাঃ ছবি ঝাপসা অথবা ভুল তথ্য প্রদান করা হয়েছে..." style="margin-top:8px;"></textarea>
+          <textarea id="actionReasonText" class="cyber-input" rows="3" placeholder="উদাঃ ছবি ঝাপসা অথবা ভুল তথ্য প্রদান করা হয়েছে..." style="margin-top:8px; width:100%; padding:10px; background:rgba(0,0,0,0.5); color:#fff; border:1px solid var(--glass-border); border-radius:4px; outline:none;"></textarea>
         </div>
-        <div class="modal-action-row" style="margin-top:20px;">
-          <button class="cyber-btn cyber-btn-muted" id="reasonCancelBtn">বাতিল</button>
-          <button class="cyber-btn cyber-btn-primary" id="reasonSubmitBtn">নিশ্চিত করুন</button>
+        <div class="modal-action-row" style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
+          <button class="action-view-btn" id="reasonCancelBtn" style="border-color:var(--text-muted); color:var(--text-muted); background:transparent;">বাতিল</button>
+          <button class="action-view-btn" id="reasonSubmitBtn" style="border-color:var(--neon-blue); color:#030712; background:var(--neon-blue);">নিশ্চিত করুন</button>
         </div>
       </div>
     </div>
@@ -178,7 +173,7 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
     panelInfoRequest.classList.add('active'); panelPhotoRequest.classList.remove('active');
   });
 
-  // ৪. রিয়েল-টাইম ফায়ারস্টোর ডেটা সিংক্রোনাইজেশন (পেন্ডিং ছবি ও তথ্য রিকোয়েস্ট লুপ)
+  // ৪. রিয়েল-টাইম ফায়ারস্টোর ডেটা সিংক্রোনাইজেশন
   const usersRef = collection(db, "users");
   
   onSnapshot(query(usersRef), (snapshot) => {
@@ -192,12 +187,17 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
       // ক) পেন্ডিং ছবি প্রসেসিং
       if (uData.imageApprovalStatus === "pending") {
         pCount++;
+        let reqDate = "N/A";
+        if (uData.imageRequestedAt) {
+          const d = uData.imageRequestedAt.toDate ? uData.imageRequestedAt.toDate() : new Date(uData.imageRequestedAt);
+          reqDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
         photoHtml += `
           <tr>
             <td>${pCount}</td>
             <td style="font-family:'Orbitron'; font-weight:600; color:var(--neon-blue);">${uData.memberId || 'N/A'}</td>
             <td>${uData.englishName || 'No Name'}</td>
-            <td style="font-size:12px; color:var(--text-muted);">অনুমোদনের অপেক্ষায়</td>
+            <td style="font-size:12px; color:var(--text-muted);">${reqDate}</td>
             <td>
               <button class="action-view-btn" data-uid="${uid}" data-type="photo"><i class="fas fa-eye"></i> বিস্তারিত</button>
             </td>
@@ -208,12 +208,17 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
       // খ) পেন্ডিং তথ্য প্রসেসিং
       if (uData.infoApprovalStatus === "pending") {
         iCount++;
+        let reqDate = "N/A";
+        if (uData.infoRequestedAt) {
+          const d = uData.infoRequestedAt.toDate ? uData.infoRequestedAt.toDate() : new Date(uData.infoRequestedAt);
+          reqDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
         infoHtml += `
           <tr>
             <td>${iCount}</td>
             <td style="font-family:'Orbitron'; font-weight:600; color:var(--neon-blue);">${uData.memberId || 'N/A'}</td>
             <td>${uData.englishName || 'No Name'}</td>
-            <td style="font-size:12px; color:var(--text-muted);">অনুমোদনের অপেক্ষায়</td>
+            <td style="font-size:12px; color:var(--text-muted);">${reqDate}</td>
             <td>
               <button class="action-view-btn" data-uid="${uid}" data-type="info"><i class="fas fa-eye"></i> বিস্তারিত</button>
             </td>
@@ -243,26 +248,25 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
     activeTargetUserId = userId;
     activeTargetActionType = mode;
 
-    // সংশ্লিষ্ট ইউজারের লেটেস্ট ডক স্ন্যাপশট রিড
     onSnapshot(doc(db, "users", userId), (docSnap) => {
       if(!docSnap.exists()) return;
       const u = docSnap.data();
-      currentFetchedUserData = u; // মেমরিতে সেভ করা হলো ফার্দার আপডেটের জন্য
+      currentFetchedUserData = u;
 
       modalDynamicContentBox.innerHTML = "";
       modalActionBar.innerHTML = "";
 
       if (mode === 'photo') {
-        modalTitleNode.innerHTML = `🖼️ ছবি পরিবর্তনের আবেদন যাচাইকরণ: <span style="color:var(--neon-blue); font-family:'Orbitron';">${u.memberId || ''}</span>`;
+        modalTitleNode.innerHTML = `🖼️ ছবি পরিবর্তনের আবেদন: <span style="color:var(--neon-blue); font-family:'Orbitron';">${u.memberId || ''}</span>`;
         
         modalDynamicContentBox.innerHTML = `
           <div class="comparison-split-grid">
             <div class="comparison-box">
-              <h5>পূর্বের ছবি (Current Profile)</h5>
+              <h5>পূর্বের ছবি</h5>
               <img src="${u.photoUrl || '../placeholder.png'}" class="comp-photo-frame">
             </div>
             <div class="comparison-box" style="border-color: var(--neon-blue); background: rgba(0, 180, 216, 0.02);">
-              <h5>পরিবর্তনের আবেদনকৃত ছবি (New Requested)</h5>
+              <h5>আবেদনকৃত ছবি</h5>
               <img src="${u.tempPendingPhoto || '../placeholder.png'}" class="comp-photo-frame" style="border-color: var(--neon-blue); box-shadow: 0 0 20px rgba(0, 180, 216, 0.2);">
             </div>
           </div>
@@ -273,59 +277,57 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
           <button class="btn-action-node btn-action-green" id="actPhotoApprove"><i class="fas fa-check-circle"></i> এপ্রুভ করুন</button>
         `;
 
-        // ছবি এপ্রুভ এবং রিজেক্ট ক্লিক ইভেন্ট লিসেনারস
         document.getElementById('actPhotoApprove').addEventListener('click', approvePhotoRequest);
         document.getElementById('actPhotoReject').addEventListener('click', () => openReasonPrompt("rejected"));
       } 
       
       else if (mode === 'info') {
-        modalTitleNode.innerHTML = `📝 তথ্য পরিবর্তনের আবেদন যাচাইকরণ: <span style="color:var(--neon-yellow); font-family:'Orbitron';">${u.memberId || ''}</span>`;
+        modalTitleNode.innerHTML = `📝 তথ্য পরিবর্তনের আবেদন: <span style="color:var(--neon-yellow); font-family:'Orbitron';">${u.memberId || ''}</span>`;
         const temp = u.tempPendingData || {};
 
-        // ২২টি কোর প্যারামিটারের ডাটা কম্পারিসন ও ডানপাশে এডমিন এডিট ব্যবস্থা গ্রিড লেআউট
         modalDynamicContentBox.innerHTML = `
           <div class="comparison-split-grid" style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
             <div class="comparison-box">
               <h5>পূর্বের রক্ষিত তথ্য</h5>
               <div class="comp-data-stack">
-                <div class="comp-data-field"><label>English Name</label><input type="text" class="cyber-input" value="${u.englishName || ''}" disabled></div>
-                <div class="comp-data-field"><label>Bangla Name</label><input type="text" class="cyber-input" value="${u.banglaName || ''}" disabled></div>
-                <div class="comp-data-field"><label>Father's Name</label><input type="text" class="cyber-input" value="${u.fatherName || ''}" disabled></div>
-                <div class="comp-data-field"><label>Mother's Name</label><input type="text" class="cyber-input" value="${u.motherName || ''}" disabled></div>
-                <div class="comp-data-field"><label>DOB</label><input type="text" class="cyber-input" value="${u.dob || ''}" disabled></div>
-                <div class="comp-data-field"><label>Gender</label><input type="text" class="cyber-input" value="${u.gender || ''}" disabled></div>
-                <div class="comp-data-field"><label>NID/BRN</label><input type="text" class="cyber-input" value="${u.nidOrBrn || ''}" disabled></div>
-                <div class="comp-data-field"><label>Institution</label><input type="text" class="cyber-input" value="${u.institution || ''}" disabled></div>
-                <div class="comp-data-field"><label>Education</label><input type="text" class="cyber-input" value="${u.education || ''}" disabled></div>
-                <div class="comp-data-field"><label>Academic Year</label><input type="text" class="cyber-input" value="${u.academicYear || ''}" disabled></div>
-                <div class="comp-data-field"><label>Profession</label><input type="text" class="cyber-input" value="${u.profession || ''}" disabled></div>
-                <div class="comp-data-field"><label>Mobile</label><input type="text" class="cyber-input" value="${u.mobileNumber || ''}" disabled></div>
-                <div class="comp-data-field"><label>WhatsApp</label><input type="text" class="cyber-input" value="${u.whatsappNumber || ''}" disabled></div>
-                <div class="comp-data-field"><label>Facebook Link</label><input type="text" class="cyber-input" value="${u.facebookLink || ''}" disabled></div>
-                <div class="comp-data-field"><label>Present Address</label><textarea class="cyber-input" rows="2" disabled>${u.presentAddress || ''}</textarea></div>
-                <div class="comp-data-field"><label>Permanent Address</label><textarea class="cyber-input" rows="2" disabled>${u.permanentAddress || ''}</textarea></div>
+                <div class="comp-data-field"><label>English Name</label><input type="text" class="cyber-input" value="${u.englishName || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Bangla Name</label><input type="text" class="cyber-input" value="${u.banglaName || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Father's Name</label><input type="text" class="cyber-input" value="${u.fatherName || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Mother's Name</label><input type="text" class="cyber-input" value="${u.motherName || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>DOB</label><input type="text" class="cyber-input" value="${u.dob || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Gender</label><input type="text" class="cyber-input" value="${u.gender || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>NID/BRN</label><input type="text" class="cyber-input" value="${u.nidOrBrn || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Institution</label><input type="text" class="cyber-input" value="${u.institution || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Education</label><input type="text" class="cyber-input" value="${u.education || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Academic Year</label><input type="text" class="cyber-input" value="${u.academicYear || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Profession</label><input type="text" class="cyber-input" value="${u.profession || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Mobile</label><input type="text" class="cyber-input" value="${u.mobileNumber || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>WhatsApp</label><input type="text" class="cyber-input" value="${u.whatsappNumber || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Facebook Link</label><input type="text" class="cyber-input" value="${u.facebookLink || ''}" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px;"></div>
+                <div class="comp-data-field"><label>Present Address</label><textarea class="cyber-input" rows="2" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px; resize:none;">${u.presentAddress || ''}</textarea></div>
+                <div class="comp-data-field"><label>Permanent Address</label><textarea class="cyber-input" rows="2" disabled style="padding:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:4px; resize:none;">${u.permanentAddress || ''}</textarea></div>
               </div>
             </div>
 
             <div class="comparison-box" style="border-color: var(--neon-yellow); background: rgba(255, 183, 3, 0.01);">
-              <h5>আবেদনকৃত তথ্য (এডমিন চাইলে সম্পাদন করতে পারবেন)</h5>
+              <h5>আবেদনকৃত তথ্য (সম্পাদনাযোগ্য)</h5>
               <div class="comp-data-stack">
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">English Name</label><input type="text" id="admEdEnglishName" class="cyber-input" value="${temp.englishName || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Bangla Name</label><input type="text" id="admEdBanglaName" class="cyber-input" value="${temp.banglaName || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Father's Name</label><input type="text" id="admEdFatherName" class="cyber-input" value="${temp.fatherName || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Mother's Name</label><input type="text" id="admEdMotherName" class="cyber-input" value="${temp.motherName || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">DOB</label><input type="text" id="admEdDob" class="cyber-input" value="${temp.dob || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Gender</label><input type="text" id="admEdGender" class="cyber-input" value="${temp.gender || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">NID/BRN</label><input type="text" id="admEdNidOrBrn" class="cyber-input" value="${temp.nidOrBrn || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Institution</label><input type="text" id="admEdInstitution" class="cyber-input" value="${temp.institution || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Education</label><input type="text" id="admEdEducation" class="cyber-input" value="${temp.education || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Academic Year</label><input type="text" id="admEdAcademicYear" class="cyber-input" value="${temp.academicYear || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Profession</label><input type="text" id="admEdProfession" class="cyber-input" value="${temp.profession || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Mobile</label><input type="text" id="admEdMobile" class="cyber-input" value="${temp.mobileNumber || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">WhatsApp</label><input type="text" id="admEdWhatsapp" class="cyber-input" value="${temp.whatsappNumber || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Facebook Link</label><input type="text" id="admEdFacebook" class="cyber-input" value="${temp.facebookLink || ''}"></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Present Address</label><textarea id="admEdPresent" class="cyber-input" rows="2">${temp.presentAddress || ''}</textarea></div>
-                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Permanent Address</label><textarea id="admEdPermanent" class="cyber-input" rows="2">${temp.permanentAddress || ''}</textarea></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">English Name</label><input type="text" id="admEdEnglishName" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.englishName || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Bangla Name</label><input type="text" id="admEdBanglaName" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.banglaName || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Father's Name</label><input type="text" id="admEdFatherName" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.fatherName || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Mother's Name</label><input type="text" id="admEdMotherName" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.motherName || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">DOB</label><input type="text" id="admEdDob" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.dob || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Gender</label><input type="text" id="admEdGender" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.gender || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">NID/BRN</label><input type="text" id="admEdNidOrBrn" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.nidOrBrn || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Institution</label><input type="text" id="admEdInstitution" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.institution || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Education</label><input type="text" id="admEdEducation" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.education || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Academic Year</label><input type="text" id="admEdAcademicYear" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.academicYear || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Profession</label><input type="text" id="admEdProfession" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.profession || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Mobile</label><input type="text" id="admEdMobile" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.mobileNumber || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">WhatsApp</label><input type="text" id="admEdWhatsapp" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.whatsappNumber || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Facebook Link</label><input type="text" id="admEdFacebook" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none;" value="${temp.facebookLink || ''}"></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Present Address</label><textarea id="admEdPresent" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none; resize:none;" rows="2">${temp.presentAddress || ''}</textarea></div>
+                <div class="comp-data-field"><label style="color:var(--neon-yellow);">Permanent Address</label><textarea id="admEdPermanent" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid var(--glass-border); color:#fff; border-radius:4px; outline:none; resize:none;" rows="2">${temp.permanentAddress || ''}</textarea></div>
               </div>
             </div>
           </div>
@@ -337,7 +339,6 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
           <button class="btn-action-node btn-action-green" id="actInfoApprove"><i class="fas fa-check-circle"></i> এপ্রুভ করুন</button>
         `;
 
-        // তথ্য এপ্রুভ, রিজেক্ট এবং হোল্ড ক্লিক ইভেন্ট লিসেনারস
         document.getElementById('actInfoApprove').addEventListener('click', approveInfoRequest);
         document.getElementById('actInfoReject').addEventListener('click', () => openReasonPrompt("rejected"));
         document.getElementById('actInfoHold').addEventListener('click', () => openReasonPrompt("waiting"));
@@ -347,30 +348,29 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
     });
   }
 
-  // মোডাল ক্লোজ লজিক
   closeMatrixModal.addEventListener('click', () => globalMatrixModal.style.display = "none");
 
-  // ৬. কোর ডাটাবেজ অ্যাকশন এক্সিকিউশন ইঞ্জিন (ফায়ারবেস আপডেট মেকানিজম)
+  // ৬. কোর ডাটাবেজ অ্যাকশন এক্সিকিউশন ইঞ্জিন (টাইমস্ট্যাম্পসহ)
 
   // ক) ছবি এপ্রুভ
   async function approvePhotoRequest() {
     if(!confirm("আপনি কি নিশ্চিতভাবে এই ছবিটি এপ্রুভ করতে চান?")) return;
     try {
       await updateDoc(doc(db, "users", activeTargetUserId), {
-        photoUrl: currentFetchedUserData.tempPendingPhoto, // সরাসরি মেইন লিংকে চলে যাবে ছবি
+        photoUrl: currentFetchedUserData.tempPendingPhoto,
         imageApprovalStatus: "approved",
-        imageRejectReason: ""
+        imageRejectReason: "",
+        imageActionAt: new Date() // ১৪ দিন কাউন্টারের জন্য অ্যাকশন টাইম সংরক্ষণ
       });
-      alert("✅ মেম্বারের প্রোফাইল ছবি সফলভাবে এপ্রুভ এবং আপডেট করা হয়েছে!");
+      alert("✅ প্রোফাইল ছবি সফলভাবে এপ্রুভ এবং আপডেট করা হয়েছে!");
       globalMatrixModal.style.display = "none";
     } catch (err) { alert("অপারেশন ব্যর্থ হয়েছে!"); }
   }
 
-  // খ) তথ্য এপ্রুভ (মডিফাইড ডেটাসহ)
+  // খ) তথ্য এপ্রুভ
   async function approveInfoRequest() {
     if(!confirm("আপনি কি নিশ্চিতভাবে এই তথ্যগুলো এপ্রুভ করতে চান?")) return;
     
-    // ডানপাশের বক্সের লেটেস্ট ডাটা রিড করা হচ্ছে (যদি এডমিন কোনো কিছু ওখান থেকে এডিট করে থাকে)
     const finalApprovedData = {
       englishName: document.getElementById('admEdEnglishName').value.trim(),
       banglaName: document.getElementById('admEdBanglaName').value.trim(),
@@ -390,7 +390,8 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
       permanentAddress: document.getElementById('admEdPermanent').value.trim(),
       
       infoApprovalStatus: "approved",
-      infoRejectReason: ""
+      infoRejectReason: "",
+      infoActionAt: new Date() // ১৪ দিন কাউন্টারের জন্য অ্যাকশন টাইম সংরক্ষণ
     };
 
     try {
@@ -424,24 +425,31 @@ function loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateD
     reasonPromptModal.style.display = "none";
 
     try {
-      // যদি ছবি রিজেক্ট করা হয়
       if (activeTargetActionType === "photo") {
         await updateDoc(doc(db, "users", activeTargetUserId), {
           imageApprovalStatus: activeTargetStatusDecision, // "rejected"
-          imageRejectReason: reason
+          imageRejectReason: reason,
+          imageActionAt: new Date() // ১৪ দিন কাউন্টারের জন্য রিজেক্ট টাইম সংরক্ষণ
         });
-        alert("❌ ছবি পরিবর্তনের আবেদনটি বাতিল করা হয়েছে এবং কারণ ইউজারের প্যানেলে পাঠানো হয়েছে।");
+        alert("❌ ছবি পরিবর্তনের আবেদনটি বাতিল করা হয়েছে।");
       } 
-      
-      // যদি তথ্য রিজেক্ট বা হোল্ড (waiting) করা হয়
       else if (activeTargetActionType === "info") {
-        await updateDoc(doc(db, "users", activeTargetUserId), {
-          infoApprovalStatus: activeTargetStatusDecision, // "rejected" অথবা "waiting"
+        const updatePayload = {
+          infoApprovalStatus: activeTargetStatusDecision, // "rejected" বা "waiting"
           infoRejectReason: reason
-        });
+        };
+
+        // শর্তানুযায়ী: রিজেক্ট হলে ১৪ দিনের টাইমার ট্র্যাক হবে, কিন্তু হোল্ড (waiting) হলে টাইমার যুক্ত হবে না
+        if (activeTargetStatusDecision === "rejected") {
+          updatePayload.infoActionAt = new Date();
+        } else if (activeTargetStatusDecision === "waiting") {
+          updatePayload.infoActionAt = null; // হোল্ড করা অবস্থায় আনলিমিটেড টাইম থাকবে
+        }
+
+        await updateDoc(doc(db, "users", activeTargetUserId), updatePayload);
         
         if(activeTargetStatusDecision === "waiting") {
-          alert("⚠️ তথ্য পরিবর্তনের আবেদনটি হোল্ড করা হয়েছে। ইউজার পুনরায় এডিট করে সাবমিট করতে পারবেন।");
+          alert("⚠️ তথ্য পরিবর্তনের আবেদনটি হোল্ড করা হয়েছে। ইউজার পুনরায় এডিট করতে পারবেন।");
         } else {
           alert("❌ তথ্য পরিবর্তনের আবেদনটি সম্পূর্ণ রিজেক্ট করা হয়েছে।");
         }
