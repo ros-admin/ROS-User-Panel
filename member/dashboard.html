@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ROS Nexus - Enterprise Admin ERP</title>
+  <title>ROS Nexus - Enterprise Member ERP</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Galada&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -115,23 +115,10 @@
 
   <script src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/navigation.js"></script>
 
-  <script src="../admin/dashboard.js"></script>
-  <script src="../admin/members.js"></script>
-  <script src="../admin/committee.js"></script>
-  <script src="../admin/comHistory.js"></script>
-  <script src="../admin/events.js"></script>
-  <script src="../admin/volunteers.js"></script>
-  <script src="../admin/attendence.js"></script>
-  <script src="../admin/logistics.js"></script>
-  <script src="../admin/treasury.js"></script>
-  <script src="../admin/documents.js"></script>
-  <script src="../admin/notifications.js"></script>
-  <script src="../admin/support.js"></script>
-  <script src="../admin/idCard.js"></script>
-  <script src="../admin/qrVerify.js"></script>
-  <script src="../admin/reports.js"></script>
-  <script src="../admin/logs.js"></script>
-  <script src="../admin/settings.js"></script>
+  <script src="../member/profile.js"></script>
+
+
+
   
   <script type="module">
     import { db, auth } from '../firebase-config.js';
@@ -139,7 +126,7 @@
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const erpModules = [
-      { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
+      { id: 'profile', name: 'প্রোফাইল' },
       { id: 'members', name: '👥 সদস্য ম্যানেজমেন্ট' },
       { id: 'committee', name: '🏛️ কমিটি ফরমেশন' },
       { id: 'comHistory', name: '📜 কমিটির ইতিহাস' },
@@ -255,58 +242,15 @@
     function switchModuleView(id) {
       contentRoot.innerHTML = "";
 
-      if (id === 'dashboard') {
-        // ড্যাশবোর্ড মডিউলের আপডেটেড ফাংশন কল (অ্যাকশন প্যারামিটারসহ)
-        loadDashboardModule(contentRoot, currentAdminData, db, collection, onSnapshot, doc, updateDoc, deleteDoc);
-      } 
-      else if (id === 'members') {
-        loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc);
-      } 
-      else if (id === 'committee') {
-        loadCommitteeModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc);
+      if (id === 'profile') {
+    loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut);
       }
-      else if (id === 'comHistory') {
-        loadComHistoryModule(contentRoot, db, collection, onSnapshot);
-      }
-      else if (id === 'events') {
-        loadEventsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'volunteers') {
-        loadVolunteersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, updateDoc, deleteDoc);
-      }
-      else if (id === 'attendance') {
-        loadAttendanceModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, collection, doc);
-      }
-      else if (id === 'logistics') {
-        loadLogisticsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc);
-      }
-      else if (id === 'treasury') {
-        loadTreasuryModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'documents') {
-        loadDocumentsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'notifications') {
-        loadNotificationsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'support') {
-        loadSupportModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, deleteDoc);
-      }
-      else if (id === 'idCards') {
-        loadIdCardsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc);
-      }
-      else if (id === 'qrVerify') {
-        loadQrVerifyModule(contentRoot, db, collection, onSnapshot, doc, getDocs);
-      }
-      else if (id === 'reports') {
-        loadReportsModule(contentRoot, db, collection, onSnapshot, getDocs);
-      }
-      else if (id === 'logs') {
-        loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'settings') {
-        loadSettingsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, setDoc);
-      }
+
+
+
+
+
+        
       else {
         contentRoot.innerHTML = `
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
