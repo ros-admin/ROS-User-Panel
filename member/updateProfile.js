@@ -1,397 +1,289 @@
-// ROS Nexus - Enterprise Member Update Info Module (Parallel Lock Engine with 1MB Size Limit & Timestamp)
+// ROS Nexus - Enterprise Member Update Info Module (Parallel Lock Engine)
 function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp) {
   
   // ১. মডিউলের জন্য ডেডিকেটেড সাইবারপাঙ্ক ইউআই এবং নোটিফিকেশন স্টাইল ইনজেকশন
   contentRoot.innerHTML = `
     <style>
-      /* কোর ফ্রেমওয়ার্ক ও কন্টেইনার */
-      .update-matrix-card { 
-        max-width: 1000px; width: 100%; margin: 0 auto; padding: 35px 30px; 
-        border-radius: 16px; position: relative; overflow: hidden; 
-        background: rgba(4, 15, 32, 0.55); backdrop-filter: blur(15px); 
-        -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(0, 245, 255, 0.25); 
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5); box-sizing: border-box;
-        font-family: 'Segoe UI', Roboto, sans-serif;
-      }
+      .update-matrix-card { max-width: 1000px; width: 100%; margin: 0 auto; padding: 40px; border-radius: 16px; position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+      .update-matrix-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, #fbbf24, #00b4d8, transparent); }
       
-      /* ছবি ও প্রোফাইল ইমেজ হাব */
+      /* ছবি ও গ্যালারি ট্রিগার নোড */
       .update-identity-hub { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 25px; }
-      .avatar-edit-wrapper { 
-        width: 135px; height: 135px; border: 2px solid var(--secondary); padding: 5px; 
-        background: #030a16; border-radius: 50%; box-shadow: 0 0 30px rgba(0, 245, 255, 0.25); 
-        margin-bottom: 15px; position: relative;
-      }
-      .prof-edit-avatar { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+      .avatar-edit-wrapper { width: 130px; height: 130px; border-radius: 50%; position: relative; border: 3px solid #00b4d8; background: #020c1b; padding: 4px; box-shadow: 0 0 20px rgba(0, 180, 216, 0.3); }
+      .avatar-preview-node { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+      .gallery-trigger-btn { position: absolute; bottom: 0; right: 0; background: #00b4d8; color: #020c1b; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(0, 180, 216, 0.5); }
+      .gallery-trigger-btn:hover { background: #fff; transform: scale(1.1); }
       
-      .change-photo-trigger { 
-        color: var(--secondary); font-size: 13.5px; font-weight: 700; cursor: pointer; 
-        text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 15px; 
-        transition: 0.3s; text-shadow: 0 0 8px rgba(0, 245, 255, 0.3); 
-      }
-      .change-photo-trigger:hover { color: var(--accent); text-shadow: 0 0 12px var(--accent); }
-      .change-photo-trigger.locked-state { opacity: 0.5 !important; cursor: not-allowed !important; color: #ef4444 !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.4) !important; }
+      /* মেম্বার স্ট্যাটাস মেগা নোটিশ */
+      .status-lock-notice { width: 100%; padding: 15px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; margin-bottom: 25px; box-sizing: border-box; display: none; align-items: center; gap: 12px; }
+      .status-pending { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; }
+      .status-rejected { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; }
       
-      .update-reg-badge { 
-        background: rgba(0, 245, 255, 0.08); color: var(--secondary); 
-        border: 1px solid rgba(0, 245, 255, 0.25); padding: 5px 20px; 
-        border-radius: 30px; font-size: 13px; font-weight: 700; letter-spacing: 2px; margin-bottom: 5px; 
-      }
-      
-      /* সিস্টেম লক স্টেট নোটিশ ব্যানার */
-      .lock-status-banner { width: 100%; padding: 14px; border-radius: 10px; font-size: 13.5px; text-align: center; font-weight: 600; margin-bottom: 20px; display: none; align-items: center; justify-content: center; gap: 10px; box-sizing: border-box; }
-      .banner-red { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; text-shadow: 0 0 5px rgba(239, 68, 68, 0.4); }
-      .banner-blue { background: rgba(0, 245, 255, 0.1); border: 1px solid rgba(0, 245, 255, 0.3); color: var(--secondary); text-shadow: 0 0 5px rgba(0, 245, 255, 0.4); }
-      
-      /* সেকশন হেডার ডিজাইন */
-      .update-section-title { font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--secondary); margin: 35px 0 18px 0; display: flex; align-items: center; gap: 10px; font-weight: 700; }
-      .update-section-title i { color: var(--accent); }
-      .update-section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(0, 245, 255, 0.2), transparent); }
-      
-      /* ফর্ম গ্রিড ও রেস্পন্সিভ ফিল্ডস */
-      .update-form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-      .form-field-box { 
-        display: flex; flex-direction: column; gap: 6px; 
-        background: rgba(5, 17, 37, 0.75); border: 1px solid rgba(255, 255, 255, 0.04); 
-        padding: 14px 18px; border-radius: 10px; transition: all 0.3s ease; box-sizing: border-box;
-      }
-      .form-field-box.span-2 { grid-column: span 2; }
-      .form-field-box.span-4 { grid-column: span 4; }
-      
-      /* ফিল্ড ফোকাস নিয়ন গ্লো */
-      .form-field-box:hover, .form-field-box:focus-within { 
-        border-color: var(--secondary); 
-        background: rgba(0, 245, 255, 0.02);
-        box-shadow: 0 0 18px rgba(0, 245, 255, 0.15), inset 0 0 8px rgba(0, 245, 255, 0.05);
-      }
-      
-      .form-field-box label { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-      .form-field-box label i { color: var(--secondary); opacity: 0.8; font-size: 12px; width: 14px; text-align: center; }
-      
-      /* ইনপুট এলিমেন্ট রেন্ডারিং */
-      .cyber-input { width: 100%; background: transparent; border: none; padding: 4px 0 0 0; color: rgba(255, 255, 255, 0.95); font-size: 14.5px; font-weight: 600; transition: all 0.25s ease; box-sizing: border-box; }
-      .cyber-input:focus { outline: none; }
-      .cyber-input:disabled { color: var(--text-muted); cursor: not-allowed; }
-      select.cyber-input option { background: #06142b; color: #fff; }
-      textarea.cyber-input { resize: vertical; min-height: 40px; font-family: inherit; }
+      /* ফর্ম গ্রিড লেআউট */
+      .update-matrix-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+      .form-field-node { display: flex; flex-direction: column; gap: 6px; }
+      .form-field-node.span-full { grid-column: span 2; }
+      .form-field-node label { font-size: 13px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+      .matrix-input { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 12px 14px; color: #fff; font-size: 14px; transition: 0.3s; width: 100%; box-sizing: border-box; }
+      .matrix-input:focus { outline: none; border-color: #00b4d8; box-shadow: 0 0 10px rgba(0, 180, 216, 0.2); background: rgba(0,0,0,0.5); }
+      .matrix-input:disabled { background: rgba(255,255,255,0.02); color: #6b7280; cursor: not-allowed; border-color: transparent; }
       
       /* সাবমিট বাটন */
-      .form-submit-row { display: flex; justify-content: center; margin-top: 40px; }
-      .cyber-save-btn { 
-        background: rgba(0, 245, 255, 0.05); border: 1px solid var(--secondary); color: var(--secondary); 
-        padding: 14px 45px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; 
-        transition: 0.3s; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 5px rgba(0, 245, 255, 0.4); 
-      }
-      .cyber-save-btn:hover { background: var(--secondary); color: #030712; box-shadow: 0 0 25px var(--secondary); transform: translateY(-2px); }
-      .cyber-save-btn:disabled { background: rgba(255,255,255,0.02) !important; border-color: rgba(255,255,255,0.05) !important; color: var(--text-muted) !important; cursor: not-allowed !important; box-shadow: none !important; text-shadow: none !important; transform: none !important; }
-
-      /* মডার্ন কনফার্মেশন মোডাল */
-      .confirm-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 10, 22, 0.85); backdrop-filter: blur(12px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
-      .confirm-popup-card { width: 100%; max-width: 425px; padding: 30px; border-radius: 14px; background: #051125; border: 1px solid rgba(0, 245, 255, 0.25); text-align: center; box-shadow: 0 0 30px rgba(0, 245, 255, 0.15); animation: nexusPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-      @keyframes nexusPop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-      .confirm-popup-card h4 { font-size: 16px; color: #fff; margin: 0 0 25px 0; line-height: 1.6; font-weight: 600; }
-      .popup-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .matrix-submit-wrapper { grid-column: span 2; display: flex; justify-content: flex-end; margin-top: 15px; }
+      .matrix-save-btn { background: linear-gradient(135deg, #00b4d8, #0077b6); color: #fff; border: none; padding: 14px 35px; font-size: 15px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3); }
+      .matrix-save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 180, 216, 0.5); }
+      .matrix-save-btn:disabled { background: #374151; color: #9ca3af; cursor: not-allowed; box-shadow: none; transform: none; }
       
-      .nexus-btn { padding: 12px 20px; font-size: 14px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: 0.2s; border: none; }
-      .nexus-btn-muted { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); }
-      .nexus-btn-muted:hover { background: rgba(255,255,255,0.1); color: #fff; }
-      .nexus-btn-primary { background: var(--secondary); color: #030712; box-shadow: 0 0 15px rgba(0, 245, 255, 0.2); }
-      .nexus-btn-primary:hover { background: #fff; box-shadow: 0 0 20px #fff; }
-
-      /* রেস্পন্সিভ মিডিয়া কোয়েরি */
-      @media (max-width: 992px) {
-        .update-form-grid { grid-template-columns: repeat(2, 1fr); }
-        .form-field-box.span-2, .form-field-box.span-4 { grid-column: span 2; }
-      }
-      @media (max-width: 768px) {
-        .update-matrix-card { padding: 25px 15px; }
-        .update-form-grid { grid-template-columns: 1fr; gap: 14px; }
-        .form-field-box.span-2, .form-field-box.span-4 { grid-column: span 1; }
-        .cyber-save-btn { width: 100%; justify-content: center; }
+      @media(max-width: 768px) {
+        .update-matrix-form { grid-template-columns: 1fr; }
+        .form-field-node.span-full, .matrix-submit-wrapper { grid-column: span 1; }
       }
     </style>
 
-    <section style="padding: 10px; box-sizing: border-box;">
-      <div class="update-matrix-card">
-        
-        <div class="lock-status-banner banner-blue" id="photoLockBanner">
-          <i class="fas fa-camera fa-spin"></i> আপনার একটি ছবি পরিবর্তনের আবেদন ইতোমধ্যে অনুমোদনের অপেক্ষায় রয়েছে। অনুগ্রহ করে অপেক্ষা করুন।
+    <div class="update-matrix-card">
+      <div class="update-identity-hub">
+        <div class="avatar-edit-wrapper">
+          <img src="../placeholder.png" id="updAvatarPreview" class="avatar-preview-node">
+          <button class="gallery-trigger-btn" id="updGalleryTriggerBtn" title="গ্যালারি থেকে ছবি সিলেক্ট করুন">
+            <i class="fas fa-camera"></i>
+          </button>
         </div>
-
-        <div class="lock-status-banner banner-red" id="infoLockBanner">
-          <i class="fas fa-user-shield fa-spin"></i> আপনার একটি তথ্য পরিবর্তনের আবেদন ইতোমধ্যে অনুমোদনের অপেক্ষায় রয়েছে। অনুগ্রহ করে অপেক্ষা করুন।
-        </div>
-
-        <div class="update-identity-hub">
-          <div class="avatar-edit-wrapper">
-            <img src="../placeholder.png" id="updAvatarImg" class="prof-edit-avatar">
-          </div>
-          
-          <div class="change-photo-trigger" id="photoTriggerBtn"><i class="fas fa-camera"></i> ছবি পরিবর্তন করুন</div>
-          <input type="file" id="hiddenGalleryInput" accept="image/*" style="display: none;">
-          
-          <div class="update-reg-badge" id="updMemberIdBadge">ROS-NEXUS</div>
-        </div>
-
-        <form id="cyberUpdateForm">
-          <div class="update-section-title"><i class="fas fa-user-astronaut"></i> ব্যক্তিগত বিবরণ (Personal Matrix)</div>
-          <div class="update-form-grid">
-            <div class="form-field-box span-2">
-              <label><i class="fas fa-user"></i> ইংরেজিতে নাম (English Name)</label>
-              <input type="text" id="updEnglishName" class="cyber-input" required>
-            </div>
-            <div class="form-field-box span-2">
-              <label><i class="fa-solid fa-signature"></i> বাংলায় নাম (Bangla Name)</label>
-              <input type="text" id="updBanglaName" class="cyber-input" required>
-            </div>
-            <div class="form-field-box span-2">
-              <label><i class="fas fa-user-shield"></i> পিতার নাম (Father's Name)</label>
-              <input type="text" id="updFatherName" class="cyber-input" required>
-            </div>
-            <div class="form-field-box span-2">
-              <label><i class="fas fa-user-tie"></i> মাতার নাম (Mother's Name)</label>
-              <input type="text" id="updMotherName" class="cyber-input" required>
-            </div>
-            <div class="form-field-box">
-              <label><i class="fas fa-calendar-alt"></i> জন্ম তারিখ (DOB)</label>
-              <input type="text" id="updDob" class="cyber-input" placeholder="DD/MM/YYYY">
-            </div>
-            <div class="form-field-box">
-              <label><i class="fas fa-venus-mars"></i> লিঙ্গ (Gender)</label>
-              <select id="updGender" class="cyber-input">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div class="form-field-box span-2">
-              <label><i class="fas fa-id-card"></i> NID অথবা BRN নম্বর</label>
-              <input type="text" id="updNidOrBrn" class="cyber-input">
-            </div>
-          </div>
-
-          <div class="update-section-title"><i class="fas fa-graduation-cap"></i> শিক্ষা ও পেশা (Academic & Career)</div>
-          <div class="update-form-grid">
-            <div class="form-field-box span-4">
-              <label><i class="fas fa-university"></i> শিক্ষা প্রতিষ্ঠান / কর্মস্থলের নাম (Institution)</label>
-              <input type="text" id="updInstitution" class="cyber-input">
-            </div>
-            <div class="form-field-box">
-              <label><i class="fas fa-book-open"></i> শিক্ষাগত যোগ্যতা (Education)</label>
-              <input type="text" id="updEducation" class="cyber-input">
-            </div>
-            <div class="form-field-box">
-              <label><i class="fas fa-clock"></i> শিক্ষাবর্ষ (Academic Year)</label>
-              <input type="text" id="updAcademicYear" class="cyber-input">
-            </div>
-            <div class="form-field-box">
-              <label><i class="fas fa-user-tag"></i> অ্যাকাউন্টের ধরন (Role)</label>
-              <input type="text" id="updRole" class="cyber-input" disabled style="color: var(--secondary);">
-            </div>
-            <div class="form-field-box">
-              <label><i class="fas fa-toggle-on"></i> অ্যাকাউন্টের স্ট্যাটাস (Status)</label>
-              <input type="text" id="updStatus" class="cyber-input" disabled style="color: var(--neon-green);">
-            </div>
-            <div class="form-field-box span-4">
-              <label><i class="fas fa-briefcase"></i> পেশা (Profession)</label>
-              <input type="text" id="updProfession" class="cyber-input">
-            </div>
-          </div>
-
-          <div class="update-section-title"><i class="fas fa-network-wired"></i> যোগাযোগ ও নেটওয়ার্ক (Contact & Network)</div>
-          <div class="update-form-grid">
-            <div class="form-field-box span-2">
-              <label><i class="fas fa-phone-alt"></i> মোবাইল নম্বর</label>
-              <input type="text" id="updMobileNumber" class="cyber-input" required>
-            </div>
-            <div class="form-field-box span-2">
-              <label><i class="fab fa-whatsapp"></i> হোয়াটসঅ্যাপ নম্বর</label>
-              <input type="text" id="updWhatsappNumber" class="cyber-input">
-            </div>
-            <div class="form-field-box span-4">
-              <label><i class="fas fa-envelope"></i> ইমেইল এড্রেস (Email)</label>
-              <input type="email" id="updEmail" class="cyber-input" disabled>
-            </div>
-            <div class="form-field-box span-4">
-              <label><i class="fab fa-facebook-square"></i> ফেসবুক প্রোফাইল লিংক (Facebook Link)</label>
-              <input type="url" id="updFacebookLink" class="cyber-input">
-            </div>
-            <div class="form-field-box span-2">
-              <label><i class="fas fa-map-marker-alt"></i> বর্তমান ঠিকানা (Present Address)</label>
-              <textarea id="updPresentAddress" class="cyber-input" rows="2"></textarea>
-            </div>
-            <div class="form-field-box span-2">
-              <label><i class="fas fa-home"></i> স্থায়ী ঠিকানা (Permanent Address)</label>
-              <textarea id="updPermanentAddress" class="cyber-input" rows="2"></textarea>
-            </div>
-          </div>
-
-          <div class="form-submit-row">
-            <button type="submit" class="cyber-save-btn" id="updSubmitBtn">
-              <i class="fas fa-save"></i> সাবমিট করুন
-            </button>
-          </div>
-        </form>
+        <input type="file" id="updHiddenGalleryInput" accept="image/*" style="display: none;">
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 10px;">সর্বোচ্চ সাইজ: ১ মেগাবাইট (JPEG/PNG)</p>
       </div>
-    </section>
 
-    <div class="confirm-popup-overlay" id="cyberConfirmPopup">
-      <div class="confirm-popup-card">
-        <h4 id="popupPromptText">আপনি কি নিশ্চিত?</h4>
-        <div class="popup-action-grid">
-          <button class="nexus-btn nexus-btn-muted" id="popupCancelBtn">বাতিল করুন</button>
-          <button class="nexus-btn nexus-btn-primary" id="popupConfirmBtn">সাবমিট করুন</button>
-        </div>
+      <div class="status-lock-notice status-pending" id="photoPendingNotice">
+        <i class="fas fa-clock fa-spin"></i> আপনার ছবি পরিবর্তনের আবেদনটি এডমিনের অনুমোদনের অপেক্ষায় রয়েছে।
       </div>
+      <div class="status-lock-notice status-pending" id="infoPendingNotice">
+        <i class="fas fa-hourglass-half fa-spin"></i> আপনার তথ্য পরিবর্তনের আবেদনটি রিভিউ করা হচ্ছে।
+      </div>
+      <div class="status-lock-notice status-rejected" id="photoRejectNotice">
+        <i class="fas fa-exclamation-circle"></i> <span id="photoRejectReasonText">আপনার ছবি পরিবর্তনের আবেদনটি বাতিল করা হয়েছে।</span>
+      </div>
+      <div class="status-lock-notice status-rejected" id="infoRejectNotice">
+        <i class="fas fa-user-times"></i> <span id="infoRejectReasonText">আপনার তথ্য পরিবর্তনের আবেদনটি বাতিল করা হয়েছে।</span>
+      </div>
+
+      <form class="update-matrix-form" id="updateMatrixForm" onsubmit="return false;">
+        <div class="form-field-node">
+          <label>English Name</label>
+          <input type="text" id="updEnglishName" class="matrix-input" required>
+        </div>
+        <div class="form-field-node">
+          <label>Bangla Name</label>
+          <input type="text" id="updBanglaName" class="matrix-input" required>
+        </div>
+        <div class="form-field-node">
+          <label>Father's Name</label>
+          <input type="text" id="updFatherName" class="matrix-input">
+        </div>
+        <div class="form-field-node">
+          <label>Mother's Name</label>
+          <input type="text" id="updMotherName" class="matrix-input">
+        </div>
+        <div class="form-field-node">
+          <label>Date of Birth</label>
+          <input type="date" id="updDob" class="matrix-input">
+        </div>
+        <div class="form-field-node">
+          <label>Gender</label>
+          <select id="updGender" class="matrix-input">
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-field-node">
+          <label>NID / Birth Registration No</label>
+          <input type="text" id="updNidOrBrn" class="matrix-input">
+        </div>
+        <div class="form-field-node">
+          <label>Institution / Workplace</label>
+          <input type="text" id="updInstitution" class="matrix-input">
+        </div>
+        <div class="form-field-node">
+          <label>Education / Degree</label>
+          <input type="text" id="updEducation" class="matrix-input">
+        </div>
+        <div class="form-field-node">
+          <label>Academic Year / Batch</label>
+          <input type="text" id="updAcademicYear" class="matrix-input">
+        </div>
+        <div class="form-field-node">
+          <label>Profession</label>
+          <input type="text" id="updProfession" class="matrix-input">
+        </div>
+        <div class="form-field-node">
+          <label>Mobile Number</label>
+          <input type="tel" id="updMobileNumber" class="matrix-input" required>
+        </div>
+        <div class="form-field-node">
+          <label>WhatsApp Number</label>
+          <input type="tel" id="updWhitespace" class="matrix-input" id="updWhatsappNumber">
+        </div>
+        <div class="form-field-node">
+          <label>Facebook Profile Link</label>
+          <input type="url" id="updFacebookLink" class="matrix-input">
+        </div>
+        <div class="form-field-node span-full">
+          <label>Present Address</label>
+          <input type="text" id="updPresentAddress" class="matrix-input">
+        </div>
+        <div class="form-field-node span-full">
+          <label>Permanent Address</label>
+          <input type="text" id="updPermanentAddress" class="matrix-input">
+        </div>
+        <div class="matrix-submit-wrapper">
+          <button type="submit" class="matrix-save-btn" id="matrixSaveBtn">
+            <i class="fas fa-shield-alt"></i> তথ্য পরিবর্তনের আবেদন পাঠান
+          </button>
+        </div>
+      </form>
     </div>
   `;
 
-  // ২. ডম অবজেক্ট রেফারেন্স ট্র্যাকিং
+  // ২. ডম অবজেক্ট রেফারেন্স ম্যাপিং
   const currentUser = auth.currentUser;
-  const photoTriggerBtn = document.getElementById('photoTriggerBtn');
-  const hiddenGalleryInput = document.getElementById('hiddenGalleryInput');
-  const photoLockBanner = document.getElementById('photoLockBanner');
-  const infoLockBanner = document.getElementById('infoLockBanner');
-  const cyberUpdateForm = document.getElementById('cyberUpdateForm');
-  const updSubmitBtn = document.getElementById('updSubmitBtn');
-  
-  const cyberConfirmPopup = document.getElementById('cyberConfirmPopup');
-  const popupPromptText = document.getElementById('popupPromptText');
-  const popupCancelBtn = document.getElementById('popupCancelBtn');
-  const popupConfirmBtn = document.getElementById('popupConfirmBtn');
+  if (!currentUser) {
+    contentRoot.innerHTML = `<div style="color:#f87171; text-align:center; padding:50px;">🚫 অনুগ্রহ করে আগে লগইন করুন।</div>`;
+    return;
+  }
 
-  let isPhotoLocked = false;
-  let isInfoLocked = false;
-  let tempBase64Image = null; 
-  let confirmationType = ""; 
+  const updAvatarPreview = document.getElementById('updAvatarPreview');
+  const updGalleryTriggerBtn = document.getElementById('updGalleryTriggerBtn');
+  const hiddenGalleryInput = document.getElementById('updHiddenGalleryInput');
+  const matrixSaveBtn = document.getElementById('matrixSaveBtn');
+  const updateMatrixForm = document.getElementById('updateMatrixForm');
 
-  if (!currentUser) { window.location.href = "../login.html"; return; }
+  // নোটিশ প্যানেলসমূহ
+  const photoPendingNotice = document.getElementById('photoPendingNotice');
+  const infoPendingNotice = document.getElementById('infoPendingNotice');
+  const photoRejectNotice = document.getElementById('photoRejectNotice');
+  const infoRejectNotice = document.getElementById('infoRejectNotice');
+  const photoRejectReasonText = document.getElementById('photoRejectReasonText');
+  const infoRejectReasonText = document.getElementById('infoRejectReasonText');
 
-  // ৩. প্যারালাল রিয়েল-টাইম ফায়ারবেস ডেটা ট্র্যাকিং লুপ
+  let tempBase64Image = null;
+
+  // ৩. রিয়েল-টাইম ডাটাবেজ সিঙ্ক লুপ (Realtime Listener Engine)
   onSnapshot(doc(db, "users", currentUser.uid), (snapshot) => {
-    if (snapshot.exists()) {
-      const d = snapshot.data();
+    if (!snapshot.exists()) return;
+    const data = snapshot.data();
 
-      if (d.imageApprovalStatus === "pending") {
-        isPhotoLocked = true;
-        photoLockBanner.style.display = "flex";
-        photoTriggerBtn.classList.add('locked-state');
-      } else {
-        isPhotoLocked = false;
-        photoLockBanner.style.display = "none";
-        photoTriggerBtn.classList.remove('locked-state');
-      }
-
-      if (d.infoApprovalStatus === "pending") {
-        isInfoLocked = true;
-        infoLockBanner.style.display = "flex";
-        updSubmitBtn.disabled = true;
-      } else {
-        isInfoLocked = false;
-        infoLockBanner.style.display = "none";
-        updSubmitBtn.disabled = false;
-      }
-
-      document.getElementById('updAvatarImg').src = d.photoUrl || '../placeholder.png';
-      document.getElementById('updMemberIdBadge').innerText = d.memberId || "ROS-MEMBER";
-
-      const fields = [
-        ['updEnglishName', d.englishName], ['updBanglaName', d.banglaName],
-        ['updFatherName', d.fatherName], ['updMotherName', d.motherName],
-        ['updDob', d.dob], ['updGender', d.gender || "Male"],
-        ['updNidOrBrn', d.nidOrBrn], ['updInstitution', d.institution],
-        ['updEducation', d.education], ['updAcademicYear', d.academicYear], 
-        ['updProfession', d.profession], ['updMobileNumber', d.mobileNumber],
-        ['updWhatsappNumber', d.whatsappNumber], 
-        ['updFacebookLink', d.facebookLink],
-        ['updPresentAddress', d.presentAddress], ['updPermanentAddress', d.permanentAddress]
-      ];
-
-      fields.forEach(([id, val]) => {
-        const el = document.getElementById(id);
-        if(el) {
-          el.value = val || "";
-          el.disabled = isInfoLocked; 
-        }
-      });
-
-      document.getElementById('updRole').value = (d.role || "member").toUpperCase();
-      document.getElementById('updStatus').value = (d.status || "active").toUpperCase();
-      document.getElementById('updEmail').value = d.email || currentUser.email;
+    // বর্তমান প্রোফাইল ছবি সেটআপ
+    if (!tempBase64Image) {
+      updAvatarPreview.src = data.photoUrl || '../placeholder.png';
     }
+
+    // ইনপুট ভ্যালু লোড করা (ইউজার যদি ওল্ড ডাটা এডিট করতে চায়)
+    document.getElementById('updEnglishName').value = data.englishName || "";
+    document.getElementById('updBanglaName').value = data.banglaName || "";
+    document.getElementById('updFatherName').value = data.fatherName || "";
+    document.getElementById('updMotherName').value = data.motherName || "";
+    document.getElementById('updDob').value = data.dob || "";
+    document.getElementById('updGender').value = data.gender || "";
+    document.getElementById('updNidOrBrn').value = data.nidOrBrn || "";
+    document.getElementById('updInstitution').value = data.institution || "";
+    document.getElementById('updEducation').value = data.education || "";
+    document.getElementById('updAcademicYear').value = data.academicYear || "";
+    document.getElementById('updProfession').value = data.profession || "";
+    document.getElementById('updMobileNumber').value = data.mobileNumber || "";
+    const whatsappInput = document.getElementById('updWhatsappNumber') || document.getElementById('updWhitespace');
+    if(whatsappInput) whatsappInput.value = data.whatsappNumber || "";
+    document.getElementById('updFacebookLink').value = data.facebookLink || "";
+    document.getElementById('updPresentAddress').value = data.presentAddress || "";
+    document.getElementById('updPermanentAddress').value = data.permanentAddress || "";
+
+    // 🔒 লক লজিক এবং নোটিশ ট্র্যাকিং ইঞ্জিন
+    // ক) ছবি লক স্ক্রিন কন্ডিশন
+    if (data.imageApprovalStatus === "pending") {
+      photoPendingNotice.style.display = "flex";
+      updGalleryTriggerBtn.disabled = true;
+      updGalleryTriggerBtn.style.opacity = "0.5";
+    } else {
+      photoPendingNotice.style.display = "none";
+      updGalleryTriggerBtn.disabled = false;
+      updGalleryTriggerBtn.style.opacity = "1";
+    }
+
+    if (data.imageApprovalStatus === "rejected") {
+      photoRejectReasonText.innerText = `❌ ছবি রিজেক্টের কারণ: ${data.imageRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
+      photoRejectNotice.style.display = "flex";
+    } else { photoRejectNotice.style.display = "none"; }
+
+    // খ) ইনফো লক স্ক্রিন কন্ডিশন
+    if (data.infoApprovalStatus === "pending") {
+      infoPendingNotice.style.display = "flex";
+      matrixSaveBtn.disabled = true;
+      toggleFormInputs(true);
+    } else {
+      infoPendingNotice.style.display = "none";
+      matrixSaveBtn.disabled = false;
+      toggleFormInputs(false);
+    }
+
+    if (data.infoApprovalStatus === "rejected") {
+      infoRejectReasonText.innerText = `❌ তথ্য রিজেক্টের কারণ: ${data.infoRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
+      infoRejectNotice.style.display = "flex";
+    } else if (data.infoApprovalStatus === "waiting") {
+      infoRejectReasonText.innerText = `⚠️ তথ্য হোল্ডের কারণ: ${data.infoRejectReason || 'আপনার তথ্য হোল্ডে রাখা হয়েছে, সংশোধন করুন।'}`;
+      infoRejectNotice.style.display = "flex";
+    } else { infoRejectNotice.style.display = "none"; }
   });
 
-  // ৪. স্বাধীন গ্যালারি ওপেনিং মেকানিজম
-  photoTriggerBtn.addEventListener('click', () => {
-    if (isPhotoLocked) {
-      alert("আপনার একটি ছবি পরিবর্তনের আবেদন ইতোমধ্যে অনুমোদনের অপেক্ষায় রয়েছে। অনুগ্রহ করে অপেক্ষা করুন।");
-      return;
-    }
-    hiddenGalleryInput.click();
-  });
+  function toggleFormInputs(isLock) {
+    const inputs = updateMatrixForm.querySelectorAll('.matrix-input');
+    inputs.forEach(input => input.disabled = isLock);
+  }
 
-  // ৫. ফাইল সাইজ ট্র্যাকিং ও ইভেন্ট হ্যান্ডলার ইঞ্জিন (১ মেগাবাইট লিমিট ভ্যালিডেশন)
+  // ৪. লোকাল গ্যালারি থেকে ছবি নিয়ে ১ মেগাবাইট কন্ডিশন ও সাবমিশন লক ট্র্যাকিং
+  updGalleryTriggerBtn.addEventListener('click', () => hiddenGalleryInput.click());
+
   hiddenGalleryInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // ১ মেগাবাইটের সর্বোচ্চ বাইট সাইজ হিসাব (1 MB = 1024 * 1024 Bytes)
-    const maxSizeBytes = 1 * 1024 * 1024; 
-
-    if (file.size > maxSizeBytes) {
-      alert("⚠️ ফাইল সাইজ অনেক বড়! সর্বোচ্চ ১ মেগাবাইট (1 MB) সাইজের ছবি আপলোড করা যাবে। অনুগ্রহ করে ছোট সাইজের ছবি সিলেক্ট করুন।");
-      hiddenGalleryInput.value = ""; // ইনপুট রিসেট করা হলো
+    // ১ মেগাবাইট বা ১০২৪ KB ফাইল সাইজ বাউন্ডারি গার্ড
+    if (file.size > 1024 * 1024) {
+      alert("⚠️ ফাইল সাইজ ১ মেগাবাইটের বেশি! অনুগ্রহ করে ছোট সাইজের ছবি আপলোড করুন।");
+      hiddenGalleryInput.value = "";
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
-      tempBase64Image = reader.result; 
-      confirmationType = "photo";
-      popupPromptText.innerText = "থিম অনুযায়ী আপনার নতুন ছবি নির্বাচন করা হয়েছে। আপনি কি ছবি পরিবর্তনের জন্য সাবমিট করবেন?";
-      cyberConfirmPopup.style.display = "flex";
+    reader.onload = async () => {
+      tempBase64Image = reader.result;
+      updAvatarPreview.src = tempBase64Image;
+
+      if (confirm("আপনি কি নতুন ছবিটি এডমিনের অনুমোদনের জন্য সাবমিট করতে চান?")) {
+        try {
+          // ছবি সাবমিট করার সাথে অফিশিয়াল serverTimestamp() সংরক্ষণ করা হলো
+          await updateDoc(doc(db, "users", currentUser.uid), {
+            tempPendingPhoto: tempBase64Image,
+            imageApprovalStatus: "pending",
+            imageActionAt: serverTimestamp() // ফটো সাবমিট এর সঠিক সার্ভার টাইম
+          });
+          alert("🎉 নতুন ছবি সফলভাবে সাবমিট হয়েছে। এডমিন অনুমোদনের অপেক্ষা করুন।");
+        } catch (err) {
+          alert("দুঃখিত, ছবি রিকোয়েস্ট পাঠানো যায়নি!");
+        }
+      } else {
+        tempBase64Image = null;
+        hiddenGalleryInput.value = "";
+      }
     };
     reader.readAsDataURL(file);
   });
 
-  // ৬. স্বাধীন তথ্য পরিবর্তন সাবমিশন মেকানিজম
-  cyberUpdateForm.addEventListener('submit', (e) => {
+  // ৫. ইনফো ডাটা ফর্ম সাবমিশন লকিং মেকানিজম এবং সার্ভার টাইমস্ট্যাম্প ফিক্স
+  updateMatrixForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (isInfoLocked) {
-      alert("আপনার একটি তথ্য পরিবর্তনের আবেদন ইতোমধ্যে অনুমোদনের অপেক্ষায় রয়েছে। অনুগ্রহ করে অপেক্ষা করুন।");
-      return;
-    }
 
-    confirmationType = "data";
-    popupPromptText.innerText = "আপনি কি আপনার তথ্য পরিবর্তনের জন্য সাবমিট করতে চান?";
-    cyberConfirmPopup.style.display = "flex";
-  });
+    const whatsappInput = document.getElementById('updWhatsappNumber') || document.getElementById('updWhitespace');
 
-  popupCancelBtn.addEventListener('click', () => {
-    cyberConfirmPopup.style.display = "none";
-    hiddenGalleryInput.value = ""; 
-    tempBase64Image = null;
-  });
-
-   // ৭. সার্ভার টাইমস্ট্যাম্প সহ ডাটা সাবমিট প্রসেস
-  popupConfirmBtn.addEventListener('click', async () => {
-    cyberConfirmPopup.style.display = "none";
-
-    // ছবি সাবমিট করার সময়স্ট্যাম্প ট্র্যাকিং
-    if (confirmationType === "photo" && tempBase64Image) {
-      try {
-        await updateDoc(doc(db, "users", currentUser.uid), {
-          tempPendingPhoto: tempBase64Image,
-          imageApprovalStatus: "pending",
-          photoRequestedAt: serverTimestamp() // ফটো আবেদনের নির্দিষ্ট সময় স্টোর করা হলো
-        });
-        alert("🔒 আপনার ছবি পরিবর্তনের আবেদনটি এডমিন/সভাপতি/সেক্রেটারির কাছে পৌঁছেছে। অনুমোদনের জন্য অনুগ্রহ করে অপেক্ষা করুন।");
-      } catch (err) {
-        alert("দুঃখিত, ছবি রিকোয়েস্ট সাবমিট হয়নি। আবার চেষ্টা করুন।");
-      }
-    } 
-    
-    // তথ্য সাবমিট করার সময়স্ট্যাম্প ট্র্যাকিং
-    else if (confirmationType === "data") {
+    if (confirm("আপনি কি নিশ্চিতভাবে এই নতুন তথ্যসমূহ অনুমোদনের জন্য পাঠাতে চান?")) {
       const pendingDataPayload = {
         tempPendingData: {
           englishName: document.getElementById('updEnglishName').value.trim(),
@@ -403,22 +295,23 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
           nidOrBrn: document.getElementById('updNidOrBrn').value.trim(),
           institution: document.getElementById('updInstitution').value.trim(),
           education: document.getElementById('updEducation').value.trim(),
-          academicYear: document.getElementById('updAcademicYear').value.trim(), 
+          academicYear: document.getElementById('updAcademicYear').value.trim(),
           profession: document.getElementById('updProfession').value.trim(),
           mobileNumber: document.getElementById('updMobileNumber').value.trim(),
-          whatsappNumber: document.getElementById('updWhatsappNumber').value.trim(), 
+          whatsappNumber: whatsappInput ? whatsappInput.value.trim() : "",
           facebookLink: document.getElementById('updFacebookLink').value.trim(),
           presentAddress: document.getElementById('updPresentAddress').value.trim(),
           permanentAddress: document.getElementById('updPermanentAddress').value.trim()
         },
         infoApprovalStatus: "pending",
-        infoRequestedAt: serverTimestamp() // তথ্য পরিবর্তনের আবেদনের নির্দিষ্ট সময় স্টোর করা হলো
+        infoActionAt: serverTimestamp() // তথ্য সাবমিট করার অফিশিয়াল সার্ভার টাইমস্ট্যাম্প
       };
 
       try {
         await updateDoc(doc(db, "users", currentUser.uid), pendingDataPayload);
         alert("🔒 আপনার প্রোফাইলের তথ্য পরিবর্তনের আবেদনটি এডমিন/সভাপতি/সেক্রেটারির কাছে পৌঁছেছে। অনুমোদনের জন্য অনুগ্রহ করে অপেক্ষা করুন।");
       } catch (err) {
+        console.error(err);
         alert("দুঃখিত, তথ্য রিকোয়েস্ট সাবমিট হয়নি। আবার চেষ্টা করুন।");
       }
     }
