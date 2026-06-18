@@ -132,6 +132,7 @@
   <script src="../admin/reports.js"></script>
   <script src="../admin/logs.js"></script>
   <script src="../admin/settings.js"></script>
+  <script src="../admin/infoUpdateRequest.js"></script>
   
   <script type="module">
     import { db, auth } from '../firebase-config.js';
@@ -157,6 +158,8 @@
       { id: 'logs', name: '🔐 সিস্টেম অ্যাক্টিভিটি লগ' },
       { id: 'backup', name: '💾 ব্যাকআপ ও রিস্টোর' },
       { id: 'settings', name: '⚙️ গ্লোবাল সিস্টেম সেটিংস' }
+      { id: 'adminRequests', name: '<i class="fas fa-tasks"></i> তথ্য পরিবর্তনের আবেদন' }
+      
     ];
 
     const menuContainer = document.getElementById('centralMenuContainer');
@@ -307,6 +310,12 @@
       else if (id === 'settings') {
         loadSettingsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, setDoc);
       }
+       else if (id === 'adminRequests') {
+  loadAdminRequestsModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc, collection, query, where);
+       }
+         
+
+        
       else {
         contentRoot.innerHTML = `
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
