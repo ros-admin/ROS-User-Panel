@@ -296,14 +296,14 @@ function loadProfileModule(contentRoot, db, auth, doc, onSnapshot, signOut) {
         // গ) ড্রপডাউন ২: শিক্ষা ও পেশা ম্যাপিং (ব্র্যাকেট নোটেশন দিয়ে Academic Year ১০০% ফিক্সড)
         document.getElementById('profGridInstitution').innerText = d.institution || "তথ্য পাওয়া যায়নি";
         document.getElementById('profGridEducation').innerText = d.education || "N/A";
-        document.getElementById('profGridAcademicYear').innerText = d['Academic Year'] || "N/A";
+        document.getElementById('profGridAcademicYear').innerText = d['academicYear'] || "N/A";
         document.getElementById('profGridProfession').innerText = d.profession || "N/A";
         document.getElementById('profGridRole').innerText = d.role || "MEMBER";
         document.getElementById('profGridStatus').innerText = d.status || "ACTIVE";
 
         // ঘ) ড্রপডাউন ৩: যোগাযোগ ডাটা ম্যাপিং (ব্র্যাকেট নোটেশন দিয়ে whatsapp Number ১০০% ফিক্সড)
         document.getElementById('profGridMobile').innerText = d.mobileNumber || "তথ্য নেই";
-        document.getElementById('profGridWhatsapp').innerText = d['whatsapp Number'] || "তথ্য নেই";
+        document.getElementById('profGridWhatsapp').innerText = d['whatsappNumber'] || "তথ্য নেই";
         document.getElementById('profGridEmail').innerText = d.email || "তথ্য নেই";
         
         if (d.facebookLink && d.facebookLink.trim() !== "") {
