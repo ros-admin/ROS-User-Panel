@@ -1,7 +1,7 @@
-// ROS Nexus - Enterprise Member Request Status Module (With Timeline, Progress Tracker & 3-Month Auto-Cleanup)
+// ROS Nexus - Enterprise Member Request Status Module (Fully Upgraded with Serialization, Multi-Timestamp Tracking & Fixes)
 function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc) {
   
-  // ১. মেম্বার রিকোয়েস্ট স্ট্যাটাস পেজের প্রিমিয়াম সাইবারপাঙ্ক ইউআই এবং অ্যানিমেশন
+  // ১. মেম্বার রিকোয়েস্ট স্ট্যাটাস পেজের প্রিমিয়াম সাইবারপাঙ্ক ইউআই এবং অ্যানিমেশন স্টাইল
   contentRoot.innerHTML = `
     <style>
       .my-req-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 20px; box-sizing: border-box; }
@@ -22,6 +22,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       .req-compact-card:hover { border-color: var(--neon-blue); background: rgba(17, 24, 39, 0.6); transform: translateX(4px); }
       
       .card-left { display: flex; align-items: center; gap: 15px; }
+      .card-serial { font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 800; color: var(--neon-blue); background: rgba(0, 180, 216, 0.1); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0, 180, 216, 0.3); }
       .card-icon { width: 36px; height: 36px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-main); }
       .card-details h4 { font-size: 14px; font-weight: 600; color: #fff; margin: 0 0 4px 0; }
       .card-details p { font-size: 11px; color: var(--text-muted); margin: 0; }
@@ -66,9 +67,9 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
 
       .timeline-content h5 { font-size: 13px; font-weight: bold; margin: 0 0 4px 0; color: #fff; display: flex; align-items: center; gap: 6px; }
       .timeline-content p { font-size: 12px; color: var(--text-muted); margin: 0 0 4px 0; line-height: 1.4; }
-      .timeline-content time { font-size: 10px; color: rgba(255,255,255,0.3); font-family: monospace; }
+      .timeline-content time { font-size: 11px; color: var(--neon-blue); font-family: monospace; font-weight: 600; display: block; margin-top: 4px; }
       
-      /* অ্যাকশন মেসেজ বাটন (Hold Status) */
+      /* অ্যাকশন বাটন এরিয়া */
       .action-trigger-area { margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; }
       .edit-redirect-btn { padding: 10px 18px; border-radius: 6px; background: var(--neon-yellow); border: none; color: #030712; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); transition: 0.2s; }
       .edit-redirect-btn:hover { transform: translateY(-1px); box-shadow: 0 0 15px rgba(255, 183, 3, 0.4); }
@@ -106,11 +107,11 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
 
   if (!currentUser) return;
 
-  // তারিখ ও সময় ফরম্যাটার হেল্পার ফাংশন
+  // তারিখ ও সময় ফরম্যাটার হেল্পার ফাংশন (সেকেন্ড ট্র্যাকিং সহ নিখুঁত সময়)
   const formatFullDateTime = (timestampField) => {
     if (!timestampField) return "প্রসেসিং সেশন";
     const d = timestampField.toDate ? timestampField.toDate() : new Date(timestampField);
-    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} — ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `📅 ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} — 🕒 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
   };
 
   const formatDateOnly = (timestampField) => {
@@ -119,33 +120,29 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
   };
 
-  // ২. লাইভ ডাটাবেজ পর্যবেক্ষণ এবং ৩ মাসের (৯০ দিন) অটো-ক্লিনআপ লজিক
+  // ২. রিয়েল-টাইম ডাটা সিঙ্ক ও ৩ মাসের অটো-ক্লিনআপ ইঞ্জিন
   onSnapshot(doc(db, "users", currentUser.uid), async (snapshot) => {
     if (!snapshot.exists()) return;
     const uData = snapshot.data();
     
-    let currentHtml = "";
-    let previousHtml = "";
-    
-    let hasCurrent = false;
-    let hasPrevious = false;
+    let currentCards = [];
+    let previousCards = [];
     
     const rightNow = new Date().getTime();
-    const ninetyDaysInMs = 90 * 24 * 60 * 60 * 1000; // ৯০ দিন (৩ মাস) মিলিসেকেন্ডে
+    const ninetyDaysInMs = 90 * 24 * 60 * 60 * 1000; // ৩ মাস (৯০ দিন)
 
     // ==========================================
-    // ক) প্রোফাইল তথ্য পরিবর্তন (INFO REQUEST) প্রসেসিং
+    // ক) প্রোফাইল তথ্য পরিবর্তন (INFO REQUEST)
     // ==========================================
     if (uData.infoApprovalStatus) {
       let isCurrent = uData.infoApprovalStatus === "pending" || uData.infoApprovalStatus === "waiting";
       let showInfoCard = true;
 
-      // আর্কাইভড (approved/rejected) ডাটার জন্য ৩ মাসের লাইফ-সাইকেল ট্র্যাকিং
+      // আর্কাইভড ডাটা ৯০ দিন পার হলে অটো-ক্লিনআপ করবে
       if (!isCurrent && uData.infoActionAt) {
         const actionTime = uData.infoActionAt.toDate ? uData.infoActionAt.toDate().getTime() : new Date(uData.infoActionAt).getTime();
         if (rightNow - actionTime >= ninetyDaysInMs) {
           showInfoCard = false;
-          // ডাটাবেজ থেকে ক্লিনআপ রিমুভাল এক্সিকিউশন
           await updateDoc(doc(db, "users", currentUser.uid), {
             infoApprovalStatus: null,
             infoRejectReason: null,
@@ -178,7 +175,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           progressColorClass = "rejected-fill";
         }
 
-        // টাইমলাইন কম্পোনেন্ট জেনারেটর
+        // টাইমলাইন ও প্রত্যেকটি ধাপের সুনির্দিষ্ট সময়
         let timelineNodesHtml = `
           <div class="timeline-node node-submitted">
             <div class="timeline-bullet"></div>
@@ -190,20 +187,18 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           </div>
         `;
 
-        // যদি পূর্বে কোনো রি-সাবমিশন ডাটা ট্র্যাপ করা থাকে বা রানিং স্টেজ থাকে
-        if (uData.infoApprovalStatus === "pending" || uData.infoApprovalStatus === "waiting" || uData.infoApprovalStatus === "approved" || uData.infoApprovalStatus === "rejected") {
-          let pendingMsg = "আপনার আবেদন বর্তমানে প্রশাসকের পর্যালোচনার অপেক্ষায় রয়েছে।";
-          // যদি সিস্টেম আবার রি-সাবমিট মোড ডিটেক্ট করে
+        if (uData.infoApprovalStatus === "pending" || uData.infoApprovalStatus === "waiting" || !isCurrent) {
+          let pendingMsg = "Your profile update request is currently under review by system admin.";
           if (uData.infoRejectReason && uData.infoApprovalStatus === "pending") {
-             pendingMsg = "আপনার আবেদনটি পুনরায় সাবমিট (Resubmitted) করা হয়েছে এবং প্রশাসকের পর্যালোচনার অপেক্ষায় আছে।";
+             pendingMsg = "আপনার আবেদনটি পুনরায় সাবমিট (Resubmitted) করা হয়েছে এবং অ্যাডমিন পর্যালোচনার অপেক্ষায় আছে।";
           }
-          
           timelineNodesHtml += `
             <div class="timeline-node node-pending ${uData.infoApprovalStatus === 'pending' ? 'node-active' : ''}">
               <div class="timeline-bullet"></div>
               <div class="timeline-content">
                 <h5><i class="fas fa-clock" style="color:var(--neon-blue);"></i> Pending Evaluation</h5>
                 <p>${pendingMsg}</p>
+                <time>${formatFullDateTime(uData.infoRequestedAt)}</time>
               </div>
             </div>
           `;
@@ -215,7 +210,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
               <div class="timeline-bullet"></div>
               <div class="timeline-content">
                 <h5><i class="fas fa-check-double" style="color:var(--neon-green);"></i> Approved</h5>
-                <p>আপনার তথ্য পরিবর্তনের আবেদন অনুমোদিত হয়েছে।</p>
+                <p>Your profile modification has been officially approved.</p>
                 <time>${formatFullDateTime(uData.infoActionAt)}</time>
               </div>
             </div>
@@ -227,7 +222,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
               <div class="timeline-content">
                 <h5><i class="fas fa-times-circle" style="color:var(--neon-red);"></i> Rejected</h5>
                 <p>আপনার তথ্য পরিবর্তনের আবেদন বাতিল করা হয়েছে।</p>
-                <div class="inner-reason-box"><strong>Reject Reason:</strong> ${uData.infoRejectReason || "কোনো সুনির্দিষ্ট কারণ উল্লেখ করা হয়নি।"}</div>
+                <div class="inner-reason-box"><strong>Reject Reason:</strong> ${uData.infoRejectReason || "সুনির্দিষ্ট কারণ জানানো হয়নি।"}</div>
                 <time>${formatFullDateTime(uData.infoActionAt)}</time>
               </div>
             </div>
@@ -240,72 +235,47 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
                 <h5><i class="fas fa-pause-circle" style="color:var(--neon-yellow);"></i> Hold</h5>
                 <p>আপনার আবেদন সাময়িকভাবে স্থগিত রাখা হয়েছে।</p>
                 <div class="inner-reason-box hold-style"><strong>Hold Reason:</strong> ${uData.infoRejectReason || "তথ্য অসঙ্গতি।"}</div>
-                <time>${formatFullDateTime(uData.infoActionAt)}</time>
+                <time>${formatFullDateTime(uData.infoActionAt || uData.infoRequestedAt)}</time>
               </div>
             </div>
           `;
         }
 
-        // এডিট রিডাইরেক্ট বাটন লজিক (Hold Status)
         let editActionHtml = "";
         if (uData.infoApprovalStatus === "waiting") {
           editActionHtml = `
             <div class="action-trigger-area">
-              <button class="edit-redirect-btn" id="triggerProfileEditBtn">
+              <button class="edit-redirect-btn" class="profile-fix-trigger-class">
                 <i class="fas fa-user-cog"></i> তথ্য সংশোধন করুন
               </button>
             </div>
           `;
         }
 
-        const componentCardHtml = `
-          <div>
-            <div class="req-compact-card" onclick="this.nextElementSibling.classList.toggle('open')">
-              <div class="card-left">
-                <div class="card-icon" style="color: var(--neon-blue); border-color: rgba(0, 180, 216, 0.3);"><i class="fas fa-user-edit"></i></div>
-                <div class="card-details">
-                  <h4>প্রোফাইল তথ্য পরিবর্তন</h4>
-                  <p>তারিখ: ${formatDateOnly(uData.infoRequestedAt)}</p>
-                </div>
-              </div>
-              <span class="status-node ${badgeClass}">${statusText} <i class="fas fa-chevron-down" style="font-size:9px; margin-left:4px;"></i></span>
-            </div>
-            <div class="req-expanded-panel">
-              <div class="progress-tracker-container">
-                <div class="progress-info-row">
-                  <span>ধাপ প্রোগ্রেস ট্র্যাকার</span>
-                  <span>সম্পন্ন: <b>${progressPercent}%</b></span>
-                </div>
-                <div class="progress-bar-bg">
-                  <div class="progress-bar-fill ${progressColorClass}" style="width: ${progressPercent}%;"></div>
-                </div>
-              </div>
-              <div class="timeline-axis">
-                ${timelineNodesHtml}
-              </div>
-              ${editActionHtml}
-            </div>
-          </div>
-        `;
+        const infoCardObj = {
+          type: 'info',
+          date: formatDateOnly(uData.infoRequestedAt),
+          badgeClass: badgeClass,
+          statusText: statusText,
+          progressPercent: progressPercent,
+          progressColorClass: progressColorClass,
+          timeline: timelineNodesHtml,
+          actionHtml: editActionHtml,
+          title: "প্রোফাইল তথ্য পরিবর্তন"
+        };
 
-        if (isCurrent) {
-          currentHtml += componentCardHtml;
-          hasCurrent = true;
-        } else {
-          previousHtml += componentCardHtml;
-          hasPrevious = true;
-        }
+        if (isCurrent) currentCards.push(infoCardObj);
+        else previousCards.push(infoCardObj);
       }
     }
 
     // ==========================================
-    // খ) প্রোফাইল ছবি পরিবর্তন (IMAGE REQUEST) প্রসেসিং
+    // খ) প্রোফাইল ছবি পরিবর্তন (IMAGE REQUEST)
     // ==========================================
     if (uData.imageApprovalStatus) {
       let isCurrent = uData.imageApprovalStatus === "pending";
       let showPhotoCard = true;
 
-      // আর্কাইভড ডাটার জন্য ৩ মাসের লাইফ-সাইকেল ট্র্যাকিং
       if (!isCurrent && uData.imageActionAt) {
         const actionTime = uData.imageActionAt.toDate ? uData.imageActionAt.toDate().getTime() : new Date(uData.imageActionAt).getTime();
         if (rightNow - actionTime >= ninetyDaysInMs) {
@@ -350,7 +320,8 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
             <div class="timeline-bullet"></div>
             <div class="timeline-content">
               <h5><i class="fas fa-clock" style="color:var(--neon-blue);"></i> Pending Evaluation</h5>
-              <p>অ্যাডমিন প্যানেল কর্তৃক ফাইল কোয়ালিটি ও প্রোফাইল ছবি ভেরিফিকেশন চলছে।</p>
+              <p>অ্যাডমিন প্যানেল ভেরিফিকেশন প্রসেস রানিং।</p>
+              <time>${formatFullDateTime(uData.imageRequestedAt)}</time>
             </div>
           </div>
         `;
@@ -361,91 +332,116 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
               <div class="timeline-bullet"></div>
               <div class="timeline-content">
                 <h5><i class="fas fa-check-double" style="color:var(--neon-green);"></i> Approved</h5>
-                <p>আপনার প্রোফাইল ছবি পরিবর্তন সফলভাবে অনুমোদিত এবং আপডেট করা হয়েছে।</p>
+                <p>আপনার প্রোফাইল ছবি পরিবর্তন সফলভাবে অনুমোদিত হয়েছে।</p>
                 <time>${formatFullDateTime(uData.imageActionAt)}</time>
               </div>
             </div>
           `;
-          } else if (uData.imageApprovalStatus === "rejected") {
+        } else if (uData.imageApprovalStatus === "rejected") {
           timelineNodesHtml += `
             <div class="timeline-node node-rejected node-active">
               <div class="timeline-bullet"></div>
               <div class="timeline-content">
                 <h5><i class="fas fa-times-circle" style="color:var(--neon-red);"></i> Rejected</h5>
                 <p>আপনার প্রোফাইল ছবি পরিবর্তনের আবেদনটি বাতিল করা হয়েছে।</p>
-                <div class="inner-reason-box"><strong>Reject Reason:</strong> ${uData.imageRejectReason || "অস্পষ্ট বা ত্রুটিপূর্ণ ফাইল ইমেজ।"}</div>
+                <div class="inner-reason-box"><strong>Reject Reason:</strong> ${uData.imageRejectReason || "ত্রুটিপূর্ণ ফাইল বা ছবি অস্পষ্ট।"}</div>
                 <time>${formatFullDateTime(uData.imageActionAt)}</time>
               </div>
             </div>
           `;
         }
 
-        const componentCardHtml = `
+        const photoCardObj = {
+          type: 'image',
+          date: formatDateOnly(uData.imageRequestedAt),
+          badgeClass: badgeClass,
+          statusText: statusText,
+          progressPercent: progressPercent,
+          progressColorClass: progressColorClass,
+          timeline: timelineNodesHtml,
+          actionHtml: "",
+          title: "প্রোফাইল ছবি পরিবর্তন"
+        };
+
+        if (isCurrent) currentCards.push(photoCardObj);
+        else previousCards.push(photoCardObj);
+      }
+    }
+
+    // ==========================================
+    // ৩. সিরিয়াল নাম্বার (১, ২, ৩, ৪) সহ রেন্ডারিং লুপ
+    // ==========================================
+    const compileHtmlFromCards = (cardsArray) => {
+      let htmlOutput = "";
+      cardsArray.forEach((card, index) => {
+        const serialNumber = index + 1; // লুপ ইনডেক্স থেকে সিরিয়াল তৈরি (১, ২, ৩...)
+        const iconClass = card.type === 'info' ? 'fas fa-user-edit' : 'fas fa-camera';
+        const strokeColor = card.type === 'info' ? 'var(--neon-blue)' : 'var(--neon-yellow)';
+
+        htmlOutput += `
           <div>
             <div class="req-compact-card" onclick="this.nextElementSibling.classList.toggle('open')">
               <div class="card-left">
-                <div class="card-icon" style="color: var(--neon-yellow); border-color: rgba(255, 183, 3, 0.3);"><i class="fas fa-camera"></i></div>
+                <div class="card-serial">${serialNumber}</div>
+                <div class="card-icon" style="color: ${strokeColor}; border-color: ${strokeColor}44;"><i class="${iconClass}"></i></div>
                 <div class="card-details">
-                  <h4>প্রোফাইল ছবি পরিবর্তন</h4>
-                  <p>তারিখ: ${formatDateOnly(uData.imageRequestedAt)}</p>
+                  <h4>${card.title}</h4>
+                  <p>তারিখ: ${card.date}</p>
                 </div>
               </div>
-              <span class="status-node ${badgeClass}">${statusText} <i class="fas fa-chevron-down" style="font-size:9px; margin-left:4px;"></i></span>
+              <span class="status-node ${card.badgeClass}">${card.statusText} <i class="fas fa-chevron-down" style="font-size:9px; margin-left:4px;"></i></span>
             </div>
             <div class="req-expanded-panel">
               <div class="progress-tracker-container">
                 <div class="progress-info-row">
                   <span>ধাপ প্রোগ্রেস ট্র্যাকার</span>
-                  <span>সম্পন্ন: <b>${progressPercent}%</b></span>
+                  <span>সম্পন্ন: <b>${card.progressPercent}%</b></span>
                 </div>
                 <div class="progress-bar-bg">
-                  <div class="progress-bar-fill ${progressColorClass}" style="width: ${progressPercent}%;"></div>
+                  <div class="progress-bar-fill ${card.progressColorClass}" style="width: ${card.progressPercent}%;"></div>
                 </div>
               </div>
               <div class="timeline-axis">
-                ${timelineNodesHtml}
+                ${card.timeline}
               </div>
+              ${card.actionHtml}
             </div>
           </div>
         `;
+      });
+      return htmlOutput;
+    };
 
-        if (isCurrent) {
-          currentHtml += componentCardHtml;
-          hasCurrent = true;
+    // কারেন্ট রেন্ডারিং এক্সিকিউশন
+    if (currentCards.length === 0) {
+      currentRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-box-open" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> বর্তমানে কোনো চলমান আবেদন নেই।</div>`;
+    } else {
+      currentRoot.innerHTML = compileHtmlFromCards(currentCards);
+    }
+
+    // আর্কাইভড রেন্ডারিং এক্সিকিউশন
+    if (previousCards.length === 0) {
+      previousRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-archive" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> পূর্ববর্তী ৩ মাসের আর্কাইভ হিস্ট্রি খালি।</div>`;
+    } else {
+      previousRoot.innerHTML = compileHtmlFromCards(previousCards);
+    }
+
+    // ৪. "তথ্য সংশোধন করুন" বাটন ক্লিকের গ্লোবাল বাবলিং ফিক্স
+    contentRoot.addEventListener('click', (e) => {
+      const btn = e.target.closest('.edit-redirect-btn');
+      if (btn) {
+        // মেম্বার ড্যাশবোর্ডের এডিট প্রোফাইল মডিউল ট্রিগার করার জন্য আইডি ট্র্যাকিং
+        const targetMenuNode = document.getElementById('menuUpdateInfoLink') || 
+                               document.getElementById('menuProfileEditLink') || 
+                               document.querySelector('[id*="UpdateInfo"]') || 
+                               document.querySelector('[id*="Edit"]');
+        if (targetMenuNode) {
+          targetMenuNode.click();
         } else {
-          previousHtml += componentCardHtml;
-          hasPrevious = true;
+          alert("সরাসরি নেভিগেশন করতে অনুগ্রহ করে বাম পাশের সাইডবার প্যানেল থেকে 'প্রোফাইল এডিট' অপশনটি সিলেক্ট করুন।");
         }
       }
-    }
+    });
 
-    // ==========================================
-    // ৩. রেন্ডারিং নোড কন্ডিশনাল চেকিং ইন্টারফেস
-    // ==========================================
-    if (!hasCurrent) {
-      currentRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-box-open" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> বর্তমানে আপনার কোনো রানিং অ্যাপ্লিকেশন রিকোয়েস্ট নেই।</div>`;
-    } else {
-      currentRoot.innerHTML = currentHtml;
-    }
-
-    if (!hasPrevious) {
-      previousRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-archive" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> পূর্ববর্তী ৩ মাসের বা আর্কাইভ করা কোনো হিস্ট্রি পাওয়া যায়নি।</div>`;
-    } else {
-      previousRoot.innerHTML = previousHtml;
-    }
-
-    // "তথ্য সংশোধন করুন" বাটনের জন্য অ্যাকশন ট্রিগার লিসেনার বাইন্ডিং
-    const editBtn = document.getElementById('triggerProfileEditBtn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        // মেম্বার ড্যাশবোর্ডের মেনু লিংক ট্রিগার করে মেম্বারকে এডিট প্রোফাইল মডিউলে নিয়ে যাবে
-        const profileEditMenuElement = document.getElementById('menuProfileEditLink') || document.querySelector('[id*="Edit"]');
-        if (profileEditMenuElement) {
-          profileEditMenuElement.click();
-        } else {
-          alert("সরাসরি নেভিগেশন করতে বাম পাশের প্যানেল থেকে 'প্রোফাইল এডিট' অপশনটি সিলেক্ট করুন।");
-        }
-      });
-    }
   });
 }
