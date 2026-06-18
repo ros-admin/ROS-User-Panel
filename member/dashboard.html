@@ -8,407 +8,435 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --cyber-bg: #020617; --glass-bg: rgba(15, 23, 42, 0.75); --glass-border: rgba(0, 180, 216, 0.2);
+      --cyber-bg: #030712; --glass-bg: rgba(17, 24, 39, 0.7); --glass-border: rgba(0, 180, 216, 0.2);
       --neon-blue: #00b4d8; --neon-green: #2ec4b6; --neon-yellow: #ffb703; --neon-red: #e63946;
-      --text-main: #f8fafc; --text-muted: #94a3b8;
+      --text-main: #f3f4f6; --text-muted: #9ca3af;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', 'Orbitron', sans-serif; }
     body { background-color: var(--cyber-bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
     
-    .cyber-glass { background: var(--glass-bg); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); }
+    .cyber-glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
     
-    /* হেডার ও ইউজার নোড */
-    .header-station { height: 65px; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 25px; border-bottom: 1px solid var(--glass-border); }
-    .brand-title { font-family: 'Orbitron'; font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 1px; text-shadow: 0 0 10px rgba(0, 180, 216, 0.4); }
+    /* হেডার ও নেভিগেশন নোড */
+    .header-station { height: 60px; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid var(--glass-border); }
+    .brand-title { font-family: 'Orbitron'; font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(0, 180, 216, 0.5); }
     
-    .user-profile-trigger { display: flex; align-items: center; gap: 12px; cursor: pointer; position: relative; padding: 5px 12px; border-radius: 30px; transition: 0.2s; }
-    .user-profile-trigger:hover { background: rgba(0, 180, 216, 0.08); }
-    .member-badge { font-size: 11px; background: rgba(46, 196, 182, 0.15); color: var(--neon-green); padding: 2px 10px; border-radius: 20px; border: 1px solid rgba(46, 196, 182, 0.3); font-weight: bold; text-transform: uppercase; }
-    .user-avatar { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--neon-blue); object-fit: cover; box-shadow: 0 0 8px rgba(0, 180, 216, 0.3); }
+    .user-profile-trigger { display: flex; align-items: center; gap: 10px; cursor: pointer; position: relative; padding: 5px 10px; border-radius: 20px; }
+    .member-badge { font-size: 11px; color: var(--neon-green); font-weight: bold; text-transform: uppercase; border: 1px solid var(--glass-border); padding: 2px 8px; border-radius: 4px; background: rgba(46, 196, 182, 0.1); }
+    .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--neon-blue); object-fit: cover; box-shadow: 0 0 10px rgba(0, 180, 216, 0.4); }
     
     /* প্রোফাইল ড্রপডাউন */
-    .profile-dropdown { position: absolute; top: 55px; right: 0; width: 240px; border-radius: 12px; padding: 10px 0; display: none; flex-direction: column; z-index: 1100; border: 1px solid rgba(0, 180, 216, 0.3); }
-    .dropdown-user-info { padding: 12px 20px; border-bottom: 1px solid var(--glass-border); }
+    .profile-dropdown { position: absolute; top: 50px; right: 0; width: 230px; border-radius: 8px; padding: 10px 0; display: none; flex-direction: column; z-index: 1100; border: 1px solid var(--glass-border); }
+    .dropdown-user-info { padding: 10px 20px; border-bottom: 1px solid var(--glass-border); }
     .dropdown-user-info h4 { font-size: 14px; color: #fff; }
-    .dropdown-user-info small { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; }
+    .dropdown-user-info small { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; word-break: break-all; }
     .profile-dropdown a { padding: 11px 20px; color: var(--text-muted); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-    .profile-dropdown a:hover { background: rgba(0, 180, 216, 0.1); color: #fff; text-shadow: 0 0 5px var(--neon-blue); }
+    .profile-dropdown a:hover { background: rgba(0, 180, 216, 0.1); color: #fff; text-shadow: 0 0 8px var(--neon-blue); }
     
-    /* লেআউট ফ্রেমওয়ার্ক */
-    .wrapper-station { display: flex; flex: 1; margin-top: 65px; }
-    .sidebar-nav { width: 260px; height: calc(100vh - 65px); position: fixed; top: 65px; left: 0; z-index: 90; border-right: 1px solid var(--glass-border); padding-top: 15px; }
-    .menu-list { list-style: none; }
-    .menu-item a { display: flex; align-items: center; gap: 12px; padding: 14px 25px; color: var(--text-muted); text-decoration: none; font-size: 14px; border-left: 4px solid transparent; transition: 0.3s; }
-    .menu-item a:hover, .menu-item.active a { color: #fff; background: rgba(0, 180, 216, 0.08); border-left-color: var(--neon-blue); }
+    /* লেআউট সিস্টেম */
+    .erp-wrapper { display: flex; flex: 1; margin-top: 60px; }
+    .sidebar-nav { width: 280px; height: calc(100vh - 60px); position: fixed; top: 60px; left: 0; z-index: 99; border-right: 1px solid var(--glass-border); }
+    .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid var(--glass-border); }
+    .sidebar-header h2 { font-size: 16px; color: var(--neon-blue); font-family: 'Orbitron'; }
+    .sidebar-menu { list-style: none; padding: 15px 0; }
+    .menu-item a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--text-muted); text-decoration: none; font-size: 14px; border-left: 4px solid transparent; transition: all 0.3s ease; }
+    .menu-item a:hover, .menu-item.active a { color: #fff; background: rgba(0, 180, 216, 0.1); border-left-color: var(--neon-blue); text-shadow: 0 0 8px var(--neon-blue); }
     
-    .main-workspace { margin-left: 260px; flex: 1; padding: 30px; min-height: calc(100vh - 65px); }
+    .main-content-node { margin-left: 280px; flex: 1; padding: 30px; min-height: calc(100vh - 60px); }
 
-    /* মোডাল এবং পপআপ এনভায়রনমেন্ট */
-    .nexus-popup-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
-    .popup-body { width: 90%; max-width: 420px; padding: 25px; border-radius: 12px; border: 1px solid rgba(0, 180, 216, 0.3); box-shadow: 0 0 30px rgba(0,180,216,0.15); }
-    
-    /* প্রিমিয়াম ইনপুট থিম */
-    .cyber-field { position: relative; margin-bottom: 18px; }
-    .cyber-field i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--neon-blue); font-size: 14px; }
-    .cyber-input { width: 100%; padding: 12px 15px 12px 42px; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; outline: none; transition: 0.3s; font-size: 14px; }
-    .cyber-input:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 180, 216, 0.3); }
+    /* মোডাল এবং কাস্টম ইন্টারফেস */
+    .nexus-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+    .modal-body { width: 90%; max-width: 450px; padding: 25px; border-radius: 8px; border: 1px solid var(--glass-border); }
+    .cyber-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; border-radius: 4px; margin-bottom: 15px; outline: none; font-size: 14px; }
+    .cyber-input:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0,180,216,0.3); }
 
-    /* প্রোফাইল ইন্টারফেস ডিজাইন */
-    .profile-card { max-width: 700px; margin: 0 auto; padding: 30px; border-radius: 12px; position: relative; }
-    .profile-avatar-zone { text-align: center; margin-bottom: 30px; position: relative; }
-    .display-avatar { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--neon-blue); object-fit: cover; box-shadow: 0 0 15px rgba(0, 180, 216, 0.4); }
-    .avatar-change-btn { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--neon-blue); cursor: pointer; text-decoration: underline; transition: 0.2s; }
-    .avatar-change-btn:hover { color: #fff; }
+    /* প্রোফাইল প্যানেল ডিজাইন */
+    .profile-workspace { max-width: 650px; margin: 0 auto; padding: 25px; border-radius: 8px; position: relative; display: none; }
+    .avatar-centric { text-align: center; margin-bottom: 25px; position: relative; }
+    .profile-main-img { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--neon-blue); object-fit: cover; box-shadow: 0 0 15px rgba(0, 180, 216, 0.4); }
+    .btn-change-avatar { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--neon-blue); cursor: pointer; text-decoration: underline; }
     
-    .info-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--glass-border); }
-    .edit-trigger-btn { background: transparent; border: 1px solid var(--glass-border); color: var(--neon-blue); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: 0.3s; }
-    .edit-trigger-btn:hover { background: rgba(0, 180, 216, 0.1); border-color: var(--neon-blue); }
+    .section-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid var(--glass-border); }
+    .edit-pencil-btn { background: transparent; border: 1px solid var(--glass-border); color: var(--neon-blue); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
     
-    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .data-node { padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px solid rgba(255,255,255,0.02); }
-    .data-node label { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; }
-    .data-node span { font-size: 14px; color: #fff; font-weight: 600; }
-    .data-node input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 6px 10px; color: #fff; border-radius: 4px; display: none; outline: none; font-size: 13px; }
+    .info-data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .info-node { padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid rgba(255,255,255,0.02); }
+    .info-node label { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; }
+    .info-node span { font-size: 14px; color: #fff; font-weight: 600; }
+    .info-node input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 6px 10px; color: #fff; border-radius: 4px; display: none; outline: none; font-size: 13px; }
     
-    .submit-bar { margin-top: 25px; display: none; justify-content: flex-end; }
-    .btn-prime { background: linear-gradient(135deg, var(--neon-blue), #0077b6); color: #fff; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3); }
-    .btn-sec { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-right: 10px; font-size: 13px; }
+    .action-submit-row { margin-top: 25px; display: none; justify-content: flex-end; gap: 10px; }
+    .btn-cyber-prime { background: var(--neon-blue); color: #000; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .btn-cyber-sec { background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; }
 
-    /* কাস্টম সিস্টেম নোটিফিকেশন টোস্ট */
-    .nexus-toast { position: fixed; bottom: -100px; right: 25px; background: #0f172a; border-left: 4px solid var(--neon-blue); padding: 15px 25px; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; gap: 12px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-width: 450px; border-top: 1px solid rgba(255,255,255,0.05); }
-    .nexus-toast.active { bottom: 25px; }
-    .nexus-toast i { font-size: 18px; }
-    .nexus-toast p { font-size: 12px; line-height: 1.5; color: #e2e8f0; }
+    /* গ্লোবাল নোটিফিকেশন সিস্টেম */
+    .system-toast { position: fixed; bottom: -100px; right: 20px; background: #0f172a; border-left: 4px solid var(--neon-blue); padding: 15px 20px; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; gap: 10px; transition: all 0.4s ease; max-width: 400px; }
+    .system-toast.active { bottom: 20px; }
+    .system-toast p { font-size: 12px; color: #fff; line-height: 1.4; }
 
-    @media (max-width: 768px) { .sidebar-nav { width: 70px; } .sidebar-nav span { display: none; } .main-workspace { margin-left: 70px; padding: 15px; } .details-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .sidebar-nav { display: none; } .main-content-node { margin-left: 0; padding: 15px; } .info-data-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
   <header class="header-station cyber-glass">
-    <div class="brand-title">ROS NEXUS <span style="color: var(--neon-blue); font-weight: 300;">CONSOLE</span></div>
+    <div class="brand-title">ROS NEXUS <span style="color: var(--neon-blue); font-weight: 300;">MEMBER</span></div>
     
-    <div class="user-profile-trigger" id="userMenuTrigger">
-      <span class="member-badge" id="memberTypeBadge">লোড হচ্ছে...</span>
-      <img src="https://via.placeholder.com/150" class="user-avatar" id="topNavAvatar">
+    <div class="user-profile-trigger" id="profileTrigger">
+      <span class="member-badge" id="topNavRole">লোড হচ্ছে...</span>
+      <img src="../placeholder.png" class="user-avatar" id="topNavAvatar">
       
-      <div class="profile-dropdown cyber-glass" id="userDropdown">
+      <div class="profile-dropdown cyber-glass" id="profileDropdown">
         <div class="dropdown-user-info">
-          <h4 id="dropProfileName">সদস্যের নাম</h4>
-          <small id="dropProfileEmail">member@ros.org</small>
+          <h4 id="dropMemberName">লোড হচ্ছে...</h4>
+          <small id="dropMemberEmail">member@ros.org</small>
         </div>
-        <a href="#" id="dropOptProfile"><i class="fas fa-user-cog" style="color: var(--neon-blue)"></i> তথ্য পরিবর্তন করুন</a>
-        <a href="#" id="dropOptPass"><i class="fas fa-shield-alt" style="color: var(--neon-yellow)"></i> পাসওয়ার্ড পরিবর্তন</a>
-        <a href="#" id="dropOptLogout" style="color: var(--neon-red)"><i class="fas fa-sign-out-alt"></i> লগআউট করুন</a>
+        <a href="#" id="triggerProfilePanel"><i class="fas fa-user-edit" style="color: var(--neon-blue)"></i> তথ্য পরিবর্তন করুন</a>
+        <a href="#" id="openPassModalBtn"><i class="fas fa-key" style="color: var(--neon-yellow)"></i> পাসওয়ার্ড পরিবর্তন</a>
+        <a href="#" id="memberSignOutBtn" style="color: var(--neon-red)"><i class="fas fa-sign-out-alt"></i> লগআউট করুন</a>
       </div>
     </div>
   </header>
 
-  <div class="wrapper-station">
+  <div class="erp-wrapper">
     <aside class="sidebar-nav cyber-glass">
-      <ul class="menu-list">
-        <li class="menu-item active" id="menuProfile"><a href="#"><i class="fas fa-user-circle"></i> <span>প্রোফাইল হোম</span></a></li>
-        <li class="menu-item" id="menuApplications"><a href="#"><i class="fas fa-file-invoice"></i> <span>আমার আবেদন</span></a></li>
+      <div class="sidebar-header"><h2>CONSOLE PANEL</h2><small style="color: var(--text-muted); font-size: 10px;">MEMBER MATRIX SYSTEM</small></div>
+      <ul class="sidebar-menu">
+        <li class="menu-item active" id="menuProfileLink"><a href="#"><i class="fas fa-user-circle"></i> <span>⚙️ প্রোফাইল</span></a></li>
+        <li class="menu-item" id="menuAppLink"><a href="#"><i class="fas fa-file-alt"></i> <span>📁 আমার আবেদন</span></a></li>
       </ul>
     </aside>
 
-    <main class="main-workspace" id="moduleContainer">
+    <main class="main-content-node" id="spaContentRoot">
       
-      <section id="profileView" class="profile-card cyber-glass">
-        <div class="profile-avatar-zone">
-          <img src="https://via.placeholder.com/150" id="profileDisplayImg" class="display-avatar"><br>
-          <span class="avatar-change-btn" id="triggerAvatarFile"><i class="fas fa-camera"></i> ছবি পরিবর্তন করুন</span>
-          <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+      <section id="profileEditorSection" class="profile-workspace cyber-glass">
+        <div class="avatar-centric">
+          <img src="../placeholder.png" id="profileDisplayImg" class="profile-main-img"><br>
+          <span class="btn-change-avatar" id="avatarUploadClicker"><i class="fas fa-camera"></i> ছবি পরিবর্তন করুন</span>
+          <input type="file" id="hiddenAvatarInput" accept="image/*" style="display: none;">
         </div>
 
-        <div class="info-header">
-          <h3 style="font-size: 16px; color: #fff;"><i class="fas fa-id-card"></i> ব্যক্তিগত তথ্য বিবরণী</h3>
-          <button class="edit-trigger-btn" id="infoEditTrigger"><i class="fas fa-pencil-alt"></i> তথ্য এডিট করুন</button>
+        <div class="section-title-bar">
+          <h3 style="font-size: 15px; color: #fff;"><i class="fas fa-id-card-alt"></i> প্রোফাইল ডাটাবেজ এন্ট্রি</h3>
+          <button class="edit-pencil-btn" id="activateEditEngine"><i class="fas fa-edit"></i> তথ্য পরিবর্তন করুন</button>
         </div>
 
-        <form id="profileDataForm">
-          <div class="details-grid">
-            <div class="data-node"><label>পূর্ণ নাম (ইংরেজি)</label><span class="view-mode" id="vName">...</span><input type="text" class="edit-mode" id="iName" required></div>
-            <div class="data-node"><label>মোবাইল নম্বর</label><span class="view-mode" id="vPhone">...</span><input type="tel" class="edit-mode" id="iPhone" required></div>
-            <div class="data-node"><label>পদবী / লিঙ্গ</label><span class="view-mode" id="vDesignation">...</span><input type="text" class="edit-mode" id="iDesignation" required></div>
-            <div class="data-node"><label>রক্তের গ্রুপ</label><span class="view-mode" id="vBlood">...</span><input type="text" class="edit-mode" id="iBlood"></div>
+        <form id="memberDataUpdateForm">
+          <div class="info-data-grid">
+            <div class="info-node"><label>নাম (ইংরেজি)</label><span class="v-mode" id="vEngName">...</span><input type="text" class="e-mode" id="iEngName" required></div>
+            <div class="info-node"><label>নাম (বাংলা)</label><span class="v-mode" id="vBngName">...</span><input type="text" class="e-mode" id="iBngName" required></div>
+            <div class="info-node"><label>মোবাইল নম্বর</label><span class="v-mode" id="vMobile">...</span><input type="tel" class="e-mode" id="iMobile" required></div>
+            <div class="info-node"><label>পদবী / লিঙ্গ</label><span class="v-mode" id="vDesignation">...</span><input type="text" class="e-mode" id="iDesignation" required></div>
           </div>
-          <div class="submit-bar" id="infoSubmitBar">
-            <button type="button" class="btn-sec" id="cancelInfoEdit">বাতিল</button>
-            <button type="submit" class="btn-prime">পরিবর্তন সাবমিট করুন</button>
+          <div class="action-submit-row" id="editActionRow">
+            <button type="button" class="btn-cyber-sec" id="cancelEditEngine">বাতিল করুন</button>
+            <button type="submit" class="btn-cyber-prime">সাবমিট করুন</button>
           </div>
         </form>
       </section>
 
-      <section id="applicationsView" style="display: none;">
-         <div class="cyber-glass" style="padding: 40px; text-align: center; border-radius: 12px;">
-            <i class="fas fa-folder-open" style="font-size: 40px; color: var(--neon-blue); margin-bottom: 15px;"></i>
-            <h3>আমার আবেদন ট্র্যাকিং স্টেশন</h3>
-            <p style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">এই মডিউলের স্ক্রিপ্ট পরবর্তী আপডেটে সংযুক্ত করা হবে।</p>
-         </div>
+      <section id="blankApplicationSection" style="display: none;">
+        <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
+          <i class="fas fa-clock" style="font-size:40px; color:var(--neon-yellow); margin-bottom:15px;"></i>
+          <h3>আমার আবেদন মডিউল</h3>
+          <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">এই সেকশনটি আপাতত ফাঁকা রাখা হয়েছে। পরবর্তী আপডেটে এখানে ডেটা যুক্ত হবে।</p>
+        </div>
       </section>
 
     </main>
   </div>
 
-  <div class="nexus-popup-modal" id="passModal">
-    <div class="popup-body cyber-glass">
-      <h3 style="color:#fff; font-size:16px; margin-bottom:15px;"><i class="fas fa-key" style="color:var(--neon-yellow)"></i> সিকিউর পাসওয়ার্ড পরিবর্তন</h3>
+  <div class="nexus-modal" id="passwordModalNode">
+    <div class="modal-body cyber-glass">
+      <h3 style="color: var(--neon-yellow); margin-bottom: 15px;"><i class="fas fa-shield-alt"></i> পাসওয়ার্ড পরিবর্তন</h3>
       <form id="directPasswordForm">
-        <div class="cyber-field"><i class="fas fa-lock"></i><input type="password" id="pNew" class="cyber-input" placeholder="নতুন পাসওয়ার্ড দিন" required></div>
-        <div class="cyber-field"><i class="fas fa-check-double"></i><input type="password" id="pConfirm" class="cyber-input" placeholder="পুনরায় পাসওয়ার্ড নিশ্চিত করুন" required></div>
-        <div style="display:flex; justify-content:flex-end; margin-top:10px;">
-          <button type="button" class="btn-sec" id="closePassModal">বাতিল</button>
-          <button type="submit" class="btn-prime">সরাসরি আপডেট করুন</button>
+        <input type="password" id="newPassInput" class="cyber-input" placeholder="নতুন পাসওয়ার্ড লিখুন" required>
+        <input type="password" id="confirmPassInput" class="cyber-input" placeholder="পুনরায় পাসওয়ার্ডটি নিশ্চিত করুন" required>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn-cyber-sec" id="closePassModalBtn">বাতিল</button>
+          <button type="submit" class="btn-cyber-prime" style="background: var(--neon-yellow);">সরাসরি আপডেট করুন</button>
         </div>
       </form>
     </div>
   </div>
 
-  <div class="nexus-popup-modal" id="imageConfirmModal">
-    <div class="popup-body cyber-glass" style="text-align:center;">
-      <i class="fas fa-question-circle" style="font-size:35px; color:var(--neon-blue); margin-bottom:15px;"></i>
-      <h3 style="color:#fff; font-size:16px; margin-bottom:8px;">ছবি পরিবর্তন ভেরিফিকেশন</h3>
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">আপনি কি নতুন প্রোফাইল ছবিটি অনুমোদনের জন্য সাবমিট করতে ইচ্ছুক?</p>
-      <div style="display:flex; justify-content:center;">
-        <button class="btn-sec" id="btnCancelImgSubmit">বাতিল করুন</button>
-        <button class="btn-prime" id="btnConfirmImgSubmit">সাবমিট করুন</button>
+  <div class="nexus-modal" id="imageConfirmModal">
+    <div class="modal-body cyber-glass" style="text-align: center;">
+      <h3 style="color: var(--neon-blue); margin-bottom: 10px;">আপনি কি ছবি পরিবর্তন এর জন্য সাবমিট করবেন?</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">আপনার নতুন ছবিটি অনুমোদনের জন্য এডমিন প্যানেলে পাঠানো হবে।</p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" class="btn-cyber-sec" id="btnCancelImgSubmit">বাতিল করুন</button>
+        <button type="button" class="btn-cyber-prime" id="btnConfirmImgSubmit">সাবমিট করুন</button>
       </div>
     </div>
   </div>
 
-  <div class="nexus-popup-modal" id="infoConfirmModal">
-    <div class="popup-body cyber-glass" style="text-align:center;">
-      <i class="fas fa-shield-alt" style="font-size:35px; color:var(--neon-yellow); margin-bottom:15px;"></i>
-      <h3 style="color:#fff; font-size:16px; margin-bottom:8px;">তথ্য পরিবর্তন কনফার্মেশন</h3>
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">আপনি কি আপনার তথ্য পরিবর্তনের আবেদনটি সাবমিট করতে চান?</p>
-      <div style="display:flex; justify-content:center;">
-        <button class="btn-sec" id="btnCancelDataSubmit">বাতিল করুন</button>
-        <button class="btn-prime" id="btnConfirmDataSubmit">সাবমিট করুন</button>
+  <div class="nexus-modal" id="dataConfirmModal">
+    <div class="modal-body cyber-glass" style="text-align: center;">
+      <h3 style="color: var(--neon-green); margin-bottom: 10px;">আপনি কি আপনার তথ্য পরিবর্তন এর জন্য সাবমিট করতে চান?</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">সাবমিট করার পর এডমিন অনুমোদন না দেওয়া পর্যন্ত তথ্য পুনরায় এডিট করা যাবে না।</p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" class="btn-cyber-sec" id="btnCancelDataSubmit">বাতিল করুন</button>
+        <button type="button" class="btn-cyber-prime" id="btnConfirmDataSubmit">সাবমিট করুন</button>
       </div>
     </div>
   </div>
 
-  <div class="nexus-toast" id="systemToast">
-    <i id="toastIcon" class="fas fa-info-circle"></i>
-    <div>
-      <p id="toastMessage">সিস্টেম নোটিফিকেশন মেসেজ</p>
-    </div>
+  <div class="system-toast" id="systemToastNode">
+    <p id="toastMessage">সিস্টেম বার্তা...</p>
   </div>
 
 
-  <script>
-    // ডামি ইউজার স্টেট ম্যানেজমেন্ট (পরবর্তীতে ফায়ারবেস অথ থেকে ডাটা রিয়েলটাইম বাইন্ড হবে)
-    // লকিং টেস্ট করার জন্য 'pending' অথবা এডিট করার অনুমতি দিতে 'waiting' / 'approved' সেট করুন।
-    let userProfileState = {
-      uid: "USER_101",
-      englishName: "মুহাম্মাদ আব্দুল্লাহ",
-      email: "abdullah@ros.org",
-      phone: "01700000000",
-      designation: "জেনারেল মেম্বার",
-      bloodGroup: "O+",
-      role: "সদস্য", 
-      photoUrl: "https://via.placeholder.com/150",
-      requestStatus: "approved" // রিকোয়েস্ট স্ট্যাটাস অবজেক্ট: 'approved', 'pending', 'waiting'
-    };
+  <script type="module">
+    import { db, auth } from '../firebase-config.js';
+    import { doc, onSnapshot, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ডক এলিমেন্ট সিলেক্টর্স
-    const userMenuTrigger = document.getElementById('userMenuTrigger');
-    const userDropdown = document.getElementById('userDropdown');
-    const systemToast = document.getElementById('systemToast');
-    const toastIcon = document.getElementById('toastIcon');
+    // লোকাল ক্যাশ হোল্ডার
+    let currentMemberUID = null;
+    let currentMemberData = null;
+
+    // ডোমেস্টিক এলিমেন্ট সিলেক্টর
+    const profileTrigger = document.getElementById('profileTrigger');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const systemToastNode = document.getElementById('systemToastNode');
     const toastMessage = document.getElementById('toastMessage');
 
-    // নোটিফিকেশন টোস্ট লঞ্চার
-    function showNotification(message, type = "success") {
-      toastMessage.innerText = message;
-      if(type === "success") {
-        systemToast.style.borderLeftColor = "var(--neon-green)";
-        toastIcon.className = "fas fa-check-circle";
-        toastIcon.style.color = "var(--neon-green)";
-      } else if(type === "warning") {
-        systemToast.style.borderLeftColor = "var(--neon-yellow)";
-        toastIcon.className = "fas fa-exclamation-triangle";
-        toastIcon.style.color = "var(--neon-yellow)";
-      } else {
-        systemToast.style.borderLeftColor = "var(--neon-red)";
-        toastIcon.className = "fas fa-times-circle";
-        toastIcon.style.color = "var(--neon-red)";
-      }
-      systemToast.classList.add('active');
-      setTimeout(() => systemToast.classList.remove('active'), 5500);
+    // টোস্ট নোটিফিকেশন ট্র্যাকার
+    function triggerNotification(msg, isSuccess = true) {
+      toastMessage.innerText = msg;
+      systemToastNode.style.borderLeftColor = isSuccess ? "var(--neon-green)" : "var(--neon-yellow)";
+      systemToastNode.classList.add('active');
+      setTimeout(() => systemToastNode.classList.remove('active'), 5000);
     }
 
-    // ড্রপডাউন টগল অপারেশন
-    userMenuTrigger.addEventListener('click', (e) => {
+    // ড্রপডাউন মেনু কন্ট্রোলার 
+    profileTrigger.addEventListener('click', (e) => {
       e.stopPropagation();
-      userDropdown.style.display = userDropdown.style.display === 'flex' ? 'none' : 'flex';
+      profileDropdown.style.display = profileDropdown.style.display === 'flex' ? 'none' : 'flex';
     });
-    document.addEventListener('click', () => userDropdown.style.display = 'none');
+    document.addEventListener('click', () => profileDropdown.style.display = 'none');
 
-    // প্যানেল মডিউল নেভিগেশন (SPA রাউটার গেট)
-    const menuProfile = document.getElementById('menuProfile');
-    const menuApplications = document.getElementById('menuApplications');
-    const profileView = document.getElementById('profileView');
-    const applicationsView = document.getElementById('applicationsView');
+    // রাউটার নেভিগেশন কন্ট্রোল (প্রোফাইল বনাম আমার আবেদন সেকশন সুইচ)
+    const menuProfileLink = document.getElementById('menuProfileLink');
+    const menuAppLink = document.getElementById('menuAppLink');
+    const profileEditorSection = document.getElementById('profileEditorSection');
+    const blankApplicationSection = document.getElementById('blankApplicationSection');
 
-    menuProfile.addEventListener('click', () => {
-      setActiveMenu(menuProfile, profileView);
+    menuProfileLink.addEventListener('click', () => {
+      menuProfileLink.classList.add('active'); menuAppLink.classList.remove('active');
+      profileEditorSection.style.display = "block"; blankApplicationSection.style.display = "none";
     });
-    menuApplications.addEventListener('click', () => {
-      setActiveMenu(menuApplications, applicationsView);
+    menuAppLink.addEventListener('click', () => {
+      menuAppLink.classList.add('active'); menuProfileLink.classList.remove('active');
+      profileEditorSection.style.display = "none"; blankApplicationSection.style.display = "block";
     });
-    document.getElementById('dropOptProfile').addEventListener('click', () => {
-      setActiveMenu(menuProfile, profileView);
+    document.getElementById('triggerProfilePanel').addEventListener('click', () => {
+      menuProfileLink.click();
     });
 
-    function setActiveMenu(menuEl, viewEl) {
-      document.querySelectorAll('.menu-item').forEach(li => li.classList.remove('active'));
-      menuEl.classList.add('active');
-      profileView.style.display = 'none';
-      applicationsView.style.display = 'none';
-      viewEl.style.display = 'block';
+    // ফায়ারবেস অথেনটিকেশন ও লাইভ ডাটাবেজ সিংক্রোনাইজেশন লুপ
+    onAuthStateChanged(auth, (user) => {
+      if (!user) { window.location.href = "../login.html"; return; }
+      
+      currentMemberUID = user.uid;
+
+      // ফায়ারস্টোর থেকে রিয়েল-টাইম ডাটা লিসেনার
+      onSnapshot(doc(db, "users", currentMemberUID), (snapshot) => {
+        if (snapshot.exists()) {
+          currentMemberData = snapshot.data();
+          renderSystemInterface();
+        } else {
+          alert("ডাটাবেজে আপনার সদস্য প্রোফাইল খুঁজে পাওয়া যায়নি!");
+          signOut(auth);
+        }
+      });
+    });
+
+    // ইন্টারফেসে রিয়েল-টাইম ডাটা পুশ করা
+    function renderSystemInterface() {
+      // হেডার নোড ডাটা ফিল
+      document.getElementById('topNavRole').innerText = (currentMemberData.role || "MEMBER").toUpperCase();
+      document.getElementById('topNavAvatar').src = currentMemberData.photoUrl || '../placeholder.png';
+      document.getElementById('profileDisplayImg').src = currentMemberData.photoUrl || '../placeholder.png';
+      document.getElementById('dropMemberName').innerText = currentMemberData.englishName || "সদস্য নাম";
+      document.getElementById('dropMemberEmail').innerText = auth.currentUser.email;
+
+      // প্রোফাইল এডিটর ভিউ মোড ডাটা ফিল
+      document.getElementById('vEngName').innerText = currentMemberData.englishName || "N/A";
+      document.getElementById('vBngName').innerText = currentMemberData.banglaName || "N/A";
+      document.getElementById('vMobile').innerText = currentMemberData.mobileNumber || "N/A";
+      document.getElementById('vDesignation').innerText = currentMemberData.designation || "N/A";
     }
 
-    // প্রোফাইল ডাটা ইন্টারফেসে রেন্ডার
-    function initProfileData() {
-      document.getElementById('memberTypeBadge').innerText = userProfileState.role;
-      document.getElementById('topNavAvatar').src = userProfileState.photoUrl;
-      document.getElementById('profileDisplayImg').src = userProfileState.photoUrl;
-      document.getElementById('dropProfileName').innerText = userProfileState.englishName;
-      document.getElementById('dropProfileEmail').innerText = userProfileState.email;
-
-      document.getElementById('vName').innerText = userProfileState.englishName;
-      document.getElementById('vPhone').innerText = userProfileState.phone;
-      document.getElementById('vDesignation').innerText = userProfileState.designation;
-      document.getElementById('vBlood').innerText = userProfileState.bloodGroup;
-    }
-    initProfileData();
-
-    // লকড কন্ডিশন ভেরিফায়ার (যদি অলরেডি পেন্ডিং থাকে তবে ট্রু রিটার্ন করবে)
-    function isProfileLocked() {
-      if(userProfileState.requestStatus === "pending") {
-        showNotification("আপনার একটি তথ্য পরিবর্তনের আবেদন ইতোমধ্যে অনুমোদনের অপেক্ষায় রয়েছে। অনুগ্রহ করে অপেক্ষা করুন।", "warning");
+    // লকিং সিস্টেম কন্ডিশনাল চেকার 
+    function verifySystemLock() {
+      // যদি স্ট্যাটাস pending_update হয় তবে সম্পূর্ণ লকড থাকবে
+      if (currentMemberData && currentMemberData.status === "pending_update") {
+        triggerNotification("আপনার একটি তথ্য পরিবর্তনের আবেদন ইতোমধ্যে অনুমোদনের অপেক্ষায় রয়েছে। অনুগ্রহ করে অপেক্ষা করুন।", false);
         return true;
       }
+      // 'waiting' স্ট্যাটাস হলে এডিট করতে দেওয়া হবে (লক হবে না)
       return false;
     }
 
-    // --- ইমেজ আপলোড ও ডাবল কনফার্মেশন সেকশন ---
-    const triggerAvatarFile = document.getElementById('triggerAvatarFile');
-    const avatarFileInput = document.getElementById('avatarFileInput');
+    // --- ক. ছবি পরিবর্তন মডিউলের লজিক ---
+    const avatarUploadClicker = document.getElementById('avatarUploadClicker');
+    const hiddenAvatarInput = document.getElementById('hiddenAvatarInput');
     const imageConfirmModal = document.getElementById('imageConfirmModal');
-    let targetImageFile = null;
+    let encodedImageBase64 = null;
 
-    triggerAvatarFile.addEventListener('click', () => {
-      if(isProfileLocked()) return;
-      avatarFileInput.click(); // ফাইল গ্যালারি ওপেন
+    avatarUploadClicker.addEventListener('click', () => {
+      if (verifySystemLock()) return;
+      hiddenAvatarInput.click();
     });
 
-    avatarFileInput.addEventListener('change', (e) => {
-      if(e.target.files.length > 0) {
-        targetImageFile = e.target.files[0];
-        // থিম অনুযায়ী সুন্দর ডিজাইনে কনফার্মেশন মোডাল পপআপ প্রদর্শন
-        imageConfirmModal.style.display = "flex";
+    hiddenAvatarInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          encodedImageBase64 = event.target.result;
+          imageConfirmModal.style.display = "flex"; // সুন্দর ডায়ালগ উইন্ডো ওপেন
+        };
+        reader.readAsDataURL(file);
       }
     });
 
     document.getElementById('btnCancelImgSubmit').addEventListener('click', () => {
       imageConfirmModal.style.display = "none";
-      avatarFileInput.value = ""; // রি-সেট ইনপुट
+      hiddenAvatarInput.value = "";
     });
 
-    document.getElementById('btnConfirmImgSubmit').addEventListener('click', () => {
+    document.getElementById('btnConfirmImgSubmit').addEventListener('click', async () => {
       imageConfirmModal.style.display = "none";
-      // এখানে ফায়ারবেস স্টোরেজ আপলোড ট্রিগার হবে
-      userProfileState.requestStatus = "pending"; // স্ট্যাটাস লক সেট
-      showNotification("আপনার প্রোফাইল ছবি পরিবর্তনের আবেদনটি এডমিন / সভাপতি / সেক্রেটারির নিকট সফলভাবে পৌঁছেছে।", "success");
+      try {
+        // নতুন আপডেট রিকোয়েস্ট ডক তৈরি / সেট করা হচ্ছে এডমিনের জন্য
+        await setDoc(doc(db, "profile_update_requests", currentMemberUID), {
+          userId: currentMemberUID,
+          userEmail: auth.currentUser.email,
+          timestamp: Date.now(),
+          requestedChanges: {
+            photoUrl: encodedImageBase64 // এখানে আপনার আপলোড প্রসেস অনুযায়ী ফাইল স্টোরেজ ইউআরএল বা বেস৬৪ বসবে
+          }
+        });
+
+         // ইউজারের মূল ডকুমেন্টের স্ট্যাটাস 'pending_update' এ রূপান্তর করে লক করা হচ্ছে
+        await updateDoc(doc(db, "users", currentMemberUID), { status: "pending_update" });
+        
+        triggerNotification("আপনার ছবি পরিবর্তনের আবেদন এডমিন/ সভাপতি/ সেক্রেটারির কাছে পৌঁছেছে।");
+      } catch (err) {
+        alert("ত্রুটি: " + err.message);
+      }
     });
 
+    // --- খ. তথ্য পরিবর্তন ইঞ্জিন লজিক ---
+    const activateEditEngine = document.getElementById('activateEditEngine');
+    const editActionRow = document.getElementById('editActionRow');
+    const memberDataUpdateForm = document.getElementById('memberDataUpdateForm');
+    const dataConfirmModal = document.getElementById('dataConfirmModal');
 
-      // --- তথ্য পরিবর্তন এডিট ইঞ্জিন এবং লকিং মেকানিজম ---
-    const infoEditTrigger = document.getElementById('infoEditTrigger');
-    const infoSubmitBar = document.getElementById('infoSubmitBar');
-    const profileDataForm = document.getElementById('profileDataForm');
-    const infoConfirmModal = document.getElementById('infoConfirmModal');
+    activateEditEngine.addEventListener('click', () => {
+      if (verifySystemLock()) return;
 
-    infoEditTrigger.addEventListener('click', () => {
-      if(isProfileLocked()) return;
-      
-      // এডিট ফিল্ডগুলোতে কারেন্ট ভ্যালু ইনপুট দেওয়া
-      document.getElementById('iName').value = userProfileState.englishName;
-      document.getElementById('iPhone').value = userProfileState.phone;
-      document.getElementById('iDesignation').value = userProfileState.designation;
-      document.getElementById('iBlood').value = userProfileState.bloodGroup;
+      // ইনপুট ফিল্ডে কারেন্ট ডাটা লোড
+      document.getElementById('iEngName').value = currentMemberData.englishName || "";
+      document.getElementById('iBngName').value = currentMemberData.banglaName || "";
+      document.getElementById('iMobile').value = currentMemberData.mobileNumber || "";
+      document.getElementById('iDesignation').value = currentMemberData.designation || "";
 
-      // ভিউ মোড হাইড করে এডিট মোড চালু
-      document.querySelectorAll('.view-mode').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.edit-mode').forEach(el => el.style.display = 'block');
-      infoSubmitBar.style.display = 'flex';
-      infoEditTrigger.style.display = 'none';
+      // ভিউ মোড বন্ধ ও এডিট মোড চালু
+      document.querySelectorAll('.v-mode').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.e-mode').forEach(el => el.style.display = 'block');
+      editActionRow.style.display = "flex";
+      activateEditEngine.style.display = "none";
     });
 
-    document.getElementById('cancelInfoEdit').addEventListener('click', () => {
-      closeEditMode();
+    document.getElementById('cancelEditEngine').addEventListener('click', () => {
+      disableEditEngine();
     });
 
-    function closeEditMode() {
-      document.querySelectorAll('.view-mode').forEach(el => el.style.display = 'inline');
-      document.querySelectorAll('.edit-mode').forEach(el => el.style.display = 'none');
-      infoSubmitBar.style.display = 'none';
-      infoEditTrigger.style.display = 'flex';
+    function disableEditEngine() {
+      document.querySelectorAll('.v-mode').forEach(el => el.style.display = 'inline');
+      document.querySelectorAll('.e-mode').forEach(el => el.style.display = 'none');
+      editActionRow.style.display = "none";
+      activateEditEngine.style.display = "block";
     }
 
-    profileDataForm.addEventListener('submit', (e) => {
+    memberDataUpdateForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      infoConfirmModal.style.display = 'flex'; // সাবমিট ডায়ালগ ওপেন
+      dataConfirmModal.style.display = "flex"; // সাবমিট করার আগে ডাবল চেক ডায়ালগ
     });
 
     document.getElementById('btnCancelDataSubmit').addEventListener('click', () => {
-      infoConfirmModal.style.display = 'none';
+      dataConfirmModal.style.display = "none";
     });
 
-    document.getElementById('btnConfirmDataSubmit').addEventListener('click', () => {
-      infoConfirmModal.style.display = 'none';
-      
-      // ফরমের নতুন ডাটাগুলো টেম্পোরারি রিকোয়েস্ট আকারে সেভ হবে (এডমিন অ্যাপ্রুভালের জন্য)
-      userProfileState.requestStatus = "pending"; // প্যানেল লকড
-      closeEditMode();
-      showNotification("আপনার প্রোফাইলের তথ্য পরিবর্তনের আবেদনটি অনুমোদনের জন্য সফলভাবে এডমিন প্যানেলে পাঠানো হয়েছে।", "success");
+    document.getElementById('btnConfirmDataSubmit').addEventListener('click', async () => {
+      dataConfirmModal.style.display = "none";
+      try {
+        const targetChangesObj = {
+          englishName: document.getElementById('iEngName').value,
+          banglaName: document.getElementById('iBngName').value,
+          mobileNumber: document.getElementById('iMobile').value,
+          designation: document.getElementById('iDesignation').value
+        };
+
+        // এডমিন রিকোয়েস্ট কালেকশনে ডাটা পুশ
+        await setDoc(doc(db, "profile_update_requests", currentMemberUID), {
+          userId: currentMemberUID,
+          userEmail: auth.currentUser.email,
+          timestamp: Date.now(),
+          requestedChanges: targetChangesObj
+        });
+
+        // মূল ইউজার নোড স্ট্যাটাস লকড ডাউন করা
+        await updateDoc(doc(db, "users", currentMemberUID), { status: "pending_update" });
+        
+        disableEditEngine();
+        triggerNotification("আপনার তথ্য পরিবর্তনের আবেদনটি অনুমোদনের জন্য সফলভাবে এডমিন প্যানেলে পাঠানো হয়েছে।");
+      } catch (err) {
+        alert("ত্রুটি: " + err.message);
+      }
     });
 
-
-    // --- পাসওয়ার্ড মডিউল (সরাসরি অ্যাকশন নো-অ্যাপ্রুভাল রিকোয়ার্ড) ---
-    const passModal = document.getElementById('passModal');
-    document.getElementById('dropOptPass').addEventListener('click', () => {
-      passModal.style.display = 'flex';
-    });
-    document.getElementById('closePassModal').addEventListener('click', () => {
-      passModal.style.display = 'none';
+    // --- গ. পাসওয়ার্ড পরিবর্তন সেকশন (সরাসরি নো-অ্যাপ্রুভাল) ---
+    const passwordModalNode = document.getElementById('passwordModalNode');
+    document.getElementById('openPassModalBtn').addEventListener('click', () => passwordModalNode.style.display = 'flex');
+    document.getElementById('closePassModalBtn').addEventListener('click', () => {
+      passwordModalNode.style.display = 'none';
       document.getElementById('directPasswordForm').reset();
     });
 
-    document.getElementById('directPasswordForm').addEventListener('submit', (e) => {
+    document.getElementById('directPasswordForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const nPass = document.getElementById('pNew').value;
-      const cPass = document.getElementById('pConfirm').value;
+      const nPass = document.getElementById('newPassInput').value;
+      const cPass = document.getElementById('confirmPassInput').value;
 
-      if(nPass !== cPass) {
-        showNotification("পাসওয়ার্ড দুটি মিলছে না, পুনরায় চেক করুন!", "danger");
+      if (nPass !== cPass) {
+        triggerNotification("পাসওয়ার্ড দুটি মিলছে না, পুনরায় যাচাই করুন!", false);
         return;
       }
-      
-      // এখানে সরাসরি Firebase auth.currentUser.updatePassword রান হবে
-      showNotification("আপনার সিকিউরিটি পাসওয়ার্ডটি সরাসরি সফলভাবে আপডেট করা হয়েছে।", "success");
-      passModal.style.display = 'none';
-      document.getElementById('directPasswordForm').reset();
+
+      try {
+        await updatePassword(auth.currentUser, nPass);
+        triggerNotification("আপনার সিকিউরিটি পাসওয়ার্ডটি সফলভাবে সরাসরি আপডেট করা হয়েছে।");
+        passwordModalNode.style.display = 'none';
+        document.getElementById('directPasswordForm').reset();
+      } catch (err) {
+        alert("পাসওয়ার্ড আপডেটে সমস্যা: " + err.message);
+      }
     });
 
-    // লগআউট নোড
-    document.getElementById('dropOptLogout').addEventListener('click', () => {
-      if(confirm("আপনি কি এই সেশনটি শেষ করে লগআউট করতে চান?")) {
-         showNotification("লগআউট হচ্ছে...", "warning");
-         // signOut(auth); window.location.href = "../login.html";
+    // --- ঘ. ১০০% ওয়ার্কিং লগআউট মডিউল লজিক ---
+    document.getElementById('memberSignOutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm("আপনি কি নিশ্চিত যে এই সেশনটি শেষ করে লগআউট করতে চান?")) {
+        signOut(auth).then(() => {
+          window.location.href = "../login.html";
+        }).catch((err) => {
+          alert("লগআউট করতে সমস্যা হয়েছে: " + err.message);
+        });
       }
     });
   </script>
