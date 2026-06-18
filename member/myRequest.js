@@ -1,7 +1,7 @@
 // ROS Nexus - Enterprise Member Request Status Module (Ultra Advanced Vertical Tracker & Dynamic Loops)
 function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc) {
   
-  // ১. প্রিমিয়াম সাইবারপাঙ্ক ইউআই এবং ভার্টিক্যাল বাম-পার্শ্বস্থ প্রোগ্রেস লাইন ডিজাইন
+  // ১. প্রিমিয়াম সাইবারপাঙ্ক ইউআই এবং ভার্টিক্যাল বাম-পার্শ্বস্থ প্রোগ্রেস লাইন ডিজাইন (১০০% অপরিবর্তিত)
   contentRoot.innerHTML = `
     <style>
       .my-req-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 20px; box-sizing: border-box; }
@@ -140,7 +140,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
 
   if (!currentUser) return;
 
-  // নিখুঁত টাইম বক্স জেনারেটর (বক্স ডিজাইনে সময় দেখাবে)
+  // নিখুঁত টাইম বক্স জেনারেটর (প্রত্যেক স্ট্যাটাসে সময় দেখাবে)[span_0](start_span)[span_0](end_span)
   const renderTimeBox = (timestampField) => {
     if (!timestampField) return `<div class="time-box"><i class="far fa-clock"></i> লাইভ সেশন রানিং</div>`;
     const d = timestampField.toDate ? timestampField.toDate() : new Date(timestampField);
@@ -153,224 +153,245 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
   };
 
-  // ২. রিয়েল-টাইম ডাটাবেজ লিসেনার এবং প্রোগ্রেসিভ লুপ আর্কিটেকচার
+  // ২. রিয়েল-টাইম ডাটাবেজ লিসেনার (৩ মাসের কোনো ডিলিট মেকানিজম নেই - একদম স্থায়ী)
   onSnapshot(doc(db, "users", currentUser.uid), async (snapshot) => {
     if (!snapshot.exists()) return;
     const uData = snapshot.data();
     
     let currentCards = [];
     let previousCards = [];
-    
-    const rightNow = new Date().getTime();
-    const ninetyDaysInMs = 90 * 24 * 60 * 60 * 1000; // ৩ মাস সংরক্ষণ মেমোরি
 
     // ==========================================
-    // ক) প্রোফাইল তথ্য পরিবর্তন আবেদন প্রসেসিং (INFO REQUEST)
+    // ক) প্রোফাইল তথ্য পরিবর্তন আবেদন প্রসেসিং (INFO REQUEST)[span_1](start_span)[span_1](end_span)
     // ==========================================
-    if (uData.infoApprovalStatus) {
+    if (uData.infoApprovalStatus && uData.infoApprovalStatus !== "") {
       let isCurrent = uData.infoApprovalStatus === "pending" || uData.infoApprovalStatus === "waiting";
-      let showInfoCard = true;
 
-      // আর্কাইভ ক্লিনিং রুলস: ৩ মাস পর অটোমেটিক রিমুভ হবে, তার আগে পুরাতন হিসেবে জমা থাকবে
-      if (!isCurrent && uData.infoActionAt) {
-        const actionTime = uData.infoActionAt.toDate ? uData.infoActionAt.toDate().getTime() : new Date(uData.infoActionAt).getTime();
-        if (rightNow - actionTime >= ninetyDaysInMs) {
-          showInfoCard = false;
-          await updateDoc(doc(db, "users", currentUser.uid), {
-            infoApprovalStatus: null,
-            infoRejectReason: null,
-            infoActionAt: null,
-            tempPendingData: null
-          });
-        }
+      let statusText = "পেন্ডিং";
+      let badgeClass = "status-pending";
+      let progressHeightPercent = 40; 
+      let progressFillModifier = "";
+
+      if (uData.infoApprovalStatus === "waiting") {
+        statusText = "হোল্ড (স্থগিত)";
+        badgeClass = "status-waiting";
+        progressHeightPercent = 65;
+      } else if (uData.infoApprovalStatus === "approved") {
+        statusText = "অনুমোদিত";
+        badgeClass = "status-approved";
+        progressFillModifier = "complete-approved";
+      } else if (uData.infoApprovalStatus === "rejected") {
+        statusText = "প্রত্যাখ্যাত";
+        badgeClass = "status-rejected";
+        progressFillModifier = "complete-rejected";
       }
 
-      if (showInfoCard) {
-        let statusText = "পেন্ডিং";
-        let badgeClass = "status-pending";
-        let progressHeightPercent = 40; 
-        let progressFillModifier = "";
+      let nodesArray = [];
 
-        if (uData.infoApprovalStatus === "waiting") {
-          statusText = "হোল্ড (স্থগিত)";
-          badgeClass = "status-waiting";
-          progressHeightPercent = 65;
-        } else if (uData.infoApprovalStatus === "approved") {
-          statusText = "অনুমোদিত";
-          badgeClass = "status-approved";
-          progressFillModifier = "complete-approved";
-        } else if (uData.infoApprovalStatus === "rejected") {
-          statusText = "প্রত্যাখ্যাত";
-          badgeClass = "status-rejected";
-          progressFillModifier = "complete-rejected";
-        }
+      // ১. Submitted নোড (সময় সহ)[span_2](start_span)[span_2](end_span)
+      nodesArray.push(`
+        <div class="timeline-node node-submitted">
+          <div class="timeline-bullet"></div>
+          <div class="timeline-content content-submitted">
+            <h5>Submitted</h5>
+            <p>আপনার তথ্য পরিবর্তনের আবেদন সফলভাবে জমা হয়েছে।</p>
+            ${renderTimeBox(uData.infoRequestedAt || uData.infoActionAt)}
+          </div>
+        </div>
+      `);
 
-        // --- রিকার্সিভ এবং ডাইনামিক ফ্লো ট্র্যাকিং ইঞ্জিন ---
-        let nodesArray = [];
-
-        // ধাপ ১: Submitted সবসময় থাকবে
+      // ২. Pending নোড (সময় সহ)[span_3](start_span)[span_3](end_span)
+      if (uData.infoApprovalStatus === "pending") {
         nodesArray.push(`
-          <div class="timeline-node node-submitted">
+          <div class="timeline-node node-pending node-active">
             <div class="timeline-bullet"></div>
-            <div class="timeline-content content-submitted">
-              <h5>Submitted</h5>
-              <p>আপনার তথ্য পরিবর্তনের আবেদন সফলভাবে জমা হয়েছে।</p>
+            <div class="timeline-content content-pending">
+              <h5>Pending</h5>
+              <p>আপনার আবেদন প্রশাসকের পর্যালোচনার অপেক্ষায় রয়েছে।</p>
               ${renderTimeBox(uData.infoRequestedAt)}
             </div>
           </div>
         `);
-
-        // ধাপ ২: প্রথমবার বা কারেন্ট পেন্ডিং স্টেট ট্র্যাকিং
-        if (uData.infoApprovalStatus === "pending" && !uData.infoRejectReason) {
-          nodesArray.push(`
-            <div class="timeline-node node-pending node-active">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-pending">
-                <h5>Pending</h5>
-                <p>আপনার আবেদন প্রশাসকের পর্যালোচনার অপেক্ষায় রয়েছে।</p>
-                ${renderTimeBox(uData.infoRequestedAt)}
-              </div>
-            </div>
-          `);
-        }
-
-        // ধাপ ৩: যদি হোল্ড (waiting) স্ট্যাটাস সক্রিয় থাকে
-        if (uData.infoApprovalStatus === "waiting") {
-          // ১ম পেন্ডিং দেখাবে
-          nodesArray.push(`
-            <div class="timeline-node node-pending">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-pending">
-                <h5>Pending</h5>
-                <p>আপনার আবেদন প্রশাসকের পর্যালোচনার অপেক্ষায় রয়েছে।</p>
-                ${renderTimeBox(uData.infoRequestedAt)}
-              </div>
-            </div>
-          `);
-          // তারপর হোল্ড নোড দেখাবে উইথ রিজন বক্স
-          nodesArray.push(`
-            <div class="timeline-node node-hold node-active">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-hold">
-                <h5>Hold</h5>
-                <p>আপনার আবেদন সাময়িকভাবে স্থগিত রাখা হয়েছে।</p>
-                <div class="reason-display-box hold-style"><strong>Hold Reason:</strong> ${uData.infoRejectReason || "তথ্য অসঙ্গতি রয়েছে। সংশোধন করুন।"}</div>
-                ${renderTimeBox(uData.infoActionAt || uData.infoRequestedAt)}
-              </div>
-            </div>
-          `);
-        }
-
-        // ধাপ ৪: ইউজার রিসাবমিট করলে (যখন রিজেক্ট রিজন ফায়ারবেসে আছে কিন্তু স্ট্যাটাস আবার পেন্ডিং)
-        if (uData.infoRejectReason && uData.infoApprovalStatus === "pending") {
-          progressHeightPercent = 85;
-          // পূর্বের ওল্ড হোল্ড হিস্ট্রি ট্রেইল
-          nodesArray.push(`
-            <div class="timeline-node node-hold">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-hold">
-                <h5>Hold</h5>
-                <p>আপনার আবেদন সাময়িকভাবে স্থগিত রাখা হয়েছে।</p>
-                <div class="reason-display-box hold-style"><strong>Previous Reason:</strong> ${uData.infoRejectReason}</div>
-                ${renderTimeBox(uData.infoRequestedAt)}
-              </div>
-            </div>
-          `);
-          // রিসাবমিটেড নোড
-          nodesArray.push(`
-            <div class="timeline-node node-resubmitted">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-resubmitted">
-                <h5>Resubmitted</h5>
-                <p>আপনি সংশোধিত তথ্য পুনরায় জমা দিয়েছেন।</p>
-                ${renderTimeBox(uData.infoRequestedAt)}
-              </div>
-            </div>
-          `);
-          // কারেন্ট রি-পেন্ডিং এভ্যালুয়েশন
-          nodesArray.push(`
-            <div class="timeline-node node-pending node-active">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-pending">
-                <h5>Pending</h5>
-                <p>আপনার আবেদনটি পুনরায় সাবমিট করা হয়েছে এবং প্রশাসকের পর্যালোচনার অপেক্ষায় রয়েছে।</p>
-                ${renderTimeBox(uData.infoRequestedAt)}
-              </div>
-            </div>
-          `);
-        }
-
-        // ধাপ ৫: ফাইনাল এপ্রুভড স্টেট
-        if (uData.infoApprovalStatus === "approved") {
-          nodesArray.push(`
-            <div class="timeline-node node-approved node-active">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-approved">
-                <h5>Approved</h5>
-                <p>আপনার আবেদন অনুমোদিত হয়েছে।</p>
-                ${renderTimeBox(uData.infoActionAt)}
-              </div>
-            </div>
-          `);
-        }
-
-        // ধাপ ৬: ফাইনাল রিজেক্টেড স্টেট
-        if (uData.infoApprovalStatus === "rejected") {
-          nodesArray.push(`
-            <div class="timeline-node node-rejected node-active">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-rejected">
-                <h5>Rejected</h5>
-                <p>আপনার আবেদন বাতিল করা হয়েছে।</p>
-                <div class="reason-display-box"><strong>Reject Reason:</strong> ${uData.infoRejectReason || "শর্তাবলী পূরণ করা হয়নি।"}</div>
-                ${renderTimeBox(uData.infoActionAt)}
-              </div>
-            </div>
-          `);
-        }
-
-        // হোল্ড কন্ডিশনে ডাইনামিক বাটন অ্যাকশন রেন্ডারিং
-        let editActionHtml = "";
-        if (uData.infoApprovalStatus === "waiting") {
-          editActionHtml = `
-            <div class="action-trigger-area">
-              <button class="edit-redirect-btn">
-                <i class="fas fa-edit"></i> তথ্য সংশোধন করুন
-              </button>
-            </div>
-          `;
-        }
-
-        const infoCardObj = {
-          type: 'info',
-          date: formatDateOnly(uData.infoRequestedAt),
-          badgeClass: badgeClass,
-          statusText: statusText,
-          progressHeight: progressHeightPercent,
-          progressFillModifier: progressFillModifier,
-          timelineHtml: nodesArray.join(''),
-          actionHtml: editActionHtml,
-          title: "প্রোফাইল তথ্য পরিবর্তন"
-        };
-
-        if (isCurrent) currentCards.push(infoCardObj);
-        else previousCards.push(infoCardObj);
       }
+
+      // ৩. Hold/Waiting নোড (সময় সহ)[span_4](start_span)[span_4](end_span)
+      if (uData.infoApprovalStatus === "waiting") {
+        nodesArray.push(`
+          <div class="timeline-node node-hold node-active">
+            <div class="timeline-bullet"></div>
+            <div class="timeline-content content-hold">
+              <h5>Hold</h5>
+              <p>আপনার আবেদন সাময়িকভাবে স্থগিত রাখা হয়েছে।</p>
+              <div class="reason-display-box hold-style"><strong>Hold Reason:</strong> ${uData.infoRejectReason || "তথ্য অসঙ্গতি রয়েছে। সংশোধন করুন।"}</div>
+              ${renderTimeBox(uData.infoActionAt || uData.infoRequestedAt)}
+            </div>
+          </div>
+        `);
+      }
+
+      // ৪. Approved নোড (সময় সহ)[span_5](start_span)[span_5](end_span)
+      if (uData.infoApprovalStatus === "approved") {
+        nodesArray.push(`
+          <div class="timeline-node node-approved node-active">
+            <div class="timeline-bullet"></div>
+            <div class="timeline-content content-approved">
+              <h5>Approved</h5>
+              <p>আপনার আবেদন অনুমোদিত হয়েছে।</p>
+              ${renderTimeBox(uData.infoActionAt)}
+            </div>
+          </div>
+        `);
+      }
+
+      // ৫. Rejected নোড (সময় সহ)[span_6](start_span)[span_6](end_span)
+      if (uData.infoApprovalStatus === "rejected") {
+        nodesArray.push(`
+          <div class="timeline-node node-rejected node-active">
+            <div class="timeline-bullet"></div>
+            <div class="timeline-content content-rejected">
+              <h5>Rejected</h5>
+              <p>আপনার আবেদন বাতিল করা হয়েছে।</p>
+              <div class="reason-display-box"><strong>Reject Reason:</strong> ${uData.infoRejectReason || "শর্তাবলী পূরণ করা হয়নি।"}</div>
+              ${renderTimeBox(uData.infoActionAt)}
+            </div>
+          </div>
+        `);
+      }
+
+      let editActionHtml = "";
+      if (uData.infoApprovalStatus === "waiting") {
+        editActionHtml = `
+          <div class="action-trigger-area">
+            <button class="edit-redirect-btn">
+              <i class="fas fa-edit"></i> তথ্য সংশোধন করুন
+            </button>
+          </div>
+        `;
+      }
+
+      currentCards.push({
+        type: 'info',
+        date: formatDateOnly(uData.infoRequestedAt || uData.infoActionAt),
+        badgeClass: badgeClass,
+        statusText: statusText,
+        progressHeight: progressHeightPercent,
+        progressFillModifier: progressFillModifier,
+        timelineHtml: nodesArray.join(''),
+        actionHtml: editActionHtml,
+        title: "প্রোফাইল তথ্য পরিবর্তন",
+        icon: "fa-user-edit"
+      });
     }
 
     // ==========================================
-    // ৩. সিরিয়াল নাম্বার (১, ২, ৩...) হ্যান্ডলিং সহ রেন্ডারার লুপ
+    // খ) প্রোফাইল ছবি পরিবর্তন আবেদন প্রসেসিং (IMAGE REQUEST - নতুন যুক্ত)
+    // ==========================================
+    if (uData.imageApprovalStatus && uData.imageApprovalStatus !== "") {
+      let isCurrent = uData.imageApprovalStatus === "pending" || uData.imageApprovalStatus === "submit";
+
+      let statusText = "সাবমিট";
+      let badgeClass = "status-pending";
+      let progressHeightPercent = 30;
+      let progressFillModifier = "";
+
+      if (uData.imageApprovalStatus === "pending") {
+        statusText = "পেন্ডিং";
+        badgeClass = "status-waiting";
+        progressHeightPercent = 60;
+      } else if (uData.imageApprovalStatus === "approved") {
+        statusText = "অনুমোদিত";
+        badgeClass = "status-approved";
+        progressFillModifier = "complete-approved";
+      } else if (uData.imageApprovalStatus === "rejected") {
+        statusText = "প্রত্যাখ্যাত";
+        badgeClass = "status-rejected";
+        progressFillModifier = "complete-rejected";
+      }
+
+      let nodesArray = [];
+
+      // ১. Submit স্টেট (সময় সহ)
+      nodesArray.push(`
+        <div class="timeline-node node-submitted">
+          <div class="timeline-bullet"></div>
+          <div class="timeline-content content-submitted">
+            <h5>Submit</h5>
+            <p>নতুন প্রোফাইল ছবি সফলভাবে আপলোড এবং সাবমিট করা হয়েছে।</p>
+            ${renderTimeBox(uData.imageRequestedAt || uData.imageActionAt)}
+          </div>
+        </div>
+      `);
+
+      // ২. Pending স্টেট (সময় সহ)
+      if (uData.imageApprovalStatus === "pending") {
+        nodesArray.push(`
+          <div class="timeline-node node-pending node-active">
+            <div class="timeline-bullet"></div>
+            <div class="timeline-content content-pending">
+              <h5>Pending</h5>
+              <p>আপনার ছবিটি প্রশাসকের অনুমোদনের অপেক্ষায় আছে।</p>
+              ${renderTimeBox(uData.imageRequestedAt)}
+            </div>
+          </div>
+        `);
+      }
+
+      // ৩. Approved স্টেট (সময় সহ)
+      if (uData.imageApprovalStatus === "approved") {
+        nodesArray.push(`
+          <div class="timeline-node node-approved node-active">
+            <div class="timeline-bullet"></div>
+            <div class="timeline-content content-approved">
+              <h5>Approved</h5>
+              <p>আপনার প্রোফাইল ছবি অনুমোদন করা হয়েছে এবং প্রোফাইল আপডেট সম্পন্ন হয়েছে।</p>
+              ${renderTimeBox(uData.imageActionAt)}
+            </div>
+          </div>
+        `);
+      }
+
+      // ৪. Rejected স্টেট (সময় সহ)
+      if (uData.imageApprovalStatus === "rejected") {
+        nodesArray.push(`
+          <div class="timeline-node node-rejected node-active">
+            <div class="timeline-bullet"></div>
+            <div class="timeline-content content-rejected">
+              <h5>Rejected</h5>
+              <p>আপনার ছবির আবেদনটি বাতিল করা হয়েছে।</p>
+              <div class="reason-display-box"><strong>Reject Reason:</strong> ${uData.imageRejectReason || "ছবিটি অস্পষ্ট বা নির্দেশিকা অনুযায়ী নয়।"}</div>
+              ${renderTimeBox(uData.imageActionAt)}
+            </div>
+          </div>
+        `);
+      }
+
+      currentCards.push({
+        type: 'image',
+        date: formatDateOnly(uData.imageRequestedAt || uData.imageActionAt),
+        badgeClass: badgeClass,
+        statusText: statusText,
+        progressHeight: progressHeightPercent,
+        progressFillModifier: progressFillModifier,
+        timelineHtml: nodesArray.join(''),
+        actionHtml: "",
+        title: "প্রোফাইল ছবি পরিবর্তন",
+        icon: "fa-image"
+      });
+    }
+
+      // ==========================================
+    // ৩. সিরিয়াল নাম্বার (১, ২, ৩...) হ্যান্ডলিং সহ রেন্ডারার লুপ[span_7](start_span)[span_7](end_span)
     // ==========================================
     const renderCardEngine = (cardsArray) => {
       let output = "";
       cardsArray.forEach((card, index) => {
-        const serialNo = index + 1; // ১, ২, ৩ সিরিয়াল নম্বর জেনারেটর
+        const serialNo = index + 1; // ১, ২, ৩ সিরিয়াল নম্বর জেনারেটর[span_8](start_span)[span_8](end_span)
         output += `
           <div>
             <div class="req-compact-card" onclick="this.nextElementSibling.classList.toggle('open')">
               <div class="card-left">
                 <div class="card-serial">${serialNo}</div>
-                <div class="card-icon" style="color:var(--neon-blue); border-color: rgba(0, 180, 216, 0.3);"><i class="fas fa-user-edit"></i></div>
+                <div class="card-icon" style="color:var(--neon-blue); border-color: rgba(0, 180, 216, 0.3);"><i class="fas ${card.icon}"></i></div>
                 <div class="card-details">
                   <h4>${card.title}</h4>
                   <p>আবেদনের তারিখ: ${card.date}</p>
@@ -388,7 +409,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
                   ${card.timelineHtml}
                 </div>
               </div>
-${card.actionHtml}
+              ${card.actionHtml}
             </div>
           </div>
         `;
@@ -396,21 +417,17 @@ ${card.actionHtml}
       return output;
     };
 
-    // কারেন্ট রেন্ডারিং কন্ডিশনাল ট্রিগার
+    // কারেন্ট রেন্ডারিং কন্ডিশনাল ট্রিগার[span_9](start_span)[span_9](end_span)
     if (currentCards.length === 0) {
       currentRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-box-open" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> বর্তমানে কোনো চলমান আবেদন নেই।</div>`;
     } else {
       currentRoot.innerHTML = renderCardEngine(currentCards);
     }
 
-    // আর্কাইভড পুরাতন রেন্ডারিং কন্ডিশনাল ট্রিগার (৩ মাস থেকে যাবে)
-    if (previousCards.length === 0) {
-      previousRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-archive" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> পুরাতন আর্কাইভ হিস্ট্রি খালি।</div>`;
-    } else {
-      previousRoot.innerHTML = renderCardEngine(previousCards);
-    }
+    // আর্কাইভড পুরাতন রেন্ডারিং (একদম স্থায়ী থাকবে)
+    previousRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-archive" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> পুরাতন আর্কাইভ হিস্ট্রি খালি।</div>`;
 
-    // ৪. "তথ্য সংশোধন করুন" বাটন নেভিগেশনাল বাবলিং ইভেন্ট লিসেনার ফিক্স
+    // ৪. "তথ্য সংশোধন করুন" বাটন নেভিগেশনাল বাবলিং ইভেন্ট লিসেনার ফিক্স[span_10](start_span)[span_10](end_span)
     contentRoot.addEventListener('click', (e) => {
       const targetBtn = e.target.closest('.edit-redirect-btn');
       if (targetBtn) {
