@@ -121,7 +121,7 @@
       <ul class="sidebar-menu">
         <li class="menu-item active" id="menuProfileLink" data-id="profile"><a href="#"><i class="fas fa-user-circle"></i> প্রোফাইল</a></li>
         <li class="menu-item" id="menuUpdateInfoLink" data-id="updateInfo"><a href="#"><i class="fas fa-user-edit"></i> তথ্য পরিবর্তন</a></li>
-        <li class="menu-item" id="menuAppLink" data-id="applications"><a href="#"><i class="fas fa-file-alt"></i> আমার আবেদন</a></li>
+        <li class="menu-item" id="menuAppLink" data-id="myRequests"><a href="#"><i class="fas fa-file-alt"></i> আমার আবেদন</a></li>
       </ul>
     </aside>
 
@@ -149,7 +149,13 @@
   </div>
 
   <script src="../member/profile.js"></script>
-  <script src="../member/updateProfile.js"></script> <script type="module">
+  <script src="../member/updateProfile.js"></script>
+  <script src="../member/myRequest.js"></script>
+
+
+
+  
+  <script type="module">
     import { db, auth } from '../firebase-config.js';
     import { doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -177,6 +183,10 @@
       } else if (moduleId === 'applications') {
         spaContentRoot.innerHTML = `<div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;"><h3>📁 আমার আবেদন মডিউল স্ট্যান্ডবাই</h3></div>`;
       }
+      else if (moduleId === 'myRequests') {
+  loadMyRequestsModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc);
+      }
+      
     }
 
     // মেনু ক্লিকের ইভেন্ট লিসেনার
