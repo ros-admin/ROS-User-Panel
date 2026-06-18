@@ -47,6 +47,22 @@
     .menu-item a:hover i, .menu-item.active a i { transform: scale(1.1); text-shadow: 0 0 8px var(--neon-blue); }
     .main-content-node { flex: 1; padding: 25px; overflow-y: auto; position: relative; background: radial-gradient(circle at 50% 50%, rgba(17, 24, 39, 0.3) 0%, transparent 100%); }
     .member-badge { font-size: 11px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(46, 196, 182, 0.3); padding: 3px 10px; border-radius: 20px; background: rgba(46, 196, 182, 0.05); color: var(--neon-green); text-shadow: 0 0 5px rgba(46, 196, 182, 0.5); font-family: 'Orbitron'; }
+    
+    /* পাসওয়ার্ড মোডাল কাস্টম স্টাইল */
+    .cyber-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .cyber-modal-card { width: 100%; max-width: 400px; padding: 30px; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 0 30px rgba(0, 180, 216, 0.2); position: relative; }
+    .cyber-modal-card h3 { font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; color: #fff; }
+    .form-group-node { margin-bottom: 18px; }
+    .form-group-node label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .form-input-node { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 10px 14px; border-radius: 6px; color: #fff; font-size: 14px; transition: 0.3s; }
+    .form-input-node:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 180, 216, 0.3); outline: none; }
+    .modal-action-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+    .cyber-btn { padding: 10px 20px; font-size: 13px; font-weight: 600; border: 1px solid transparent; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+    .cyber-btn-muted { background: transparent; border-color: var(--glass-border); color: var(--text-muted); }
+    .cyber-btn-muted:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .cyber-btn-primary { background: rgba(0, 180, 216, 0.1); border-color: var(--neon-blue); color: var(--neon-blue); }
+    .cyber-btn-primary:hover { background: var(--neon-blue); color: #030712; box-shadow: 0 0 15px var(--neon-blue); }
+
     @media (max-width: 992px) {
       .mobile-menu-toggle { display: flex; }
       .sidebar-nav { position: fixed; top: 60px; left: -260px; height: calc(100vh - 60px); z-index: 900; width: 260px; background: #030712; }
@@ -74,6 +90,7 @@
           <h4 id="dropMemberName">সদস্য নাম</h4>
           <small id="dropMemberEmail">member@ros.org</small>
         </div>
+        <button id="openPassModalBtn"><i class="fas fa-key"></i> পাসওয়ার্ড পরিবর্তন</button>
         <button id="memberSignOutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> লগআউট করুন</button>
       </div>
     </div>
@@ -93,18 +110,39 @@
       </main>
   </div>
 
+  <div class="cyber-modal-overlay" id="passwordChangeModal">
+    <div class="cyber-modal-card cyber-glass">
+      <h3>🔒 নিরাপত্তা পাসওয়ার্ড আপডেট</h3>
+      <form id="passwordUpdateForm">
+        <div class="form-group-node">
+          <label>নতুন পাসওয়ার্ড লিখুন</label>
+          <input type="password" id="newPassword" class="form-input-node" required minlength="6">
+        </div>
+        <div class="form-group-node">
+          <label>নতুন পাসওয়ার্ড পুনরায় নিশ্চিত করুন</label>
+          <input type="password" id="confirmNewPassword" class="form-input-node" required minlength="6">
+        </div>
+        <div class="modal-action-row">
+          <button type="button" class="cyber-btn cyber-btn-muted" id="closePassModalBtn">বাতিল</button>
+          <button type="submit" class="cyber-btn cyber-btn-primary">সংরক্ষণ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="../admin/profile.js"></script>
 
   <script type="module">
     import { db, auth } from '../firebase-config.js';
     import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const sidebarNode = document.getElementById('sidebarNode');
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const spaContentRoot = document.getElementById('spaContentRoot');
     const profileTrigger = document.getElementById('profileTrigger');
     const profileDropdown = document.getElementById('profileDropdown');
+    const passwordChangeModal = document.getElementById('passwordChangeModal');
 
     // ১. সেন্ট্রাল ডাইনামিক রাউটার ইঞ্জিন (SPA মডিউল লোডার)
     function switchModuleView(moduleId, clickedLink) {
@@ -116,11 +154,11 @@
       spaContentRoot.innerHTML = "";
 
       if (moduleId === 'profile') {
-        // প্রোফাইল মডিউল রান করানো হলো
+        // এক্সটার্নাল প্রোফাইল মডিউল সফলভাবে ফায়ার করা হলো
         loadProfileModule(spaContentRoot, db, auth, doc, onSnapshot, signOut);
       }
       /* =======================================================
-         🚩 [ভবিষ্যতের মডিউল ফাংশน এড করার জন্য মার্ক করা জায়গা]
+         🚩 [ভবিষ্যতের মডিউল ফাংশন এড করার জন্য মার্ক করা জায়গা]
          পরবর্তী মডিউল স্ক্রিপ্টগুলোর ফাংশন কল করার জন্য নিচের ব্লক ব্যবহার করুন:
          ======================================================= */
       else if (moduleId === 'updateInfo') {
@@ -158,7 +196,24 @@
       sidebarNode.classList.toggle('active');
     });
 
-    // ৪. ফায়ারবেস অথেনটিকেশন ও লাইভ ডাটাবেজ সিংক্রোনাইজেশন লুপ
+    // ৪. পাসওয়ার্ড মোডাল ওপেন/ক্লোজ ট্রিগার
+    document.getElementById('openPassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'flex');
+    document.getElementById('closePassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'none');
+    
+    // ৫. পাসওয়ার্ড ফায়ারবেস আপডেট সাবমিশন হ্যান্ডলার
+    document.getElementById('passwordUpdateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newPass = document.getElementById('newPassword').value;
+      if (newPass !== document.getElementById('confirmNewPassword').value) { alert("দুঃখিত, পাসওয়ার্ড মিলছে না!"); return; }
+      try { 
+        await updatePassword(auth.currentUser, newPass); 
+        alert("🔒 পাসওয়ার্ড সফলভাবে আপডেট হয়েছে!"); 
+        passwordChangeModal.style.display = 'none'; 
+        document.getElementById('passwordUpdateForm').reset();
+      } catch (err) { alert(err.message); }
+    });
+
+    // ৬. ফায়ারবেস অথেনটিকেশন ও লাইভ ডাটাবেজ সিংক্রোনাইজেশন লুপ
     onAuthStateChanged(auth, (user) => {
       if (!user) { window.location.href = "../login.html"; return; }
       
@@ -186,7 +241,7 @@
       });
     });
 
-    // ৫. ১০০% ওয়ার্কিং লগআউট মডিউল লজিক
+    // ৭. ১০০% ওয়ার্কিং লগআউট মডিউল লজিক
     document.getElementById('memberSignOutBtn').addEventListener('click', () => {
       if (confirm("আপনি কি নিশ্চিত যে এই সেশনটি শেষ করে লগআউট করতে চান?")) {
         signOut(auth).then(() => {
