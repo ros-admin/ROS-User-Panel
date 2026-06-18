@@ -1,4 +1,4 @@
-// ROS Nexus - Enterprise Member Update Info Module (Cloudinary Link Integration & Parallel Lock Engine)
+// ROS Nexus - Enterprise Member Update Info Module (Cloudinary Direct Sync & Reject Notice Auto-Hide Engine)
 function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp) {
   
   if (!contentRoot) return;
@@ -198,51 +198,54 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
     // ছবি পরিবর্তনের রিয়েল-টাইম নোটিফিকেশন লজিক
     if (data.imageApprovalStatus === "pending") {
       if(photoPendingNotice) photoPendingNotice.style.display = "flex";
+      if(photoRejectNotice) photoRejectNotice.style.display = "none"; // নতুন পেন্ডিং রিকোয়েস্টে রিজেক্ট নোটিশ হাইড হবে
       if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = true; updGalleryTriggerBtn.style.opacity = "0.5"; }
-    } else {
+    } else if (data.imageApprovalStatus === "rejected") {
       if(photoPendingNotice) photoPendingNotice.style.display = "none";
-      if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = false; updGalleryTriggerBtn.style.opacity = "1"; }
-    }
-
-    if (data.imageApprovalStatus === "rejected") {
       if(photoRejectReasonText) photoRejectReasonText.innerText = `❌ ছবি রিজেক্টের কারণ: ${data.imageRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
       if(photoRejectNotice) photoRejectNotice.style.display = "flex";
-    } else { if(photoRejectNotice) photoRejectNotice.style.display = "none"; }
+      if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = false; updGalleryTriggerBtn.style.opacity = "1"; }
+    } else {
+      if(photoPendingNotice) photoPendingNotice.style.display = "none";
+      if(photoRejectNotice) photoRejectNotice.style.display = "none";
+      if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = false; updGalleryTriggerBtn.style.opacity = "1"; }
+    }
 
     // তথ্য পরিবর্তনের ডাইনামিক লক ও রিসাবমিট স্টেট ইন্টিগ্রেশন
     if (data.infoApprovalStatus === "pending") {
       if(infoPendingNotice) infoPendingNotice.style.display = "flex";
+      if(infoRejectNotice) infoRejectNotice.style.display = "none"; // নতুন পেন্ডিং রিকোয়েস্টে রিজেক্ট/হোল্ড নোটিশ হাইড হবে
       if(matrixSaveBtn) matrixSaveBtn.disabled = true;
       if(matrixSaveBtnText) matrixSaveBtnText.innerText = "তথ্য পরিবর্তনের আবেদন পাঠান";
-      toggleFormInputs(true); // পেন্ডিং থাকলে ফর্ম লক থাকবে
+      toggleFormInputs(true);
     } else if (data.infoApprovalStatus === "waiting") {
-      // হোল্ড করা হলে সবার নিচে রিসাবমিট অপশন আসবে এবং নোটিফিকেশন দেখাবে
       if(infoPendingNotice) infoPendingNotice.style.display = "none";
       if(matrixSaveBtn) matrixSaveBtn.disabled = false;
       if(matrixSaveBtnText) matrixSaveBtnText.innerHTML = `<i class="fas fa-redo"></i> তথ্য সংশোধন করে রিসাবমিট করুন`;
-      toggleFormInputs(false); // হোল্ড থাকলে ফর্ম খোলা থাকবে এডিট করার জন্য
-    } else {
+      toggleFormInputs(false);
+
+      if(infoRejectNotice) {
+        infoRejectNotice.className = "status-lock-notice status-pending"; // থিমের হলুদ সংকেত
+        infoRejectNotice.style.display = "flex";
+      }
+      if(infoRejectReasonText) infoRejectReasonText.innerHTML = `<i class="fas fa-pause-circle"></i> ⚠️ তথ্য হোল্ডের কারণ: ${data.infoRejectReason || 'আপনার তথ্য হোল্ডে রাখা হয়েছে, সংশোধন করুন।'}`;
+    } else if (data.infoApprovalStatus === "rejected") {
       if(infoPendingNotice) infoPendingNotice.style.display = "none";
       if(matrixSaveBtn) matrixSaveBtn.disabled = false;
       if(matrixSaveBtnText) matrixSaveBtnText.innerText = "তথ্য পরিবর্তনের আবেদন পাঠান";
       toggleFormInputs(false);
-    }
 
-    // হোল্ড ও রিজেক্ট নোটিফিকেশন বক্স কন্ডিশনাল ম্যাচিং
-    if (data.infoApprovalStatus === "rejected") {
       if(infoRejectNotice) {
-        infoRejectNotice.className = "status-lock-notice status-rejected";
+        infoRejectNotice.className = "status-lock-notice status-rejected"; // থিমের লাল সংকেত
         infoRejectNotice.style.display = "flex";
       }
       if(infoRejectReasonText) infoRejectReasonText.innerText = `❌ তথ্য রিজেক্টের কারণ: ${data.infoRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
-    } else if (data.infoApprovalStatus === "waiting") {
-      if(infoRejectNotice) {
-        infoRejectNotice.className = "status-lock-notice status-pending"; // থিমের হলুদ সিগন্যাল অ্যালার্ট ধরে রাখার জন্য
-        infoRejectNotice.style.display = "flex";
-      }
-      if(infoRejectReasonText) infoRejectReasonText.innerHTML = `<i class="fas fa-pause-circle"></i> ⚠️ তথ্য হোল্ডের কারণ: ${data.infoRejectReason || 'আপনার তথ্য হোল্ডে রাখা হয়েছে, সংশোধন করুন।'}`;
-    } else { 
-      if(infoRejectNotice) infoRejectNotice.style.display = "none"; 
+    } else {
+      if(infoPendingNotice) infoPendingNotice.style.display = "none";
+      if(infoRejectNotice) infoRejectNotice.style.display = "none";
+      if(matrixSaveBtn) matrixSaveBtn.disabled = false;
+      if(matrixSaveBtnText) matrixSaveBtnText.innerText = "তথ্য পরিবর্তনের আবেদন পাঠান";
+      toggleFormInputs(false);
     }
   });
 
@@ -252,7 +255,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
     inputs.forEach(input => input.disabled = isLock);
   }
 
-  // ৪. লোকাল ক্লাউডিনারি ইমেজ আপলোডার ট্রিগার সিঙ্ক (আপনার cloudinary.js স্ট্রাকচারের সাথে সামঞ্জস্যপূর্ণ)
+  // ৪. সরাসরি ক্লাউডিনারি এপিআই আপলোডার সিঙ্ক (আপনার ক্রেডেন্সিয়ালসসহ)
   if(updGalleryTriggerBtn && hiddenGalleryInput) {
     updGalleryTriggerBtn.onclick = () => hiddenGalleryInput.click();
 
@@ -260,30 +263,37 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
       const file = e.target.files[0];
       if (!file) return;
 
-      if (confirm("আপনি কি নতুন ছবিটি ক্লাউডিনারিতে আপলোড করে এডমিনের অনুমোদনের জন্য সাবমিট করতে চান?")) {
+      if (confirm("আপনি কি নতুন ছবিটি আপলোড করে এডমিনের অনুমোদনের জন্য সাবমিট করতে চান?")) {
         try {
           if (matrixSaveBtn) matrixSaveBtn.disabled = true;
           
-          // আপনার গ্লোবাল Cloudinary আপলোড ফাংশন কলিং (যা আপনার cloudinary.js ফাইলে ডিফাইন করা আছে)
-          if (typeof uploadToCloudinary === "function") {
-            const cloudinarySecureUrl = await uploadToCloudinary(file);
+          // ফর্মডাটা মেকানিজমে সরাসরি আপনার ক্লাউডিনারি লিংক আপলোড ফ্লো
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("upload_preset", "ros_uploads"); // আপনার প্রিসেট
+
+          const res = await fetch(`https://api.cloudinary.com/v1_1/dcmu3hius/image/upload`, { // আপনার ক্লাউড নেম
+            method: "POST",
+            body: formData
+          });
+
+          if (!res.ok) throw new Error("Cloudinary upload error");
+          const uploadedResult = await res.json();
+          const cloudinarySecureUrl = uploadedResult.secure_url;
             
-            if (cloudinarySecureUrl) {
-              await updateDoc(doc(db, "users", currentUser.uid), {
-                tempPendingPhoto: cloudinarySecureUrl, // ক্লাউডিনারির সিকিউরড ছবির লিংক যাচ্ছে ফায়ারবেসে
-                imageApprovalStatus: "pending",
-                imageActionAt: getTimeStamp()
-              });
-              alert("🎉 নতুন ছবি ক্লাউডিনারিতে আপলোড সফল হয়েছে এবং এডমিন প্যানেলে পাঠানো হয়েছে।");
-            } else {
-              throw new Error("Cloudinary URL generation failed.");
-            }
-          } else {
-            alert("⚠️ ত্রুটি: uploadToCloudinary ফাংশনটি পাওয়া যায়নি! অনুগ্রহ করে নিশ্চিত করুন cloudinary.js ঠিকমতো লোড হয়েছে কিনা।");
+          if (cloudinarySecureUrl) {
+            // ফায়ারবেসে সাবমিট হওয়ার সাথে সাথে imageApprovalStatus "pending" হয়ে যাবে, ফলে পুরাতন রিজেক্ট নোটিশ স্ক্রিন থেকে সাথে সাথে গায়েব হবে।
+            await updateDoc(doc(db, "users", currentUser.uid), {
+              tempPendingPhoto: cloudinarySecureUrl,
+              imageApprovalStatus: "pending",
+              imageRejectReason: null, // রিজেক্ট কারণ ওল্ড মেমোরি থেকে রিসেট
+              imageActionAt: getTimeStamp()
+            });
+            alert("🎉 নতুন ছবি সফলভাবে আপলোড হয়েছে এবং এডমিন প্যানেলে পাঠানো হয়েছে।");
           }
         } catch (err) {
           console.error(err);
-          alert("দুঃখিত, ক্লাউডিনারিতে ছবি আপলোড বা রিকোয়েস্ট পাঠানো যায়নি!");
+          alert("দুঃখিত, ক্লাউডিনারিতে ছবি আপলোড ব্যর্থ হয়েছে!");
         } finally {
           if (matrixSaveBtn) matrixSaveBtn.disabled = false;
         }
@@ -298,6 +308,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
       e.preventDefault();
 
       if (confirm("আপনি কি নিশ্চিতভাবে এই সংশোধিত তথ্যসমূহ অনুমোদনের জন্য পাঠাতে চান?")) {
+        // সাবমিট বাটনে চাপ দেওয়ার সাথে সাথে এটি pending হবে, ফলে পুরাতন রিজেক্ট/হোল্ড নোটিশ অটো হাইড হবে।
         const pendingDataPayload = {
           tempPendingData: {
             englishName: document.getElementById('updEnglishName') ? document.getElementById('updEnglishName').value.trim() : "",
@@ -318,7 +329,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
             permanentAddress: document.getElementById('updPermanentAddress') ? document.getElementById('updPermanentAddress').value.trim() : ""
           },
           infoApprovalStatus: "pending",
-          infoRequestedAt: getTimeStamp(), // টাইমলাইনের সাথে সিঙ্ক রাখার জন্য
+          infoRequestedAt: getTimeStamp(), 
           infoActionAt: getTimeStamp()
         };
 
