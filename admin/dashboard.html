@@ -256,7 +256,8 @@
       contentRoot.innerHTML = "";
 
       if (id === 'dashboard') {
-        loadDashboardModule(contentRoot, currentAdminData, db, collection, onSnapshot);
+        // ড্যাশবোর্ড মডিউলের আপডেটেড ফাংশন কল (অ্যাকশন প্যারামিটারসহ)
+        loadDashboardModule(contentRoot, currentAdminData, db, collection, onSnapshot, doc, updateDoc, deleteDoc);
       } 
       else if (id === 'members') {
         loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc);
