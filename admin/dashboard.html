@@ -30,9 +30,19 @@
     .profile-dropdown a { padding: 10px 20px; color: var(--text-muted); text-decoration: none; font-size: 13px; transition: 0.2s; }
     .profile-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
     .mobile-menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: var(--glass-bg); border: 1px solid var(--glass-border); color: #fff; padding: 10px; border-radius: 4px; cursor: pointer; }
-    .nexus-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-    .modal-body { width: 90%; max-width: 450px; padding: 25px; border-radius: 8px; }
-    .cyber-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; border-radius: 4px; margin-bottom: 15px; outline: none; }
+    
+    /* উন্নত ইউনিক মডাল ডিজাইন */
+    .nexus-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+    .modal-body { width: 90%; max-width: 450px; padding: 30px; border-radius: 12px; border: 1px solid rgba(0, 180, 216, 0.4); box-shadow: 0 0 30px rgba(0, 180, 216, 0.2); }
+    
+    /* ইউনিক ইনপুট র্যাপার */
+    .input-group-cyber { position: relative; margin-bottom: 20px; display: flex; align-items: center; }
+    .input-group-cyber i.prefix-icon { position: absolute; left: 15px; color: var(--neon-blue); font-size: 14px; }
+    .cyber-input-premium { width: 100%; padding: 12px 40px 12px 45px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; outline: none; transition: all 0.3s ease; font-size: 14px; letter-spacing: 1.5px; }
+    .cyber-input-premium:focus { border-color: var(--neon-blue); box-shadow: 0 0 12px rgba(0, 180, 216, 0.4); background: rgba(0, 0, 0, 0.8); }
+    .toggle-password-btn { position: absolute; right: 15px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+    .toggle-password-btn:hover { color: var(--neon-blue); }
+
     @media (max-width: 992px) { .sidebar-nav { left: -280px; height: calc(100vh - 60px); top: 60px; } .sidebar-nav.active { left: 0; } .main-content-node { margin-left: 0; padding: 15px; } .mobile-menu-btn { display: block; } .admin-profile-trigger { top: 15px; right: 15px; } }
   </style>
 </head>
@@ -60,17 +70,48 @@
 
   <div class="nexus-modal" id="passwordChangeModal">
     <div class="modal-body cyber-glass">
-      <h3 style="color: var(--neon-blue); margin-bottom: 15px;">🔒 সিকিউর কি-পাসওয়ার্ড আপডেট</h3>
+      <div style="text-align: center; margin-bottom: 25px;">
+        <div style="width: 50px; height: 50px; background: rgba(0, 180, 216, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 1px solid var(--neon-blue);">
+          <i class="fas fa-shield-alt" style="color: var(--neon-blue); font-size: 20px;"></i>
+        </div>
+        <h3 style="color: #fff; font-size: 18px; font-weight: 600;">সিকিউর ক্রেডেন্সিয়াল আপডেট</h3>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">আপনার অ্যাকাউন্টের নিরাপত্তা নিশ্চিত করতে নতুন পাসওয়ার্ড ইনপুট দিন</p>
+      </div>
+
       <form id="passwordUpdateForm">
-        <input type="password" id="newPassword" class="cyber-input" placeholder="নতুন পাসওয়ার্ড" required>
-        <input type="password" id="confirmNewPassword" class="cyber-input" placeholder="পাসওয়ার্ড নিশ্চিত করুন" required>
-        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-          <button type="button" class="cyber-input" id="closePassModalBtn" style="width: auto; margin:0; background: transparent;">বাতিল</button>
-          <button type="submit" class="cyber-input" style="width: auto; margin:0; background: var(--neon-blue); border:none; font-weight:bold;">আপডেট</button>
+        <div class="input-group-cyber">
+          <i class="fas fa-lock prefix-icon"></i>
+          <input type="password" id="newPassword" class="cyber-input-premium" placeholder="নতুন পাসওয়ার্ড" required>
+          <i class="fas fa-eye toggle-password-btn" onclick="togglePassVisibility('newPassword', this)"></i>
+        </div>
+        
+        <div class="input-group-cyber">
+          <i class="fas fa-check-double prefix-icon"></i>
+          <input type="password" id="confirmNewPassword" class="cyber-input-premium" placeholder="পাসওয়ার্ড নিশ্চিত করুন" required>
+          <i class="fas fa-eye toggle-password-btn" onclick="togglePassVisibility('confirmNewPassword', this)"></i>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px;">
+          <button type="button" id="closePassModalBtn" style="padding: 10px 20px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 6px; cursor: pointer; transition: 0.2s;">বাতিল</button>
+          <button type="submit" style="padding: 10px 25px; background: linear-gradient(135deg, var(--neon-blue), #0077b6); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);">আপডেট স্টেশন</button>
         </div>
       </form>
     </div>
   </div>
+
+  <script>
+    // পাসওয়ার্ড ভিউ অন/অফ করার গ্লোবাল হেল্পার ফাংশন
+    function togglePassVisibility(inputId, iconEl) {
+      const input = document.getElementById(inputId);
+      if (input.type === "password") {
+        input.type = "text";
+        iconEl.classList.replace("fa-eye", "fa-eye-slash");
+      } else {
+        input.type = "password";
+        iconEl.classList.replace("fa-eye-slash", "fa-eye");
+      }
+    }
+  </script>
 
   <script src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/navigation.js"></script>
 
@@ -92,15 +133,10 @@
   <script src="../admin/logs.js"></script>
   <script src="../admin/settings.js"></script>
   
-  
-  
-  
-  
   <script type="module">
     import { db, auth } from '../firebase-config.js';
     import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
 
     const erpModules = [
       { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
@@ -130,8 +166,47 @@
     const passwordChangeModal = document.getElementById('passwordChangeModal');
     let currentAdminData = null;
 
+    // --- ফিচার ১: অটোমেটিক ইন-অ্যাক্টিভিটি লগআউট সিস্টেম ---
+    let inactivityTimeout;
+    const INACTIVITY_TIME = 3 * 60 * 1000; // ৩ মিনিট (মিলিসেকেন্ডে), আপনার প্রয়োজনমত চেঞ্জ করতে পারেন।
+
+    function triggerAutoLogout() {
+      alert("নিষ্ক্রিয়তার কারণে আপনার সেশনটি শেষ হয়ে গেছে। পুনরায় লগইন করুন।");
+      signOut(auth).then(() => { window.location.href = "../login.html"; });
+    }
+
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimeout);
+      // ব্যবহারকারী লগইন অবস্থায় থাকলেই কেবল টাইমার চলবে
+      if (auth.currentUser) {
+        inactivityTimeout = setTimeout(triggerAutoLogout, INACTIVITY_TIME);
+      }
+    }
+
+    // ব্যবহারকারীর অ্যাক্টিভিটি ট্র্যাকিং ইভেন্ট লিসেনারস
+    function startTrackingInactivity() {
+      window.addEventListener('mousemove', resetInactivityTimer);
+      window.addEventListener('keypress', resetInactivityTimer);
+      window.addEventListener('scroll', resetInactivityTimer);
+      window.addEventListener('click', resetInactivityTimer);
+      resetInactivityTimer();
+    }
+
+    function stopTrackingInactivity() {
+      window.removeEventListener('mousemove', resetInactivityTimer);
+      window.removeEventListener('keypress', resetInactivityTimer);
+      window.removeEventListener('scroll', resetInactivityTimer);
+      window.removeEventListener('click', resetInactivityTimer);
+      clearTimeout(inactivityTimeout);
+    }
+    // -----------------------------------------------------
+
     onAuthStateChanged(auth, async (user) => {
-      if (!user) { window.location.href = "../login.html"; return; }
+      if (!user) { 
+        stopTrackingInactivity();
+        window.location.href = "../login.html"; 
+        return; 
+      }
       try {
         const adminSnap = await getDoc(doc(db, "users", user.uid));
         if (adminSnap.exists() && ["super_admin", "president", "secretary", "treasurer"].includes(adminSnap.data().role)) {
@@ -140,6 +215,9 @@
           initSidebarMenu();
           switchModuleView('dashboard'); 
           document.getElementById('nexusCoreBody').style.display = 'flex';
+          
+          // সফল লগইন এর পর অটো লগআউট মনিটরিং শুরু
+          startTrackingInactivity();
         } else {
           alert("অনাধিকার প্রবেশ নিষিদ্ধ!"); window.location.href = "../login.html";
         }
@@ -173,88 +251,61 @@
       });
     }
 
-    // 🚀 সেন্ট্রাল সুইচ রাউটার (যা মডিউল ফাইলের ফাংশনকে রান করায়)
+    // 🚀 সেন্ট্রাল সুইচ রাউটার
     function switchModuleView(id) {
       contentRoot.innerHTML = "";
 
       if (id === 'dashboard') {
-        // ড্যাশবোর্ড মডিউলের ফাংশন কল
         loadDashboardModule(contentRoot, currentAdminData, db, collection, onSnapshot);
       } 
       else if (id === 'members') {
-        // মেম্বার মডিউলের ফাংশন কল
         loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc);
       } 
-        else if (id === 'committee') {
-        // কমিটি মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      else if (id === 'committee') {
         loadCommitteeModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc);
-        }
-          else if (id === 'comHistory') {
-        // কমিটির ইতিহাস মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'comHistory') {
         loadComHistoryModule(contentRoot, db, collection, onSnapshot);
-          }
-            else if (id === 'events') {
-        // ইভেন্ট মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'events') {
         loadEventsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-            }
-              else if (id === 'volunteers') {
-        // স্বেচ্ছাসেবক মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'volunteers') {
         loadVolunteersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, updateDoc, deleteDoc);
-              }
-                else if (id === 'attendance') {
-        // ডিজিটাল উপস্থিতি মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'attendance') {
         loadAttendanceModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, collection, doc);
-                }
-               else if (id === 'logistics') {
-        // লজিস্টিকস মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'logistics') {
         loadLogisticsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc);
-                }
-                 else if (id === 'treasury') {
-        // সেন্ট্রাল ট্রেজারি মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'treasury') {
         loadTreasuryModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-                 }
-                   else if (id === 'documents') {
-        // ডকুমেন্ট হাব মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'documents') {
         loadDocumentsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-                 }
-                   else if (id === 'notifications') {
-        // নোটিফিকেশন মديউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'notifications') {
         loadNotificationsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-                 }
-                   else if (id === 'support') {
-        // টিকেট ও সাপোর্ট মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'support') {
         loadSupportModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, deleteDoc);
-                   }
-                     else if (id === 'idCards') {
-        // মেম্বারশিপ কার্ড মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'idCards') {
         loadIdCardsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc);
-                     }
-                       else if (id === 'qrVerify') {
-        // কিউআর ভেরিফিকেশন মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'qrVerify') {
         loadQrVerifyModule(contentRoot, db, collection, onSnapshot, doc, getDocs);
-                      }
-                         else if (id === 'reports') {
-        // এন্টারপ্রাইজ রিপোর্টস মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'reports') {
         loadReportsModule(contentRoot, db, collection, onSnapshot, getDocs);
-                     }
-                        else if (id === 'logs') {
-        // সিস্টেম অ্যাক্টিভিটি লগ মডিউলের ফাংশন কল (এই ৩টি লাইন যুক্ত করুন)
+      }
+      else if (id === 'logs') {
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-                        }
-                      
-                        else if (id === 'settings') {
-        // এখানে onSnapshot, doc, updateDoc এবং আমাদের নতুন ইম্পোর্ট করা setDoc পাস করা হলো
+      }
+      else if (id === 'settings') {
         loadSettingsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, setDoc);
-              }
-        
-
-
-
-
-
-
-
-            
+      }
       else {
         contentRoot.innerHTML = `
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
@@ -276,7 +327,12 @@
       e.preventDefault();
       const newPass = document.getElementById('newPassword').value;
       if (newPass !== document.getElementById('confirmNewPassword').value) { alert("পাসওয়ার্ড মিলছে না!"); return; }
-      try { await updatePassword(auth.currentUser, newPass); alert("পাসওয়ার্ড আপডেটেড!"); passwordChangeModal.style.display = 'none'; } catch (err) { alert(err.message); }
+      try { 
+        await updatePassword(auth.currentUser, newPass); 
+        alert("🔒 পাসওয়ার্ড সফলভাবে আপডেট হয়েছে!"); 
+        passwordChangeModal.style.display = 'none'; 
+        document.getElementById('passwordUpdateForm').reset();
+      } catch (err) { alert(err.message); }
     });
 
     document.getElementById('adminSignOutBtn').addEventListener('click', () => { if (confirm("লগআউট করবেন?")) signOut(auth).then(() => { window.location.href = "../login.html"; }); });
