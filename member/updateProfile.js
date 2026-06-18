@@ -1,9 +1,9 @@
-// ROS Nexus - Enterprise Member Update Info Module (Parallel Lock Engine)
+// ROS Nexus - Enterprise Member Update Info Module (Cloudinary Link Integration & Parallel Lock Engine)
 function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp) {
   
   if (!contentRoot) return;
 
-  // ১. মডিউলের জন্য ডেডিকেটেড সাইবারপাঙ্ক ইউআই এবং নোটিফিকেশন স্টাইল ইনজেকশন
+  // ১. মডিউলের জন্য ডেডিকেটেড সাইবারপাঙ্ক ইউআই এবং নোটিফিকেশন স্টাইল ইনজেকশন (থিম সম্পূর্ণ অপরিবর্তিত)
   contentRoot.innerHTML = `
     <style>
       .update-matrix-card { max-width: 1000px; width: 100%; margin: 0 auto; padding: 40px; border-radius: 16px; position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; color: #fff; }
@@ -47,7 +47,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
           </button>
         </div>
         <input type="file" id="updHiddenGalleryInput" accept="image/*" style="display: none;">
-        <p style="color: #9ca3af; font-size: 12px; margin-top: 10px;">সর্বোচ্চ সাইজ: ১ মেগাবাইট (JPEG/PNG)</p>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 10px;">Cloudinary সিকিউরড স্টোরেজ সিঙ্ক অ্যাক্টিভেটেড</p>
       </div>
 
       <div class="status-lock-notice status-pending" id="photoPendingNotice">
@@ -135,7 +135,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
         </div>
         <div class="matrix-submit-wrapper">
           <button type="submit" class="matrix-save-btn" id="matrixSaveBtn">
-            <i class="fas fa-shield-alt"></i> তথ্য পরিবর্তনের আবেদন পাঠান
+            <i class="fas fa-shield-alt"></i> <span id="matrixSaveBtnText">তথ্য পরিবর্তনের আবেদন পাঠান</span>
           </button>
         </div>
       </form>
@@ -153,6 +153,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
   const updGalleryTriggerBtn = document.getElementById('updGalleryTriggerBtn');
   const hiddenGalleryInput = document.getElementById('updHiddenGalleryInput');
   const matrixSaveBtn = document.getElementById('matrixSaveBtn');
+  const matrixSaveBtnText = document.getElementById('matrixSaveBtnText');
   const updateMatrixForm = document.getElementById('updateMatrixForm');
 
   const photoPendingNotice = document.getElementById('photoPendingNotice');
@@ -162,21 +163,21 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
   const photoRejectReasonText = document.getElementById('photoRejectReasonText');
   const infoRejectReasonText = document.getElementById('infoRejectReasonText');
 
-  let tempBase64Image = null;
-
   function getTimeStamp() {
     return (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date();
   }
 
-  // ৩. রিয়েল-টাইม ডাটাবেজ লুপ
+  // ৩. রিয়েল-টাইম ডাটাবেজ লিসেনার এবং ডাইনামিক স্ট্যাটাস চেঞ্জার ইন্টিগ্রেশন
   onSnapshot(doc(db, "users", currentUser.uid), (snapshot) => {
     if (!snapshot.exists()) return;
     const data = snapshot.data();
 
-    if (!tempBase64Image && updAvatarPreview) {
+    // ছবি প্রিভিউ লোড (ফায়ারবেস থেকে সরাসরি ক্লাউডিনারি লিংক রিড করবে)
+    if (updAvatarPreview) {
       updAvatarPreview.src = data.photoUrl || '../placeholder.png';
     }
 
+    // ফিল্ড ভ্যালু অ্যাসাইনমেন্ট
     if(document.getElementById('updEnglishName')) document.getElementById('updEnglishName').value = data.englishName || "";
     if(document.getElementById('updBanglaName')) document.getElementById('updBanglaName').value = data.banglaName || "";
     if(document.getElementById('updFatherName')) document.getElementById('updFatherName').value = data.fatherName || "";
@@ -194,6 +195,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
     if(document.getElementById('updPresentAddress')) document.getElementById('updPresentAddress').value = data.presentAddress || "";
     if(document.getElementById('updPermanentAddress')) document.getElementById('updPermanentAddress').value = data.permanentAddress || "";
 
+    // ছবি পরিবর্তনের রিয়েল-টাইম নোটিফিকেশন লজিক
     if (data.imageApprovalStatus === "pending") {
       if(photoPendingNotice) photoPendingNotice.style.display = "flex";
       if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = true; updGalleryTriggerBtn.style.opacity = "0.5"; }
@@ -207,23 +209,41 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
       if(photoRejectNotice) photoRejectNotice.style.display = "flex";
     } else { if(photoRejectNotice) photoRejectNotice.style.display = "none"; }
 
+    // তথ্য পরিবর্তনের ডাইনামিক লক ও রিসাবমিট স্টেট ইন্টিগ্রেশন
     if (data.infoApprovalStatus === "pending") {
       if(infoPendingNotice) infoPendingNotice.style.display = "flex";
       if(matrixSaveBtn) matrixSaveBtn.disabled = true;
-      toggleFormInputs(true);
+      if(matrixSaveBtnText) matrixSaveBtnText.innerText = "তথ্য পরিবর্তনের আবেদন পাঠান";
+      toggleFormInputs(true); // পেন্ডিং থাকলে ফর্ম লক থাকবে
+    } else if (data.infoApprovalStatus === "waiting") {
+      // হোল্ড করা হলে সবার নিচে রিসাবমিট অপশন আসবে এবং নোটিফিকেশন দেখাবে
+      if(infoPendingNotice) infoPendingNotice.style.display = "none";
+      if(matrixSaveBtn) matrixSaveBtn.disabled = false;
+      if(matrixSaveBtnText) matrixSaveBtnText.innerHTML = `<i class="fas fa-redo"></i> তথ্য সংশোধন করে রিসাবমিট করুন`;
+      toggleFormInputs(false); // হোল্ড থাকলে ফর্ম খোলা থাকবে এডিট করার জন্য
     } else {
       if(infoPendingNotice) infoPendingNotice.style.display = "none";
       if(matrixSaveBtn) matrixSaveBtn.disabled = false;
+      if(matrixSaveBtnText) matrixSaveBtnText.innerText = "তথ্য পরিবর্তনের আবেদন পাঠান";
       toggleFormInputs(false);
     }
 
+    // হোল্ড ও রিজেক্ট নোটিফিকেশন বক্স কন্ডিশনাল ম্যাচিং
     if (data.infoApprovalStatus === "rejected") {
+      if(infoRejectNotice) {
+        infoRejectNotice.className = "status-lock-notice status-rejected";
+        infoRejectNotice.style.display = "flex";
+      }
       if(infoRejectReasonText) infoRejectReasonText.innerText = `❌ তথ্য রিজেক্টের কারণ: ${data.infoRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
-      if(infoRejectNotice) infoRejectNotice.style.display = "flex";
     } else if (data.infoApprovalStatus === "waiting") {
-      if(infoRejectReasonText) infoRejectReasonText.innerText = `⚠️ তথ্য হোল্ডের কারণ: ${data.infoRejectReason || 'আপনার তথ্য হোল্ডে রাখা হয়েছে, সংশোধন করুন।'}`;
-      if(infoRejectNotice) infoRejectNotice.style.display = "flex";
-    } else { if(infoRejectNotice) infoRejectNotice.style.display = "none"; }
+      if(infoRejectNotice) {
+        infoRejectNotice.className = "status-lock-notice status-pending"; // থিমের হলুদ সিগন্যাল অ্যালার্ট ধরে রাখার জন্য
+        infoRejectNotice.style.display = "flex";
+      }
+      if(infoRejectReasonText) infoRejectReasonText.innerHTML = `<i class="fas fa-pause-circle"></i> ⚠️ তথ্য হোল্ডের কারণ: ${data.infoRejectReason || 'আপনার তথ্য হোল্ডে রাখা হয়েছে, সংশোধন করুন।'}`;
+    } else { 
+      if(infoRejectNotice) infoRejectNotice.style.display = "none"; 
+    }
   });
 
   function toggleFormInputs(isLock) {
@@ -232,52 +252,52 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
     inputs.forEach(input => input.disabled = isLock);
   }
 
-  // ৪. লোকাল গ্যালারি ইমেজ সাবমিশন
+  // ৪. লোকাল ক্লাউডিনারি ইমেজ আপলোডার ট্রিগার সিঙ্ক (আপনার cloudinary.js স্ট্রাকচারের সাথে সামঞ্জস্যপূর্ণ)
   if(updGalleryTriggerBtn && hiddenGalleryInput) {
     updGalleryTriggerBtn.onclick = () => hiddenGalleryInput.click();
 
-    hiddenGalleryInput.onchange = (e) => {
+    hiddenGalleryInput.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      if (file.size > 1024 * 1024) {
-        alert("⚠️ ফাইল সাইজ ১ মেগাবাইটের বেশি! অনুগ্রহ করে ছোট সাইজের ছবি আপলোড করুন।");
-        hiddenGalleryInput.value = "";
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = async () => {
-        tempBase64Image = reader.result;
-        if(updAvatarPreview) updAvatarPreview.src = tempBase64Image;
-
-        if (confirm("আপনি কি নতুন ছবিটি এডমিনের অনুমোদনের জন্য সাবমিট করতে চান?")) {
-          try {
-            await updateDoc(doc(db, "users", currentUser.uid), {
-              tempPendingPhoto: tempBase64Image,
-              imageApprovalStatus: "pending",
-              imageActionAt: getTimeStamp()
-            });
-            alert("🎉 নতুন ছবি সফলভাবে সাবমিট হয়েছে। এডমিন অনুমোদনের অপেক্ষা করুন।");
-          } catch (err) {
-            alert("দুঃখিত, ছবি রিকোয়েস্ট পাঠানো যায়নি!");
+      if (confirm("আপনি কি নতুন ছবিটি ক্লাউডিনারিতে আপলোড করে এডমিনের অনুমোদনের জন্য সাবমিট করতে চান?")) {
+        try {
+          if (matrixSaveBtn) matrixSaveBtn.disabled = true;
+          
+          // আপনার গ্লোবাল Cloudinary আপলোড ফাংশন কলিং (যা আপনার cloudinary.js ফাইলে ডিফাইন করা আছে)
+          if (typeof uploadToCloudinary === "function") {
+            const cloudinarySecureUrl = await uploadToCloudinary(file);
+            
+            if (cloudinarySecureUrl) {
+              await updateDoc(doc(db, "users", currentUser.uid), {
+                tempPendingPhoto: cloudinarySecureUrl, // ক্লাউডিনারির সিকিউরড ছবির লিংক যাচ্ছে ফায়ারবেসে
+                imageApprovalStatus: "pending",
+                imageActionAt: getTimeStamp()
+              });
+              alert("🎉 নতুন ছবি ক্লাউডিনারিতে আপলোড সফল হয়েছে এবং এডমিন প্যানেলে পাঠানো হয়েছে।");
+            } else {
+              throw new Error("Cloudinary URL generation failed.");
+            }
+          } else {
+            alert("⚠️ ত্রুটি: uploadToCloudinary ফাংশনটি পাওয়া যায়নি! অনুগ্রহ করে নিশ্চিত করুন cloudinary.js ঠিকমতো লোড হয়েছে কিনা।");
           }
-        } else {
-          tempBase64Image = null;
-          hiddenGalleryInput.value = "";
-          if(updAvatarPreview) updAvatarPreview.src = "../placeholder.png";
+        } catch (err) {
+          console.error(err);
+          alert("দুঃখিত, ক্লাউডিনারিতে ছবি আপলোড বা রিকোয়েস্ট পাঠানো যায়নি!");
+        } finally {
+          if (matrixSaveBtn) matrixSaveBtn.disabled = false;
         }
-      };
-      reader.readAsDataURL(file);
+      }
+      hiddenGalleryInput.value = "";
     };
   }
 
-  // ৫. ইনফো ডাটা ফর্ম সাবমিশন
+  // ৫. ইনফো ডাটা ফর্ম সাবমিশন এবং ব্যাকএন্ড টাইমলাইন ট্র্যাকিং সিঙ্ক
   if(updateMatrixForm) {
     updateMatrixForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (confirm("আপনি কি নিশ্চিতভাবে এই নতুন তথ্যসমূহ অনুমোদনের জন্য পাঠাতে চান?")) {
+      if (confirm("আপনি কি নিশ্চিতভাবে এই সংশোধিত তথ্যসমূহ অনুমোদনের জন্য পাঠাতে চান?")) {
         const pendingDataPayload = {
           tempPendingData: {
             englishName: document.getElementById('updEnglishName') ? document.getElementById('updEnglishName').value.trim() : "",
@@ -298,6 +318,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
             permanentAddress: document.getElementById('updPermanentAddress') ? document.getElementById('updPermanentAddress').value.trim() : ""
           },
           infoApprovalStatus: "pending",
+          infoRequestedAt: getTimeStamp(), // টাইমলাইনের সাথে সিঙ্ক রাখার জন্য
           infoActionAt: getTimeStamp()
         };
 
@@ -309,9 +330,8 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
           alert("দুঃখিত, তথ্য রিকোয়েস্ট সাবমিট হয়নি। আবার চেষ্টা করুন।");
         }
       }
-      
-      if(hiddenGalleryInput) hiddenGalleryInput.value = "";
-      tempBase64Image = null;
+      hiddenGalleryInput.value = "";
     });
   }
-                                      }
+
+}
