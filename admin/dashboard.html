@@ -142,7 +142,7 @@
   <script src="../admin/qrVerify.js"></script>
   <script src="../admin/reports.js"></script>
   <script src="../admin/logs.js"></script>
-  <script src="../admin/settings.js"></script>
+  <script src="../admin/passwordResetRequest.js"></script>
   <script src="../admin/infoUpdateRequest.js"></script>
   
   <script type="module">
@@ -169,8 +169,7 @@
       { id: 'qrVerify', name: '🔍 QR কোড ভেরিфикации' },
       { id: 'reports', name: '📈 এন্টারপ্রাইজ রিপোর্টস' },
       { id: 'logs', name: '🔐 সিস্টেম অ্যাক্টিভিটি লগ' },
-      { id: 'backup', name: '💾 ব্যাকআপ ও রিস্টোর' },
-      { id: 'settings', name: '⚙️ গ্লোবাল সিস্টেম সেটিংস' },
+      { id: 'resetUserPassword', name: 'Password Reset Request' },
       { id: 'adminRequests', name: '<i class="fas fa-tasks"></i> তথ্য পরিবর্তনের আবেদন' }
     ];
 
@@ -311,9 +310,10 @@
       else if (id === 'logs') {
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
       }
-      else if (id === 'settings') {
-        loadSettingsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, setDoc);
-      }
+      else if (id === 'resetUserPassword') {
+  // পাসওয়ার্ড চেঞ্জ ও রিসেট রিকোয়েস্ট ম্যানেজমেন্ট মডিউল লোড করা হলো
+  loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
+}
       else if (id === 'adminRequests') {
         // এখানে query এবং where ডিফাইন করা ছিল যা ওপরে সফলভাবে ইম্পোর্ট করা হয়েছে।
         loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, collection, query, where, serverTimestamp);
