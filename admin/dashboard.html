@@ -312,8 +312,7 @@
       }
       else if (id === 'resetUserPassword') {
   // পাসওয়ার্ড চেঞ্জ ও রিসেট রিকোয়েস্ট ম্যানেজমেন্ট মডিউল লোড করা হলো
-  loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
-}
+        loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot)
       else if (id === 'adminRequests') {
         // এখানে query এবং where ডিফাইন করা ছিল যা ওপরে সফলভাবে ইম্পোর্ট করা হয়েছে।
         loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, collection, query, where, serverTimestamp);
