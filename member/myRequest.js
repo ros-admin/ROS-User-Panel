@@ -1,68 +1,105 @@
 // ROS Nexus - Enterprise Member Request Status Module (Ultra Advanced Vertical Tracker & Dynamic Loops)
 function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc) {
   
-  // ১. প্রিমিয়াম সাইবারপাঙ্ক ইউআই এবং ভার্টিক্যাল বাম-পার্শ্বস্থ প্রোগ্রেস লাইন ডিজাইন
+  // ১. প্রিমিয়াম সাইবেরপাঙ্ক ডার্ক-ম্যাট্রিক্স থিম ইউআই এবং ভার্টিক্যাল প্রোগ্রেস লাইন ডিজাইন (updateProfile-এর সাথে সিঙ্কড)
   contentRoot.innerHTML = `
     <style>
-      .my-req-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 20px; box-sizing: border-box; }
-      .my-req-title { font-size: 20px; color: #fff; margin-bottom: 25px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+      .my-req-container { 
+        max-width: 1000px; width: 100%; margin: 0 auto; padding: 40px; border-radius: 16px; 
+        position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.95); 
+        backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
+        border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
+        box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; color: #fff; 
+      }
+      .my-req-container::before { 
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; 
+        background: linear-gradient(90deg, transparent, #fbbf24, #00b4d8, transparent); 
+      }
       
-      .req-section-title { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 25px 0 12px 0; display: flex; align-items: center; gap: 8px; }
-      .req-section-title span { color: var(--neon-blue); font-weight: bold; }
+      .my-req-title { 
+        font-size: 22px; color: #fff; margin-bottom: 25px; font-weight: 700;
+        border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 15px; 
+        display: flex; align-items: center; gap: 12px; 
+      }
+      .my-req-title i { color: #00b4d8; text-shadow: 0 0 10px rgba(0, 180, 216, 0.4); }
+      
+      .req-section-title { 
+        font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: #9ca3af; 
+        margin: 30px 0 14px 0; display: flex; align-items: center; gap: 8px; font-weight: 600; 
+      }
+      .req-section-title span { color: #00b4d8; font-weight: 700; }
+      .req-section-title i { color: #fbbf24; }
 
       /* কম্প্যাক্ট লিস্ট ভিউ */
-      .req-status-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+      .req-status-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
       
       .req-compact-card { 
-        padding: 16px 20px; border-radius: 8px; 
-        background: rgba(17, 24, 39, 0.4); border: 1px solid var(--glass-border); 
+        padding: 18px 22px; border-radius: 8px; 
+        background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.06); 
         display: flex; justify-content: space-between; align-items: center; 
         cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
       }
-      .req-compact-card:hover { border-color: var(--neon-blue); background: rgba(17, 24, 39, 0.6); transform: translateX(4px); }
+      .req-compact-card:hover { 
+        border-color: #00b4d8; background: rgba(0, 0, 0, 0.5); 
+        transform: translateX(4px); box-shadow: 0 4px 15px rgba(0, 180, 216, 0.1); 
+      }
       
       .card-left { display: flex; align-items: center; gap: 15px; flex: 1; min-width: 0; }
-      .card-serial { font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 800; color: var(--neon-blue); background: rgba(0, 180, 216, 0.1); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0, 180, 216, 0.3); flex-shrink: 0; }
-      .card-icon { width: 36px; height: 36px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-main); flex-shrink: 0; }
+      .card-serial { 
+        font-family: 'Orbitron', monospace, sans-serif; font-size: 13px; font-weight: 800; 
+        color: #00b4d8; background: rgba(0, 180, 216, 0.1); width: 30px; height: 30px; 
+        border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        border: 1px solid rgba(0, 180, 216, 0.3); flex-shrink: 0; 
+      }
+      .card-icon { 
+        width: 38px; height: 38px; border-radius: 6px; background: rgba(255,255,255,0.02); 
+        border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; 
+        justify-content: center; font-size: 16px; color: #fff; flex-shrink: 0; 
+      }
+      
       .card-details { flex: 1; min-width: 0; }
-      .card-details h4 { font-size: 14px; font-weight: 600; color: #fff; margin: 0 0 4px 0; }
-      .card-details p { font-size: 11px; color: var(--text-muted); margin: 0; }
+      .card-details h4 { font-size: 15px; font-weight: 600; color: #fff; margin: 0 0 4px 0; }
+      .card-details p { font-size: 12px; color: #9ca3af; margin: 0; }
       
-      /* কার্ডের ভেতরে ছোট রিজন ট্যাগ */
-      .card-inline-reason { font-size: 11px; margin-top: 5px !important; font-weight: 500; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%; }
-      .reason-red { color: #ffb3b8; }
-      .reason-yellow { color: #ffe399; }
+      /* কার্ডের ভেতরের ইনলাইন রিজন ট্যাগ স্টাইল */
+      .card-inline-reason { font-size: 12px; margin-top: 6px !important; font-weight: 500; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%; }
+      .reason-red { color: #f87171; }
+      .reason-yellow { color: #fbbf24; }
       
-      /* নিয়ন স্ট্যাটাস ব্যাজ */
-      .status-node { padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-      .status-pending { background: rgba(0, 180, 216, 0.15); color: var(--neon-blue); border-color: var(--neon-blue); }
-      .status-approved { background: rgba(46, 196, 182, 0.15); color: var(--neon-green); border-color: var(--neon-green); }
-      .status-rejected { background: rgba(230, 57, 70, 0.15); color: var(--neon-red); border-color: var(--neon-red); }
-      .status-waiting { background: rgba(255, 183, 3, 0.15); color: var(--neon-yellow); border-color: var(--neon-yellow); }
+      /* নিয়ন স্ট্যাটাস ব্যাজ (updateProfile থিমের সাথে ম্যাচিং) */
+      .status-node { 
+        padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: 700; 
+        text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; 
+        display: flex; align-items: center; gap: 6px; flex-shrink: 0; 
+      }
+      .status-pending { background: rgba(0, 180, 216, 0.15); color: #00b4d8; border-color: rgba(0, 180, 216, 0.3); }
+      .status-approved { background: rgba(46, 196, 182, 0.15); color: #2ec4b6; border-color: rgba(46, 196, 182, 0.3); }
+      .status-rejected { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; }
+      .status-waiting { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; }
       
-      /* স্মুথ এক্সপ্যান্ড ড্রপডাউন */
+      /* স্মুথ এক্সপ্যান্ড ড্রপডাউন প্যানেল */
       .req-expanded-panel { 
         max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
-        background: rgba(10, 17, 31, 0.6); border: 0 solid var(--glass-border); border-top: none; 
+        background: rgba(0, 0, 0, 0.2); border: 0 solid rgba(255,255,255,0.06); border-top: none; 
         border-radius: 0 0 8px 8px; margin-top: -14px; margin-bottom: 15px; padding: 0 20px; box-sizing: border-box;
       }
-      .req-expanded-panel.open { max-height: 2000px; padding: 25px 20px; border-width: 0 1px 1px 1px; }
+      .req-expanded-panel.open { max-height: 2000px; padding: 25px 22px; border-width: 0 1px 1px 1px; }
 
       /* ইউনিক ভার্টিক্যাল প্রোগ্রেস এবং টাইমলাইন এক্সিস */
       .timeline-wrapper { position: relative; padding-left: 35px; margin-left: 15px; }
       
       /* বাম পাশের ডাইনামিক প্রোগ্রেস লাইন বার */
       .vertical-progress-line { 
-        position: absolute; left: 5px; top: 10px; bottom: 15px; width: 4px; 
+        position: absolute; left: 5px; top: 10px; bottom: 15px; width: 3px; 
         background: rgba(255, 255, 255, 0.05); border-radius: 2px; overflow: hidden; 
       }
       .vertical-progress-fill { 
         width: 100%; height: 0%; 
-        background: linear-gradient(180deg, #0077b6, var(--neon-blue), var(--neon-yellow)); 
+        background: linear-gradient(180deg, #0077b6, #00b4d8, #fbbf24); 
         transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
       }
-      .vertical-progress-fill.complete-approved { background: linear-gradient(180deg, var(--neon-blue), var(--neon-green)); height: 100% !important; }
-      .vertical-progress-fill.complete-rejected { background: linear-gradient(180deg, var(--neon-blue), var(--neon-red)); height: 100% !important; }
+      .vertical-progress-fill.complete-approved { background: linear-gradient(180deg, #00b4d8, #2ec4b6); height: 100% !important; }
+      .vertical-progress-fill.complete-rejected { background: linear-gradient(180deg, #00b4d8, #f87171); height: 100% !important; }
 
       /* টাইমলাইন নোড এলিমেন্টস */
       .timeline-axis { display: flex; flex-direction: column; gap: 24px; position: relative; }
@@ -70,54 +107,59 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       
       /* বুলেট ডট */
       .timeline-bullet { 
-        position: absolute; left: -35px; top: 2px; width: 14px; height: 14px; 
+        position: absolute; left: -35px; top: 2px; width: 12px; height: 12px; 
         border-radius: 50%; background: #1f2937; border: 2px solid #4b5563; 
-        box-shadow: 0 0 0 4px #0b111f; transition: 0.3s; z-index: 2;
+        box-shadow: 0 0 0 4px #111827; transition: 0.3s; z-index: 2;
       }
       
-      .node-active .timeline-bullet { background: #030712; border-color: var(--neon-blue); box-shadow: 0 0 12px var(--neon-blue), 0 0 0 4px #0b111f; }
+      .node-active .timeline-bullet { background: #030712; border-color: #00b4d8; box-shadow: 0 0 12px #00b4d8, 0 0 0 4px #111827; }
       .node-submitted .timeline-bullet { border-color: #0077b6; background: #0077b6; }
-      .node-resubmitted .timeline-bullet { border-color: var(--neon-blue); background: var(--neon-blue); }
+      .node-resubmitted .timeline-bullet { border-color: #00b4d8; background: #00b4d8; }
       .node-pending .timeline-bullet { border-color: #00b4d8; background: #00b4d8; }
-      .node-approved .timeline-bullet { border-color: var(--neon-green); background: var(--neon-green); box-shadow: 0 0 12px var(--neon-green), 0 0 0 4px #0b111f; }
-      .node-rejected .timeline-bullet { border-color: var(--neon-red); background: var(--neon-red); box-shadow: 0 0 12px var(--neon-red), 0 0 0 4px #0b111f; }
-      .node-hold .timeline-bullet { border-color: var(--neon-yellow); background: var(--neon-yellow); box-shadow: 0 0 12px var(--neon-yellow), 0 0 0 4px #0b111f; }
+      .node-approved .timeline-bullet { border-color: #2ec4b6; background: #2ec4b6; box-shadow: 0 0 12px #2ec4b6, 0 0 0 4px #111827; }
+      .node-rejected .timeline-bullet { border-color: #f87171; background: #f87171; box-shadow: 0 0 12px #f87171, 0 0 0 4px #111827; }
+      .node-hold .timeline-bullet { border-color: #fbbf24; background: #fbbf24; box-shadow: 0 0 12px #fbbf24, 0 0 0 4px #111827; }
 
       /* কন্টেন্ট টেক্সট এবং সুন্দর টাইম বক্স */
       .timeline-content h5 { font-size: 14px; font-weight: 700; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; }
       .content-submitted h5 { color: #0077b6; }
-      .content-resubmitted h5 { color: var(--neon-blue); }
+      .content-resubmitted h5 { color: #00b4d8; }
       .content-pending h5 { color: #00b4d8; }
-      .content-approved h5 { color: var(--neon-green); }
-      .content-rejected h5 { color: var(--neon-red); }
-      .content-hold h5 { color: var(--neon-yellow); }
+      .content-approved h5 { color: #2ec4b6; }
+      .content-rejected h5 { color: #f87171; }
+      .content-hold h5 { color: #fbbf24; }
 
       .timeline-content p { font-size: 13px; color: #e5e7eb; margin: 0 0 8px 0; line-height: 1.5; font-weight: 500; }
       
       /* সুন্দর বক্সের মধ্যে সময় */
       .time-box { 
         display: inline-flex; align-items: center; gap: 6px;
-        background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); 
+        background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); 
         padding: 4px 10px; border-radius: 4px; font-size: 11px; color: #9ca3af; 
-        font-family: 'Orbitron', monospace; font-weight: 600; box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+        font-family: 'Orbitron', monospace; font-weight: 600; box-shadow: inset 0 0 6px rgba(0,0,0,0.2);
       }
 
-      /* রিজেক্ট/হোল্ড রেসপন্স বক্স */
+      /* রিজেক্ট/হোল্ড রেসপন্স বক্স (কোড কালার প্যালেট অ্যালাইনড) */
       .reason-display-box { 
-        background: rgba(230, 57, 70, 0.06); border: 1px solid rgba(230, 57, 70, 0.2); 
-        padding: 12px; border-radius: 6px; font-size: 12px; margin-top: 8px; color: #ffb3b8; 
+        background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.2); 
+        padding: 12px; border-radius: 6px; font-size: 13px; margin-top: 8px; color: #f87171; 
         line-height: 1.4; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       }
       .reason-display-box.hold-style { 
-        background: rgba(255, 183, 3, 0.06); border-color: rgba(255, 183, 3, 0.2); color: #ffe399; 
+        background: rgba(245, 158, 11, 0.06); border-color: rgba(245, 158, 11, 0.2); color: #fbbf24; 
       }
 
       /* অ্যাকশন বাটন প্যানেল */
       .action-trigger-area { margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; }
-      .edit-redirect-btn { padding: 11px 22px; border-radius: 6px; background: var(--neon-yellow); border: none; color: #030712; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 12px rgba(255, 183, 3, 0.2); transition: 0.2s; text-transform: uppercase; }
-      .edit-redirect-btn:hover { transform: translateY(-1px); box-shadow: 0 0 18px rgba(255, 183, 3, 0.5); }
+      .edit-redirect-btn { 
+        padding: 12px 24px; border-radius: 6px; background: linear-gradient(135deg, #fbbf24, #d97706); 
+        border: none; color: #020c1b; font-size: 13px; font-weight: 700; cursor: pointer; 
+        display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); 
+        transition: 0.3s; text-transform: uppercase; 
+      }
+      .edit-redirect-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5); }
 
-      .no-req-placeholder { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; border: 1px dashed var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.01); }
+      .no-req-placeholder { text-align: center; padding: 45px; color: #6b7280; font-size: 14px; border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px; background: rgba(255,255,255,0.01); }
       
       @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(8px); }
@@ -159,7 +201,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
   };
 
-  // ২. রিয়েল-টাইম ডাটাবেজ লিসেনার এবং প্রোগ্রেসিভ লুপ আর্কিটেকচার
+  // ২. রিয়েল-টাইম ডাটাবেজ লিসেনার এবং প্রোগ্রেসিভ লুপ আর্কিটেকচার (লজিক সম্পূর্ণ অপরিবর্তিত)
   onSnapshot(doc(db, "users", currentUser.uid), async (snapshot) => {
     if (!snapshot.exists()) return;
     const uData = snapshot.data();
@@ -177,7 +219,6 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       let isCurrent = uData.infoApprovalStatus === "pending" || uData.infoApprovalStatus === "waiting";
       let showInfoCard = true;
 
-      // আর্কাইভ ক্লিনিং রুলস: ৩ মাস পর অটোমেটিক রিমুভ হবে, তার আগে পুরাতন হিসেবে জমা থাকবে
       if (!isCurrent && uData.infoActionAt) {
         const actionTime = uData.infoActionAt.toDate ? uData.infoActionAt.toDate().getTime() : new Date(uData.infoActionAt).getTime();
         if (rightNow - actionTime >= ninetyDaysInMs) {
@@ -196,13 +237,13 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         let badgeClass = "status-pending";
         let progressHeightPercent = 40; 
         let progressFillModifier = "";
-        let inlineReasonHtml = ""; // বাইরে রিজন দেখানোর জন্য ভেরিয়েবল
+        let inlineReasonHtml = ""; 
 
         if (uData.infoApprovalStatus === "waiting") {
           statusText = "হোল্ড (স্থগিত)";
           badgeClass = "status-waiting";
           progressHeightPercent = 65;
-          inlineReasonHtml = `<p class="card-inline-reason reason-yellow"><strong>কারণ:</strong> ${uData.infoRejectReason || "তথ্য অসঙ্গতি রয়েছে। সংশোধন করুন।"}</p>`;
+          inlineReasonHtml = `<p class="card-inline-reason reason-yellow"><strong>হোল্ডের কারণ:</strong> ${uData.infoRejectReason || "তথ্য অসঙ্গতি রয়েছে। সংশোধন করুন।"}</p>`;
         } else if (uData.infoApprovalStatus === "approved") {
           statusText = "অনুমোদিত";
           badgeClass = "status-approved";
@@ -211,10 +252,9 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           statusText = "প্রত্যাখ্যাত";
           badgeClass = "status-rejected";
           progressFillModifier = "complete-rejected";
-          inlineReasonHtml = `<p class="card-inline-reason reason-red"><strong>কারণ:</strong> ${uData.infoRejectReason || "শর্তাবলী পূরণ করা হয়নি।"}</p>`;
+          inlineReasonHtml = `<p class="card-inline-reason reason-red"><strong>বাতিলের কারণ:</strong> ${uData.infoRejectReason || "শর্তাবলী পূরণ করা হয়নি।"}</p>`;
         }
 
-        // --- রিকার্সিভ এবং ডাইনামিক ফ্লো ট্র্যাকিং ইঞ্জিন ---
         let nodesArray = [];
 
         nodesArray.push(`
@@ -267,7 +307,6 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
 
         if (uData.infoRejectReason && uData.infoApprovalStatus === "pending") {
           progressHeightPercent = 85;
-          // যদি এডিট করে রি-সাবমিট করা অবস্থায় থাকে
           inlineReasonHtml = `<p class="card-inline-reason reason-yellow"><strong>পূর্বের কারণ:</strong> ${uData.infoRejectReason}</p>`;
           
           nodesArray.push(`
@@ -350,7 +389,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           progressFillModifier: progressFillModifier,
           timelineHtml: nodesArray.join(''),
           actionHtml: editActionHtml,
-          inlineReasonHtml: inlineReasonHtml, // অবজেক্টে পাস করা হলো
+          inlineReasonHtml: inlineReasonHtml, 
           title: "প্রোফাইল তথ্য পরিবর্তন",
           icon: "fa-user-edit"
         };
@@ -361,13 +400,12 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     }
 
     // ==========================================
-    // খ) প্রোফাইল ছবি পরিবর্তন আবেদন প্রসেসিং (IMAGE REQUEST)
+// খ) প্রোফাইল ছবি পরিবর্তন আবেদন প্রসেসিং (IMAGE REQUEST)
     // ==========================================
     if (uData.imageApprovalStatus && uData.imageApprovalStatus !== "") {
       let isImgCurrent = uData.imageApprovalStatus === "submit" || uData.imageApprovalStatus === "pending";
       let showImgCard = true;
 
-      // ছবি আর্কাইভ ক্লিনিং রুলস: ৩ মাস পর পুরাতন হিস্ট্রি ক্লিন হবে
       if (!isImgCurrent && uData.imageActionAt) {
         const imgActionTime = uData.imageActionAt.toDate ? uData.imageActionAt.toDate().getTime() : new Date(uData.imageActionAt).getTime();
         if (rightNow - imgActionTime >= ninetyDaysInMs) {
@@ -386,7 +424,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         let imgBadgeClass = "status-pending";
         let imgProgressHeight = 40;
         let imgProgressFillModifier = "";
-        let imgInlineReasonHtml = ""; // ইমেজ কার্ডের জন্য রিজন ভেরিয়েবল
+        let imgInlineReasonHtml = ""; 
 
         if (uData.imageApprovalStatus === "pending") {
           imgStatusText = "পেন্ডিং";
@@ -400,12 +438,11 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           imgStatusText = "প্রত্যাখ্যাত";
           imgBadgeClass = "status-rejected";
           imgProgressFillModifier = "complete-rejected";
-          imgInlineReasonHtml = `<p class="card-inline-reason reason-red"><strong>কারণ:</strong> ${uData.imageRejectReason || "ছবিটি অস্পষ্ট বা নির্দেশিকা অনুযায়ী নয়।"}</p>`;
+          imgInlineReasonHtml = `<p class="card-inline-reason reason-red"><strong>বাতিলের কারণ:</strong> ${uData.imageRejectReason || "ছবিটি অস্পষ্ট বা নির্দেশিকা অনুযায়ী নয়।"}</p>`;
         }
 
         let imgNodes = [];
 
-        // ১. ছবি সাবমিট নোড
         imgNodes.push(`
           <div class="timeline-node node-submitted">
             <div class="timeline-bullet"></div>
@@ -417,7 +454,6 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           </div>
         `);
 
-        // ২. ছবি পেন্ডিং নোড
         if (uData.imageApprovalStatus === "submit" || uData.imageApprovalStatus === "pending") {
           imgNodes.push(`
             <div class="timeline-node node-pending node-active">
@@ -442,7 +478,6 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           `);
         }
 
-        // ৩. ছবি ফাইনাল এপ্রুভড স্টেট
         if (uData.imageApprovalStatus === "approved") {
           imgNodes.push(`
             <div class="timeline-node node-approved node-active">
@@ -456,7 +491,6 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           `);
         }
 
-        // ৪. ছবি ফাইনাল রিজেক্টেড স্টেট
         if (uData.imageApprovalStatus === "rejected") {
           imgNodes.push(`
             <div class="timeline-node node-rejected node-active">
@@ -480,7 +514,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           progressFillModifier: imgProgressFillModifier,
           timelineHtml: imgNodes.join(''),
           actionHtml: "",
-          inlineReasonHtml: imgInlineReasonHtml, // অবজেক্টে পাস করা হলো
+          inlineReasonHtml: imgInlineReasonHtml, 
           title: "প্রোফাইল ছবি পরিবর্তন",
           icon: "fa-image"
         };
@@ -502,11 +536,11 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
             <div class="req-compact-card" onclick="this.nextElementSibling.classList.toggle('open')">
               <div class="card-left">
                 <div class="card-serial">${serialNo}</div>
-                <div class="card-icon" style="color:var(--neon-blue); border-color: rgba(0, 180, 216, 0.3);"><i class="fas ${card.icon || 'fa-user-edit'}"></i></div>
+                <div class="card-icon" style="color:#00b4d8; border-color: rgba(0, 180, 216, 0.3);"><i class="fas ${card.icon || 'fa-user-edit'}"></i></div>
                 <div class="card-details">
                   <h4>${card.title}</h4>
                   <p>আবেদনের তারিখ: ${card.date}</p>
-                  ${card.inlineReasonHtml || ""} <!-- এখানে Hold/Reject এর রিজনটি রেন্ডার হবে -->
+                  ${card.inlineReasonHtml || ""} 
                 </div>
               </div>
               <span class="status-node ${card.badgeClass}">${card.statusText} <i class="fas fa-chevron-down" style="font-size:9px; margin-left:4px;"></i></span>
@@ -529,21 +563,19 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       return output;
     };
 
-    // কারেন্ট রেন্ডারিং কন্ডিশনাল ট্রিগার
     if (currentCards.length === 0) {
-      currentRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-box-open" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> বর্তমানে কোনো চলমান আবেদন নেই।</div>`;
+      currentRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-box-open" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.15);"></i> বর্তমানে কোনো চলমান আবেদন নেই।</div>`;
     } else {
       currentRoot.innerHTML = renderCardEngine(currentCards);
     }
 
-    // আর্কাইভড পুরাতন রেন্ডারিং কন্ডিশনাল ট্রিগার (৩ মাস থেকে যাবে)
     if (previousCards.length === 0) {
-      previousRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-archive" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.2);"></i> পুরাতন আর্কাইভ হিস্ট্রি খালি।</div>`;
+      previousRoot.innerHTML = `<div class="no-req-placeholder"><i class="fas fa-archive" style="font-size:24px; display:block; margin-bottom:8px; color:rgba(255,255,255,0.15);"></i> পুরাতন আর্কাইভ হিস্ট্রি খালি।</div>`;
     } else {
       previousRoot.innerHTML = renderCardEngine(previousCards);
     }
 
-    // ৪. "তথ্য সংশোধন করুন" বাটন নেভিগেশনাল বাবলিং ইভেন্ট লিসেনার ফিক্স
+    // ৪. ইভেন্ট লিসেনার নেভিগেশনাল বাবল ফিক্স
     contentRoot.addEventListener('click', (e) => {
       const targetBtn = e.target.closest('.edit-redirect-btn');
       if (targetBtn) {
@@ -560,4 +592,4 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     });
 
   });
-             }
+}
