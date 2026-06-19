@@ -1,7 +1,7 @@
 // ROS Nexus - Enterprise Admin Password Control & Reset Request Module
 export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot) {
   
-  // ১. প্রিমিয়াম ডার্ক-ম্যাট্রিক্স থিম এবং অ্যাডমিন কন্ট্রোল প্যানেল ইউআই (সম্পূর্ণ অপরিবর্তিত)
+  // ১. প্রিমিয়াম ডার্ক-ম্যাট্রিক্স থিম এবং অ্যাডমিন কন্ট্রোল প্যানেল ইউআই (হুবহু আগের মতো)
   contentRoot.innerHTML = `
     <style>
       :root {
@@ -64,7 +64,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       }
       .queue-action-btn:hover { box-shadow: 0 0 12px var(--adm-cyan); }
 
-      /* অ্যাডভান্সড মেম্বার ডিটেইলস ওভারলে মডাল */
+      /* মডাল ওভারলে */
       .adm-modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(10px);
@@ -78,7 +78,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         animation: modalSlideUp 0.4s ease; color: #fff;
       }
       
-      /* মেম্বার প্রোফাইল কার্ড স্টাইল */
+      /* মেম্বার প্রোফাইল কার্ড */
       .member-profile-header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 20px; }
       .member-avatar { 
         width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
@@ -92,12 +92,12 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       .member-profile-header h3 { font-size: 18px; margin: 0 0 4px 0; color: #fff; }
       .member-profile-header p { font-size: 12px; color: var(--adm-cyan); margin: 0; font-family: monospace; font-weight: bold; }
 
-      /* ডিটেইলস লিস্ট টেবিল */
+      /* ডিটেইলস টেবিল */
       .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
       .detail-label { color: var(--adm-muted); }
       .detail-value { color: #fff; font-weight: 500; }
 
-      /* পাসওয়ার্ড কন্ট্রোল এরিয়া */
+      /* পাসওয়ার্ড কন্ট্রোল */
       .pass-control-box { margin-top: 20px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
       .pass-control-box h4 { font-size: 13px; color: var(--adm-yellow); margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; }
       
@@ -228,7 +228,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     queueRoot.innerHTML = queueHtml;
   });
 
-  // ৩. প্রোফাইল ভেরিফাই এবং স্মার্ট সার্চ লজিক ইঞ্জিন (FIXED SEARCH LOGIC WITH EXACT FIELDS)
+  // ৩. প্রোফাইল ভেরিফাই এবং সিম্পল ও নিরাপদ সার্চ ইঞ্জিন (সরাসরি field matching লজিক)
   contentRoot.addEventListener('click', async (e) => {
     const targetBtn = e.target.closest('.inspect-btn');
     if (!targetBtn) return;
@@ -243,7 +243,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       let userDocSnapshot = null;
       let uData = null;
 
-      // স্টেপ ১: প্রথমে memberId ফিল্ড দিয়ে সরাসরি ডাইনামিক কোয়েরি
+      // কন্ডিশন ১: মেম্বার আইডি (memberId) দিয়ে প্রথমে খোঁজা হচ্ছে
       let userQuery = query(collection(db, "users"), where("memberId", "==", identifier));
       let userSnap = await getDocs(userQuery);
 
@@ -251,30 +251,17 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         userDocSnapshot = userSnap.docs[0];
         uData = userDocSnapshot.data();
       } else {
-        // স্টেপ ২: মেম্বার আইডি না মিললে, মোবাইল নম্বরের বিভিন্ন সম্ভাব্য ফর্ম্যাট চেক করা
-        let cleanNumber = identifier.replace(/[^0-9]/g, ''); 
-        let variants = [];
-
-        if (cleanNumber.startsWith('880')) {
-          variants.push(cleanNumber, "+" + cleanNumber, cleanNumber.substring(2));
-        } else if (cleanNumber.startsWith('0')) {
-          variants.push(cleanNumber, "88" + cleanNumber, "+88" + cleanNumber);
-        } else {
-          variants.push(cleanNumber, "0" + cleanNumber, "880" + cleanNumber, "+880" + cleanNumber);
-        }
-
-        // লুপ চালিয়ে ডাটাবেজের mobileNumber ফিল্ডের সাথে নিখুঁত ম্যাচিং
-        for (let i = 0; i < variants.length; i++) {
-          let phoneQuery = query(collection(db, "users"), where("mobileNumber", "==", variants[i]));
-          let phoneSnap = await getDocs(phoneQuery);
-          if (!phoneSnap.empty) {
-            userDocSnapshot = phoneSnap.docs[0];
-            uData = userDocSnapshot.data();
-            break;
-          }
+        // কন্ডিশন ২: যদি মেম্বার আইডি না পাওয়া যায়, তবে সরাসরি মোবাইল নাম্বার (mobileNumber) দিয়ে খোঁজা হচ্ছে
+        let phoneQuery = query(collection(db, "users"), where("mobileNumber", "==", identifier));
+        let phoneSnap = await getDocs(phoneQuery);
+        
+        if (!phoneSnap.empty) {
+          userDocSnapshot = phoneSnap.docs[0];
+          uData = userDocSnapshot.data();
         }
       }
 
+      // যদি কোনোটাই ম্যাচ না করে
       if (!userDocSnapshot) {
         showPopup("এই আইডেন্টিফায়ারের বিপরীতে কোনো নিবন্ধিত মেম্বার প্রোফাইল খুঁজে পাওয়া যায়নি!", "error");
         targetBtn.innerHTML = `<i class="fas fa-user-search"></i> প্রোফাইল ভেরিফাই করুন`;
@@ -299,7 +286,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         <p>ID: ${uData.memberId || 'ID Pending'}</p>
       `;
 
-      // মোডাল স্পেসিফিকেশন টেবিল রেন্ডর
+      // মোডাল স্পেসিফিকেশন টেবিল রেন্ডর (সঠিক ডাটাবেজ ফিল্ড নেম অনুযায়ী)
       document.getElementById('modalUserSpecs').innerHTML = `
         <div class="detail-row"><span class="detail-label">ইমেইল এড্রেস</span><span class="detail-value">${uData.email || 'নাই'}</span></div>
         <div class="detail-row"><span class="detail-label">মোবাইল নম্বর</span><span class="detail-value">${uData.mobileNumber || 'নাই'}</span></div>
@@ -318,7 +305,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     }
   });
 
-  // ৪. পাসওয়ার্ড আপডেট এক্সিকিউশন মেকানিজম (সম্পূর্ণ অপরিবর্তিত)
+  // ৪. পাসওয়ার্ড আপডেট এক্সিকিউশন মেকানিজম (হুবহু আগের মতো)
   submitNewPassBtn.addEventListener('click', async () => {
     const newPassValue = targetNewPasswordInput.value.trim();
     if (!newPassValue || newPassValue.length < 6) {
