@@ -1,9 +1,9 @@
-// ROS Nexus - Enterprise Member Update Info Module (Cloudinary Direct Sync & Reject Notice Auto-Hide Engine)
-function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp) {
+// ROS Nexus - Enterprise Member Update Info Module (Sub-collection Architecture & Multi-Time Tracking Engine)
+function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp, collection, query, where, getDocs, addDoc) {
   
   if (!contentRoot) return;
 
-  // ১. মডিউলের জন্য ডেডিকেটেড সাইবারপাঙ্ক ইউআই এবং নোটিফিকেশন স্টাইল ইনজেকশন (থিম সম্পূর্ণ অপরিবর্তিত)
+  // ১. মডিউলের জন্য ডেডিকেটেড সাইবারপাঙ্ক ইউআই এবং নোটিফিকেশন স্টাইল ইনজেকশন
   contentRoot.innerHTML = `
     <style>
       .update-matrix-card { max-width: 1000px; width: 100%; margin: 0 auto; padding: 40px; border-radius: 16px; position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; color: #fff; }
@@ -50,6 +50,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
         <p style="color: #9ca3af; font-size: 12px; margin-top: 10px;">Cloudinary সিকিউরড স্টোরেজ সিঙ্ক অ্যাক্টিভেটেড</p>
       </div>
 
+      <!-- স্ট্যাটাস নোটিশ বোর্ডসমূহ -->
       <div class="status-lock-notice status-pending" id="photoPendingNotice">
         <i class="fas fa-clock fa-spin"></i> আপনার ছবি পরিবর্তনের আবেদনটি এডমিনের অনুমোদনের অপেক্ষায় রয়েছে।
       </div>
@@ -167,80 +168,91 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
     return (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date();
   }
 
-  // ৩. রিয়েল-টাইম ডাটাবেজ লিসেনার এবং ডাইনামিক স্ট্যাটাস চেঞ্জার ইন্টিগ্রেশন
+  // ৩. রিয়েল-টাইম ডাটা লিসেনার (ইউজারের মূল তথ্য এবং সাব-কালেকশনের রানিং স্টেট ট্র্যাকিং)
   onSnapshot(doc(db, "users", currentUser.uid), (snapshot) => {
     if (!snapshot.exists()) return;
     const data = snapshot.data();
 
-    // ছবি প্রিভিউ লোড (ফায়ারবেস থেকে সরাসরি ক্লাউডিনারি লিংক রিড করবে)
+    // প্রোফাইল ছবি ডিরেক্ট ভিউ (মূল ডক থেকে)
     if (updAvatarPreview) {
       updAvatarPreview.src = data.photoUrl || '../placeholder.png';
     }
 
-    // ফিল্ড ভ্যালু অ্যাসাইনমেন্ট
-    if(document.getElementById('updEnglishName')) document.getElementById('updEnglishName').value = data.englishName || "";
-    if(document.getElementById('updBanglaName')) document.getElementById('updBanglaName').value = data.banglaName || "";
-    if(document.getElementById('updFatherName')) document.getElementById('updFatherName').value = data.fatherName || "";
-    if(document.getElementById('updMotherName')) document.getElementById('updMotherName').value = data.motherName || "";
-    if(document.getElementById('updDob')) document.getElementById('updDob').value = data.dob || "";
-    if(document.getElementById('updGender')) document.getElementById('updGender').value = data.gender || "";
-    if(document.getElementById('updNidOrBrn')) document.getElementById('updNidOrBrn').value = data.nidOrBrn || "";
-    if(document.getElementById('updInstitution')) document.getElementById('updInstitution').value = data.institution || "";
-    if(document.getElementById('updEducation')) document.getElementById('updEducation').value = data.education || "";
-    if(document.getElementById('updAcademicYear')) document.getElementById('updAcademicYear').value = data.academicYear || "";
-    if(document.getElementById('updProfession')) document.getElementById('updProfession').value = data.profession || "";
-    if(document.getElementById('updMobileNumber')) document.getElementById('updMobileNumber').value = data.mobileNumber || "";
-    if(document.getElementById('updWhatsappNumber')) document.getElementById('updWhatsappNumber').value = data.whatsappNumber || "";
-    if(document.getElementById('updFacebookLink')) document.getElementById('updFacebookLink').value = data.facebookLink || "";
-    if(document.getElementById('updPresentAddress')) document.getElementById('updPresentAddress').value = data.presentAddress || "";
-    if(document.getElementById('updPermanentAddress')) document.getElementById('updPermanentAddress').value = data.permanentAddress || "";
+    // ফর্ম ফিল্ডগুলোতে কারেন্ট বা রানিং ডাটা শো করানো (যদি অলরেডি ফর্মে ইউজার হাত না দিয়ে থাকে)
+    if (!updateMatrixForm.dataset.userInteracted) {
+      if(document.getElementById('updEnglishName')) document.getElementById('updEnglishName').value = data.englishName || "";
+      if(document.getElementById('updBanglaName')) document.getElementById('updBanglaName').value = data.banglaName || "";
+      if(document.getElementById('updFatherName')) document.getElementById('updFatherName').value = data.fatherName || "";
+      if(document.getElementById('updMotherName')) document.getElementById('updMotherName').value = data.motherName || "";
+      if(document.getElementById('updDob')) document.getElementById('updDob').value = data.dob || "";
+      if(document.getElementById('updGender')) document.getElementById('updGender').value = data.gender || "";
+      if(document.getElementById('updNidOrBrn')) document.getElementById('updNidOrBrn').value = data.nidOrBrn || "";
+      if(document.getElementById('updInstitution')) document.getElementById('updInstitution').value = data.institution || "";
+      if(document.getElementById('updEducation')) document.getElementById('updEducation').value = data.education || "";
+      if(document.getElementById('updAcademicYear')) document.getElementById('updAcademicYear').value = data.academicYear || "";
+      if(document.getElementById('updProfession')) document.getElementById('updProfession').value = data.profession || "";
+      if(document.getElementById('updMobileNumber')) document.getElementById('updMobileNumber').value = data.mobileNumber || "";
+      if(document.getElementById('updWhatsappNumber')) document.getElementById('updWhatsappNumber').value = data.whatsappNumber || "";
+      if(document.getElementById('updFacebookLink')) document.getElementById('updFacebookLink').value = data.facebookLink || "";
+      if(document.getElementById('updPresentAddress')) document.getElementById('updPresentAddress').value = data.presentAddress || "";
+      if(document.getElementById('updPermanentAddress')) document.getElementById('updPermanentAddress').value = data.permanentAddress || "";
+    }
+  });
 
-    // ছবি পরিবর্তনের রিয়েল-টাইম নোটিফিকেশন লজিক
-    if (data.imageApprovalStatus === "pending") {
-      if(photoPendingNotice) photoPendingNotice.style.display = "flex";
-      if(photoRejectNotice) photoRejectNotice.style.display = "none"; // নতুন পেন্ডিং রিকোয়েস্টে রিজেক্ট নোটিশ হাইড হবে
-      if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = true; updGalleryTriggerBtn.style.opacity = "0.5"; }
-    } else if (data.imageApprovalStatus === "rejected") {
-      if(photoPendingNotice) photoPendingNotice.style.display = "none";
-      if(photoRejectReasonText) photoRejectReasonText.innerText = `❌ ছবি রিজেক্টের কারণ: ${data.imageRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
-      if(photoRejectNotice) photoRejectNotice.style.display = "flex";
-      if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = false; updGalleryTriggerBtn.style.opacity = "1"; }
+  // ফর্মের ইনপুট ট্র্যাকিং ট্রিগার
+  updateMatrixForm.addEventListener('input', () => { updateMatrixForm.dataset.userInteracted = true; });
+
+  // সাব-কালেকশন `profile_applications` থেকে রানিং ওপেন (`isOpen: true`) অ্যাপ্লিকেশনের স্টেট লিসেনার
+  const appCollRef = collection(db, "users", currentUser.uid, "profile_applications");
+  
+  onSnapshot(appCollRef, (snap) => {
+    let activeInfoApp = null;
+    let activeImageApp = null;
+
+    snap.forEach((d) => {
+      const app = d.data();
+      if (app.isOpen) {
+        if (app.type === "info") activeInfoApp = app;
+        if (app.type === "image") activeImageApp = app;
+      }
+    });
+
+    // ক) ইমেজ রিকোয়েস্ট লাইভ কন্ডিশনাল ইউআই হ্যান্ডলিং
+    if (activeImageApp) {
+      if (activeImageApp.status === "pending") {
+        if(photoPendingNotice) photoPendingNotice.style.display = "flex";
+        if(photoRejectNotice) photoRejectNotice.style.display = "none";
+        if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = true; updGalleryTriggerBtn.style.opacity = "0.5"; }
+      }
     } else {
       if(photoPendingNotice) photoPendingNotice.style.display = "none";
       if(photoRejectNotice) photoRejectNotice.style.display = "none";
       if(updGalleryTriggerBtn) { updGalleryTriggerBtn.disabled = false; updGalleryTriggerBtn.style.opacity = "1"; }
     }
 
-    // তথ্য পরিবর্তনের ডাইনামিক লক ও রিসাবমিট স্টেট ইন্টিগ্রেশন
-    if (data.infoApprovalStatus === "pending") {
-      if(infoPendingNotice) infoPendingNotice.style.display = "flex";
-      if(infoRejectNotice) infoRejectNotice.style.display = "none"; // নতুন পেন্ডিং রিকোয়েস্টে রিজেক্ট/হোল্ড নোটিশ হাইড হবে
-      if(matrixSaveBtn) matrixSaveBtn.disabled = true;
-      if(matrixSaveBtnText) matrixSaveBtnText.innerText = "তথ্য পরিবর্তনের আবেদন পাঠান";
-      toggleFormInputs(true);
-    } else if (data.infoApprovalStatus === "waiting") {
-      if(infoPendingNotice) infoPendingNotice.style.display = "none";
-      if(matrixSaveBtn) matrixSaveBtn.disabled = false;
-      if(matrixSaveBtnText) matrixSaveBtnText.innerHTML = `<i class="fas fa-redo"></i> তথ্য সংশোধন করে রিসাবমিট করুন`;
-      toggleFormInputs(false);
+    // খ) ইনফো রিকোয়েস্ট লাইভ কন্ডিশনাল ইউআই হ্যান্ডলিং
+    if (activeInfoApp) {
+      if (activeInfoApp.status === "pending") {
+        if(infoPendingNotice) infoPendingNotice.style.display = "flex";
+        if(infoRejectNotice) infoRejectNotice.style.display = "none";
+        if(matrixSaveBtn) matrixSaveBtn.disabled = true;
+        if(matrixSaveBtnText) matrixSaveBtnText.innerText = "আবেদন রিভিউ করা হচ্ছে...";
+        toggleFormInputs(true);
+      } else if (activeInfoApp.status === "waiting") {
+        // Hold স্টেট
+        if(infoPendingNotice) infoPendingNotice.style.display = "none";
+        if(matrixSaveBtn) matrixSaveBtn.disabled = false;
+        if(matrixSaveBtnText) matrixSaveBtnText.innerHTML = `<i class="fas fa-redo"></i> তথ্য সংশোধন করে রিসাবমিট করুন`;
+        toggleFormInputs(false);
 
-      if(infoRejectNotice) {
-        infoRejectNotice.className = "status-lock-notice status-pending"; // থিমের হলুদ সংকেত
-        infoRejectNotice.style.display = "flex";
+        if(infoRejectNotice) {
+          infoRejectNotice.className = "status-lock-notice status-pending"; 
+          infoRejectNotice.style.display = "flex";
+        }
+        if(infoRejectReasonText) infoRejectReasonText.innerHTML = `<i class="fas fa-pause-circle"></i> ⚠️ তথ্য হোল্ডের কারণ: ${activeInfoApp.rejectReason || 'স্থগিত করা হয়েছে, সংশোধন করুন।'}`;
       }
-      if(infoRejectReasonText) infoRejectReasonText.innerHTML = `<i class="fas fa-pause-circle"></i> ⚠️ তথ্য হোল্ডের কারণ: ${data.infoRejectReason || 'আপনার তথ্য হোল্ডে রাখা হয়েছে, সংশোধন করুন।'}`;
-    } else if (data.infoApprovalStatus === "rejected") {
-      if(infoPendingNotice) infoPendingNotice.style.display = "none";
-      if(matrixSaveBtn) matrixSaveBtn.disabled = false;
-      if(matrixSaveBtnText) matrixSaveBtnText.innerText = "তথ্য পরিবর্তনের আবেদন পাঠান";
-      toggleFormInputs(false);
-
-      if(infoRejectNotice) {
-        infoRejectNotice.className = "status-lock-notice status-rejected"; // থিমের লাল সংকেত
-        infoRejectNotice.style.display = "flex";
-      }
-      if(infoRejectReasonText) infoRejectReasonText.innerText = `❌ তথ্য রিজেক্টের কারণ: ${data.infoRejectReason || 'নির্দিষ্ট কারণ নেই।'}`;
     } else {
+      // কোনো ওপেন অ্যাপ্লিকেশন নেই (সব ক্লোজড বা একদম প্রথমবার)
       if(infoPendingNotice) infoPendingNotice.style.display = "none";
       if(infoRejectNotice) infoRejectNotice.style.display = "none";
       if(matrixSaveBtn) matrixSaveBtn.disabled = false;
@@ -255,7 +267,7 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
     inputs.forEach(input => input.disabled = isLock);
   }
 
-  // ৪. সরাসরি ক্লাউডিনারি এপিআই আপলোডার সিঙ্ক (আপনার ক্রেডেন্সিয়ালসসহ)
+  // ৪. সরাসরি ক্লাউডিনারি এপিআই আপলোডার সিঙ্ক (সাব-কালেকশন রুলস মেকানিজম)
   if(updGalleryTriggerBtn && hiddenGalleryInput) {
     updGalleryTriggerBtn.onclick = () => hiddenGalleryInput.click();
 
@@ -267,12 +279,11 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
         try {
           if (matrixSaveBtn) matrixSaveBtn.disabled = true;
           
-          // ফর্মডাটা মেকানিজমে সরাসরি আপনার ক্লাউডিনারি লিংক আপলোড ফ্লো
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("upload_preset", "ros_uploads"); // আপনার প্রিসেট
+          formData.append("upload_preset", "ros_uploads"); 
 
-          const res = await fetch(`https://api.cloudinary.com/v1_1/dcmu3hius/image/upload`, { // আপনার ক্লাউড নেম
+          const res = await fetch(`https://api.cloudinary.com/v1_1/dcmu3hius/image/upload`, { 
             method: "POST",
             body: formData
           });
@@ -282,18 +293,39 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
           const cloudinarySecureUrl = uploadedResult.secure_url;
             
           if (cloudinarySecureUrl) {
-            // ফায়ারবেসে সাবমিট হওয়ার সাথে সাথে imageApprovalStatus "pending" হয়ে যাবে, ফলে পুরাতন রিজেক্ট নোটিশ স্ক্রিন থেকে সাথে সাথে গায়েব হবে।
-            await updateDoc(doc(db, "users", currentUser.uid), {
-              tempPendingPhoto: cloudinarySecureUrl,
-              imageApprovalStatus: "pending",
-              imageRejectReason: null, // রিজেক্ট কারণ ওল্ড মেমোরি থেকে রিসেট
-              imageActionAt: getTimeStamp()
-            });
+            // চেক করা হচ্ছে কোনো 'isOpen: true' ইমেজ রিকোয়েস্ট আছে কিনা
+            const q = query(appCollRef, where("isOpen", "==", true), where("type", "==", "image"));
+            const snapShot = await getDocs(q);
+
+            if (!snapShot.empty) {
+              const activeDocId = snapShot.docs[0].id;
+              await updateDoc(doc(db, "users", currentUser.uid, "profile_applications", activeDocId), {
+                status: "pending",
+                resubmittedAt: getTimeStamp(),
+                pendingAt: getTimeStamp(),
+                "data.photoUrl": cloudinarySecureUrl
+              });
+            } else {
+              // কোনো ওপেন ডক না থাকলে একদম নতুন ডক সাব-কালেকশনে জেনারেট হবে
+              await addDoc(appCollRef, {
+                type: "image",
+                status: "pending",
+                isOpen: true,
+                submittedAt: getTimeStamp(),
+                pendingAt: getTimeStamp(),
+                resubmittedAt: null,
+                waitingAt: null,
+                approvedAt: null,
+                rejectedAt: null,
+                rejectReason: null,
+                data: { photoUrl: cloudinarySecureUrl }
+              });
+            }
             alert("🎉 নতুন ছবি সফলভাবে আপলোড হয়েছে এবং এডমিন প্যানেলে পাঠানো হয়েছে।");
           }
         } catch (err) {
           console.error(err);
-          alert("দুঃখিত, ক্লাউডিনারিতে ছবি আপলোড ব্যর্থ হয়েছে!");
+          alert("দুঃখিত, ছবি আপলোড ব্যর্থ হয়েছে!");
         } finally {
           if (matrixSaveBtn) matrixSaveBtn.disabled = false;
         }
@@ -302,47 +334,71 @@ function loadUpdateInfoModule(contentRoot, db, auth, doc, onSnapshot, updateDoc,
     };
   }
 
-  // ৫. ইনফো ডাটা ফর্ম সাবমিশন এবং ব্যাকএন্ড টাইমলাইন ট্র্যাকিং সিঙ্ক
+  // ৫. ইনফো ডাটা ফর্ম সাবমিশন এবং সাব-কালেকশন ট্র্যাকিং ইঞ্জিন
   if(updateMatrixForm) {
     updateMatrixForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (confirm("আপনি কি নিশ্চিতভাবে এই সংশোধিত তথ্যসমূহ অনুমোদনের জন্য পাঠাতে চান?")) {
-        // সাবমিট বাটনে চাপ দেওয়ার সাথে সাথে এটি pending হবে, ফলে পুরাতন রিজেক্ট/হোল্ড নোটিশ অটো হাইড হবে।
-        const pendingDataPayload = {
-          tempPendingData: {
-            englishName: document.getElementById('updEnglishName') ? document.getElementById('updEnglishName').value.trim() : "",
-            banglaName: document.getElementById('updBanglaName') ? document.getElementById('updBanglaName').value.trim() : "",
-            fatherName: document.getElementById('updFatherName') ? document.getElementById('updFatherName').value.trim() : "",
-            motherName: document.getElementById('updMotherName') ? document.getElementById('updMotherName').value.trim() : "",
-            dob: document.getElementById('updDob') ? document.getElementById('updDob').value.trim() : "",
-            gender: document.getElementById('updGender') ? document.getElementById('updGender').value : "",
-            nidOrBrn: document.getElementById('updNidOrBrn') ? document.getElementById('updNidOrBrn').value.trim() : "",
-            institution: document.getElementById('updInstitution') ? document.getElementById('updInstitution').value.trim() : "",
-            education: document.getElementById('updEducation') ? document.getElementById('updEducation').value.trim() : "",
-            academicYear: document.getElementById('updAcademicYear') ? document.getElementById('updAcademicYear').value.trim() : "",
-            profession: document.getElementById('updProfession') ? document.getElementById('updProfession').value.trim() : "",
-            mobileNumber: document.getElementById('updMobileNumber') ? document.getElementById('updMobileNumber').value.trim() : "",
-            whatsappNumber: document.getElementById('updWhatsappNumber') ? document.getElementById('updWhatsappNumber').value.trim() : "",
-            facebookLink: document.getElementById('updFacebookLink') ? document.getElementById('updFacebookLink').value.trim() : "",
-            presentAddress: document.getElementById('updPresentAddress') ? document.getElementById('updPresentAddress').value.trim() : "",
-            permanentAddress: document.getElementById('updPermanentAddress') ? document.getElementById('updPermanentAddress').value.trim() : ""
-          },
-          infoApprovalStatus: "pending",
-          infoRequestedAt: getTimeStamp(), 
-          infoActionAt: getTimeStamp()
+      if (confirm("আপনি কি নিশ্চিতভাবে এই তথ্যসমূহ অনুমোদনের জন্য পাঠাতে চান?")) {
+        
+        const currentPayloadData = {
+          englishName: document.getElementById('updEnglishName') ? document.getElementById('updEnglishName').value.trim() : "",
+          banglaName: document.getElementById('updBanglaName') ? document.getElementById('updBanglaName').value.trim() : "",
+          fatherName: document.getElementById('updFatherName') ? document.getElementById('updFatherName').value.trim() : "",
+          motherName: document.getElementById('updMotherName') ? document.getElementById('updMotherName').value.trim() : "",
+          dob: document.getElementById('updDob') ? document.getElementById('updDob').value.trim() : "",
+          gender: document.getElementById('updGender') ? document.getElementById('updGender').value : "",
+          nidOrBrn: document.getElementById('updNidOrBrn') ? document.getElementById('updNidOrBrn').value.trim() : "",
+          institution: document.getElementById('updInstitution') ? document.getElementById('updInstitution').value.trim() : "",
+          education: document.getElementById('updEducation') ? document.getElementById('updEducation').value.trim() : "",
+          academicYear: document.getElementById('updAcademicYear') ? document.getElementById('updAcademicYear').value.trim() : "",
+          profession: document.getElementById('updProfession') ? document.getElementById('updProfession').value.trim() : "",
+          mobileNumber: document.getElementById('updMobileNumber') ? document.getElementById('updMobileNumber').value.trim() : "",
+          whatsappNumber: document.getElementById('updWhatsappNumber') ? document.getElementById('updWhatsappNumber').value.trim() : "",
+          facebookLink: document.getElementById('updFacebookLink') ? document.getElementById('updFacebookLink').value.trim() : "",
+          presentAddress: document.getElementById('updPresentAddress') ? document.getElementById('updPresentAddress').value.trim() : "",
+          permanentAddress: document.getElementById('updPermanentAddress') ? document.getElementById('updPermanentAddress').value.trim() : ""
         };
 
         try {
-          await updateDoc(doc(db, "users", currentUser.uid), pendingDataPayload);
-          alert("🔒 আপনার প্রোফাইলের তথ্য পরিবর্তনের আবেদনটি এডমিন প্যানেলে পৌঁছেছে। অনুমোদনের জন্য অপেক্ষা করুন।");
+          // ১. চেক করা হচ্ছে পূর্বে কোনো রানিং বা ওপেন (`isOpen == true`) অ্যাপ্লিকেশন ঝুলে আছে কিনা
+          const q = query(appCollRef, where("isOpen", "==", true), where("type", "==", "info"));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            // ২. রানিং অ্যাপ্লিকেশন থাকলে ওটাকেই "Resubmit" করে টাইমস্ট্যাম্প আপডেট করা হবে
+            const activeDocId = querySnapshot.docs[0].id;
+            await updateDoc(doc(db, "users", currentUser.uid, "profile_applications", activeDocId), {
+              status: "pending",               
+              resubmittedAt: getTimeStamp(), 
+              pendingAt: getTimeStamp(),     
+              data: currentPayloadData        
+            });
+            alert("🔒 আপনার আবেদনটি সফলভাবে রিসাবমিট (Resubmitted) হয়েছে। এডমিন পর্যালোচনার জন্য অপেক্ষা করুন।");
+          } else {
+            // ৩. কোনো ওপেন অ্যাপ্লিকেশন না থাকলে (প্রথমবার বা আগেরগুলো ক্লোজড) সম্পূর্ণ নতুন ডক যোগ হবে
+            await addDoc(appCollRef, {
+              type: "info",
+              status: "pending",
+              isOpen: true,
+              submittedAt: getTimeStamp(),
+              pendingAt: getTimeStamp(),
+              resubmittedAt: null,
+              waitingAt: null,
+              approvedAt: null,
+              rejectedAt: null,
+              rejectReason: null,
+              data: currentPayloadData
+            });
+            alert("🔒 আপনার প্রোফাইলের তথ্য পরিবর্তনের সম্পূর্ণ নতুন একটি আবেদন এডমিন প্যানেলে পাঠানো হয়েছে।");
+          }
+          delete updateMatrixForm.dataset.userInteracted; // সেশন ইন্টারঅ্যাকশন রিসেট
         } catch (err) {
           console.error(err);
-          alert("দুঃখিত, তথ্য রিকোয়েস্ট সাবমিট হয়নি। আবার চেষ্টা করুন।");
+          alert("দুঃখিত, আবেদনটি প্রসেস করা সম্ভব হয়নি। আবার চেষ্টা করুন।");
         }
       }
       hiddenGalleryInput.value = "";
     });
   }
-
 }
