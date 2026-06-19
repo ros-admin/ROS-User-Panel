@@ -199,16 +199,18 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           statusText = "অনুমোদিত";
           badgeClass = "status-approved";
           progressFillModifier = "complete-approved";
+          progressHeightPercent = 100;
         } else if (uData.infoApprovalStatus === "rejected") {
           statusText = "প্রত্যাখ্যাত";
           badgeClass = "status-rejected";
           progressFillModifier = "complete-rejected";
+          progressHeightPercent = 100;
         }
 
         // --- রিকার্সিভ এবং ডাইনামিক ফ্লো ট্র্যাকিং ইঞ্জিন ---
         let nodesArray = [];
 
-        // Critical Check: আপনার ট্রেইল লজিক অক্ষুণ্ণ রাখার জন্য
+        // ধাপ ১: Submitted সবসময় থাকবে
         nodesArray.push(`
           <div class="timeline-node node-submitted">
             <div class="timeline-bullet"></div>
@@ -220,9 +222,10 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           </div>
         `);
 
-        if (uData.infoApprovalStatus === "pending" && !uData.infoRejectReason) {
+        // ধাপ ২: প্রথমবার সাবমিশনের পর পেন্ডিং স্টেট ট্র্যাকিং (যদি কোনো ওল্ড রিজেক্ট রিজন না থাকে)
+        if (!uData.infoRejectReason && (uData.infoApprovalStatus === "pending" || uData.infoApprovalStatus === "waiting" || uData.infoApprovalStatus === "approved" || uData.infoApprovalStatus === "rejected")) {
           nodesArray.push(`
-            <div class="timeline-node node-pending node-active">
+            <div class="timeline-node node-pending ${uData.infoApprovalStatus === "pending" ? "node-active" : ""}">
               <div class="timeline-bullet"></div>
               <div class="timeline-content content-pending">
                 <h5>Pending</h5>
@@ -233,17 +236,8 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           `);
         }
 
+        // াপ ৩: যদি হোল্ড (waiting) স্ট্যাটাস সক্রিয় থাকে
         if (uData.infoApprovalStatus === "waiting") {
-          nodesArray.push(`
-            <div class="timeline-node node-pending">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-pending">
-                <h5>Pending</h5>
-                <p>আপনার আবেদন প্রশাসকের পর্যালোচনার অপেক্ষায় রয়েছে।</p>
-                ${renderTimeBox(uData.infoRequestedAt)}
-              </div>
-            </div>
-          `);
           nodesArray.push(`
             <div class="timeline-node node-hold node-active">
               <div class="timeline-bullet"></div>
@@ -257,8 +251,9 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           `);
         }
 
-        if (uData.infoRejectReason && uData.infoApprovalStatus === "pending") {
-          progressHeightPercent = 85;
+        // ধাপ ৪: ইউজার রিসাবমিট করার পর বা এপ্রুভড/রিজেক্টেড হওয়ার পর যদি ওল্ড ট্রেইল (infoRejectReason) থাকে
+        if (uData.infoRejectReason) {
+          // পূর্বের ওল্ড হোল্ড হিস্ট্রি ট্রেইল (আর্কাইভে গেলেও এটি হারাবে না)
           nodesArray.push(`
             <div class="timeline-node node-hold">
               <div class="timeline-bullet"></div>
@@ -270,6 +265,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
               </div>
             </div>
           `);
+          // রিসাবমিটেড নোড
           nodesArray.push(`
             <div class="timeline-node node-resubmitted">
               <div class="timeline-bullet"></div>
@@ -280,8 +276,9 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
               </div>
             </div>
           `);
+          // রিসাবমিটের পরের পেন্ডিং মূল্যায়ন নোড
           nodesArray.push(`
-            <div class="timeline-node node-pending node-active">
+            <div class="timeline-node node-pending ${uData.infoApprovalStatus === "pending" ? "node-active" : ""}">
               <div class="timeline-bullet"></div>
               <div class="timeline-content content-pending">
                 <h5>Pending</h5>
@@ -292,6 +289,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           `);
         }
 
+        // াপ ৫: ফাইনাল এপ্রুভড স্টেট
         if (uData.infoApprovalStatus === "approved") {
           nodesArray.push(`
             <div class="timeline-node node-approved node-active">
@@ -305,6 +303,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           `);
         }
 
+        // ধাপ ৬: ফাইনাল রিজেক্টেড স্টেট
         if (uData.infoApprovalStatus === "rejected") {
           nodesArray.push(`
             <div class="timeline-node node-rejected node-active">
@@ -319,6 +318,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           `);
         }
 
+        // হোল্ড কন্ডিশনে ডাইনামিক বাটন অ্যাকশন রেন্ডারিং
         let editActionHtml = "";
         if (uData.infoApprovalStatus === "waiting") {
           editActionHtml = `
@@ -383,10 +383,12 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           imgStatusText = "অনুমোদিত";
           imgBadgeClass = "status-approved";
           imgProgressFillModifier = "complete-approved";
+          imgProgressHeight = 100;
         } else if (uData.imageApprovalStatus === "rejected") {
           imgStatusText = "প্রত্যাখ্যাত";
           imgBadgeClass = "status-rejected";
           imgProgressFillModifier = "complete-rejected";
+          imgProgressHeight = 100;
         }
 
         let imgNodes = [];
@@ -404,29 +406,16 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         `);
 
         // ২. ছবি পেন্ডিং নোড
-        if (uData.imageApprovalStatus === "submit" || uData.imageApprovalStatus === "pending") {
-          imgNodes.push(`
-            <div class="timeline-node node-pending node-active">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-pending">
-                <h5>Pending</h5>
-                <p>আপনার ছবিটি প্রশাসকের অনুমোদনের অপেক্ষায় আছে।</p>
-                ${renderTimeBox(uData.imageRequestedAt || uData.imageActionAt)}
-              </div>
+        imgNodes.push(`
+          <div class="timeline-node node-pending ${(uData.imageApprovalStatus === "submit" || uData.imageApprovalStatus === "pending") ? "node-active" : ""}">
+            <div class="timeline-bullet"></div>
+            <div class="timeline-content content-pending">
+              <h5>Pending</h5>
+              <p>আপনার ছবিটি প্রশাসকের অনুমোদনের অপেক্ষায় আছে।</p>
+              ${renderTimeBox(uData.imageRequestedAt || uData.imageActionAt)}
             </div>
-          `);
-        } else {
-          imgNodes.push(`
-            <div class="timeline-node node-pending">
-              <div class="timeline-bullet"></div>
-              <div class="timeline-content content-pending">
-                <h5>Pending</h5>
-                <p>আপনার ছবিটি প্রশাসকের অনুমোদনের অপেক্ষায় আছে।</p>
-                ${renderTimeBox(uData.imageRequestedAt || uData.imageActionAt)}
-              </div>
-            </div>
-          `);
-        }
+          </div>
+        `);
 
         // ৩. ছবি ফাইনাল এপ্রুভড স্টেট
         if (uData.imageApprovalStatus === "approved") {
@@ -545,4 +534,3 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
 
   });
 }
-  
