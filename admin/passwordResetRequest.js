@@ -1,7 +1,7 @@
 // ROS Nexus - Enterprise Admin Password Control & Reset Request Module
 export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot) {
   
-  // ১. প্রিমিয়াম ডার্ক-ম্যাট্রিক্স থিম এবং অ্যাডমিন কন্ট্রোল প্যানেল ইউআই
+  // ১. প্রিমিয়াম ডার্ক-ম্যাট্রিক্স থিম এবং অ্যাডমিন কন্ট্রোল প্যানেল ইউআই (সম্পূর্ণ অপরিবর্তিত)
   contentRoot.innerHTML = `
     <style>
       :root {
@@ -64,7 +64,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       }
       .queue-action-btn:hover { box-shadow: 0 0 12px var(--adm-cyan); }
 
-      /* ওভারলে মডাল */
+      /* অ্যাডভান্সড মেম্বার ডিটেইলস ওভারলে মডাল */
       .adm-modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(10px);
@@ -78,7 +78,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         animation: modalSlideUp 0.4s ease; color: #fff;
       }
       
-      /* মেম্বার প্রোফাইল কার্ড */
+      /* মেম্বার প্রোফাইল কার্ড স্টাইল */
       .member-profile-header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 20px; }
       .member-avatar { 
         width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
@@ -92,7 +92,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       .member-profile-header h3 { font-size: 18px; margin: 0 0 4px 0; color: #fff; }
       .member-profile-header p { font-size: 12px; color: var(--adm-cyan); margin: 0; font-family: monospace; font-weight: bold; }
 
-      /* ডিটেইলস টেবিল */
+      /* ডিটেইলস লিস্ট টেবিল */
       .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
       .detail-label { color: var(--adm-muted); }
       .detail-value { color: #fff; font-weight: 500; }
@@ -135,17 +135,14 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       </div>
     </div>
 
-    <!-- মেম্বার ডিটেইলস এবং পাসওয়ার্ড চেঞ্জ পপআপ মোডাল -->
     <div id="admDetailModal" class="adm-modal-overlay">
       <div class="adm-modal-content">
         
         <div class="member-profile-header" id="modalProfileHeader">
-          <!-- ডাইনামিক প্রোফাইল পিকচার এবং নাম আসবে এখানে -->
-        </div>
+          </div>
 
         <div id="modalUserSpecs">
-          <!-- ফায়ারস্টোর থেকে ডিটেইল ডাটা এখানে রেন্ডার হবে -->
-        </div>
+          </div>
 
         <div class="pass-control-box">
           <h4><i class="fas fa-key"></i> অ্যাকশন: নতুন পাসওয়ার্ড সেট করুন</h4>
@@ -170,7 +167,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
   let activeRequestData = null; 
   let activeUserDocId = null;  
 
-  // নোটিফিকেশন ইঞ্জিন
+  // ৩ সেকেন্ডের স্বয়ংক্রিয় পপআপ নোটিফিকেশন ইঞ্জিন
   function showPopup(message, type = 'success') {
     let container = document.getElementById('notification-container');
     if (!container) {
@@ -198,7 +195,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
   // মোডাল ক্লোজ ইভেন্ট
   closeModalBtn.addEventListener('click', () => { detailModal.style.display = 'none'; });
 
-  // ২. রিয়েল-টাইম পাসওয়ার্ড রিসেট কিউ লিসেনার
+  // ২. রিয়েল-টাইম পাসওয়ার্ড রিসেট কিউ লিসেনার লুপ
   const qResets = query(collection(db, "password_resets"), where("status", "==", "pending"));
   onSnapshot(qResets, (snapshot) => {
     if (snapshot.empty) {
@@ -231,7 +228,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     queueRoot.innerHTML = queueHtml;
   });
 
-  // ৩. প্রোফাইল ভেরিফাই এবং স্মার্ট মোবাইল নম্বর ফিল্টারিং ইঞ্জিন 
+  // ৩. প্রোফাইল ভেরিফাই এবং স্মার্ট সার্চ লজিক ইঞ্জিন (FIXED SEARCH LOGIC WITH EXACT FIELDS)
   contentRoot.addEventListener('click', async (e) => {
     const targetBtn = e.target.closest('.inspect-btn');
     if (!targetBtn) return;
@@ -246,7 +243,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       let userDocSnapshot = null;
       let uData = null;
 
-      // স্টেপ ১: memberId ফিল্ড দিয়ে সরাসরি ফায়ারস্টোরে সার্চ
+      // স্টেপ ১: প্রথমে memberId ফিল্ড দিয়ে সরাসরি ডাইনামিক কোয়েরি
       let userQuery = query(collection(db, "users"), where("memberId", "==", identifier));
       let userSnap = await getDocs(userQuery);
 
@@ -254,28 +251,26 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         userDocSnapshot = userSnap.docs[0];
         uData = userDocSnapshot.data();
       } else {
-        // স্টেপ ২: memberId না মিললে, mobileNumber ফিল্ডের জন্য ডাইনামিক ফরম্যাট চেক
+        // স্টেপ ২: মেম্বার আইডি না মিললে, মোবাইল নম্বরের বিভিন্ন সম্ভাব্য ফর্ম্যাট চেক করা
         let cleanNumber = identifier.replace(/[^0-9]/g, ''); 
-        
-        let possibleNumbers = [];
+        let variants = [];
+
         if (cleanNumber.startsWith('880')) {
-          let base = cleanNumber.substring(2); 
-          possibleNumbers.push("+" + cleanNumber, cleanNumber, base);
+          variants.push(cleanNumber, "+" + cleanNumber, cleanNumber.substring(2));
         } else if (cleanNumber.startsWith('0')) {
-          possibleNumbers.push(cleanNumber, "88" + cleanNumber, "+88" + cleanNumber);
+          variants.push(cleanNumber, "88" + cleanNumber, "+88" + cleanNumber);
         } else {
-          possibleNumbers.push(cleanNumber, "0" + cleanNumber, "880" + cleanNumber, "+880" + cleanNumber);
+          variants.push(cleanNumber, "0" + cleanNumber, "880" + cleanNumber, "+880" + cleanNumber);
         }
 
-        // লুপ চালিয়ে ডাটাবেজে mobileNumber ফিল্ডের সাথে ম্যাচিং (Syntax fixed)
-        for (let numVariant of possibleNumbers) {
-          let phoneQuery = query(collection(db, "users"), where("mobileNumber", "==", numVariant));
+        // লুপ চালিয়ে ডাটাবেজের mobileNumber ফিল্ডের সাথে নিখুঁত ম্যাচিং
+        for (let i = 0; i < variants.length; i++) {
+          let phoneQuery = query(collection(db, "users"), where("mobileNumber", "==", variants[i]));
           let phoneSnap = await getDocs(phoneQuery);
-          
           if (!phoneSnap.empty) {
             userDocSnapshot = phoneSnap.docs[0];
             uData = userDocSnapshot.data();
-            break; 
+            break;
           }
         }
       }
@@ -290,18 +285,21 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       activeUserDocId = userDocSnapshot.id;
       activeRequestData = { reqId: reqId, identifier: identifier };
 
+      // প্রোফাইল ছবি ডাইনামিক রেন্ডারিং
       let avatarHtml = `<div class="member-avatar-placeholder"><i class="fas fa-user"></i></div>`;
       const finalImgSrc = uData.profileImageUrl || uData.tempBase64Image;
       if (finalImgSrc && finalImgSrc !== "") {
         avatarHtml = `<img src="${finalImgSrc}" class="member-avatar" alt="Member Avatar" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'member-avatar-placeholder\'><i class=\'fas fa-user-times\'></i></div>'">`;
       }
 
+      // মোডাল হেডার কন্টেন্ট ইনজেকশন
       document.getElementById('modalProfileHeader').innerHTML = `
         ${avatarHtml}
         <h3>${uData.fullName || 'নাম পাওয়া যায়নি'}</h3>
         <p>ID: ${uData.memberId || 'ID Pending'}</p>
       `;
 
+      // মোডাল স্পেসিফিকেশন টেবিল রেন্ডর
       document.getElementById('modalUserSpecs').innerHTML = `
         <div class="detail-row"><span class="detail-label">ইমেইল এড্রেস</span><span class="detail-value">${uData.email || 'নাই'}</span></div>
         <div class="detail-row"><span class="detail-label">মোবাইল নম্বর</span><span class="detail-value">${uData.mobileNumber || 'নাই'}</span></div>
@@ -320,7 +318,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     }
   });
 
-  // ৪. পাসওয়ার্ড আপডেট এক্সিকিউশন
+  // ৪. পাসওয়ার্ড আপডেট এক্সিকিউশন মেকানিজম (সম্পূর্ণ অপরিবর্তিত)
   submitNewPassBtn.addEventListener('click', async () => {
     const newPassValue = targetNewPasswordInput.value.trim();
     if (!newPassValue || newPassValue.length < 6) {
