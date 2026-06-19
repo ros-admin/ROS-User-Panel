@@ -1,11 +1,11 @@
 // ROS Nexus - Enterprise Member Request Status Module (Ultra Advanced Vertical Tracker & Dynamic Loops)
 function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc) {
   
-  // ১. প্রিমিয়াম সাইবেরপাঙ্ক ডার্ক-ম্যাট্রিক্স থিম ইউআই এবং ভার্টিক্যাল প্রোগ্রেস লাইন ডিজাইন (updateProfile-এর সাথে সিঙ্কড)
+  // ১. প্রিমিয়াম সাইবেরপাঙ্ক ডার্ক-ম্যাট্রিক্স থিম ইউআই এবং মোবাইল রেসপন্সিভ লেআউট ডিজাইন
   contentRoot.innerHTML = `
     <style>
       .my-req-container { 
-        max-width: 1000px; width: 100%; margin: 0 auto; padding: 40px; border-radius: 16px; 
+        max-width: 1000px; width: 100%; margin: 0 auto; padding: 25px 15px; border-radius: 16px; 
         position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.95); 
         backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
         border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
@@ -17,7 +17,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       }
       
       .my-req-title { 
-        font-size: 22px; color: #fff; margin-bottom: 25px; font-weight: 700;
+        font-size: 20px; color: #fff; margin-bottom: 20px; font-weight: 700;
         border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 15px; 
         display: flex; align-items: center; gap: 12px; 
       }
@@ -30,13 +30,13 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       .req-section-title span { color: #00b4d8; font-weight: 700; }
       .req-section-title i { color: #fbbf24; }
 
-      /* কম্প্যাক্ট লিস্ট ভিউ */
+      /* কম্প্যাক্ট লিস্ট ভিউ - মোবাইল রেসপন্সিভ ফ্লেক্স লেআউট */
       .req-status-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
       
       .req-compact-card { 
-        padding: 18px 22px; border-radius: 8px; 
+        padding: 16px 20px; border-radius: 8px; 
         background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.06); 
-        display: flex; justify-content: space-between; align-items: center; 
+        display: flex; justify-content: space-between; align-items: center; gap: 15px;
         cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
       }
       .req-compact-card:hover { 
@@ -44,6 +44,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
         transform: translateX(4px); box-shadow: 0 4px 15px rgba(0, 180, 216, 0.1); 
       }
       
+      /* মোবাইল ওভারল্যাপ ফিক্স করার জন্য লেফট এরিয়া */
       .card-left { display: flex; align-items: center; gap: 15px; flex: 1; min-width: 0; }
       .card-serial { 
         font-family: 'Orbitron', monospace, sans-serif; font-size: 13px; font-weight: 800; 
@@ -58,19 +59,19 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       }
       
       .card-details { flex: 1; min-width: 0; }
-      .card-details h4 { font-size: 15px; font-weight: 600; color: #fff; margin: 0 0 4px 0; }
-      .card-details p { font-size: 12px; color: #9ca3af; margin: 0; }
+      .card-details h4 { font-size: 14px; font-weight: 600; color: #fff; margin: 0 0 4px 0; line-height: 1.4; }
+      .card-details p { font-size: 11px; color: #9ca3af; margin: 0; }
       
       /* কার্ডের ভেতরের ইনলাইন রিজন ট্যাগ স্টাইল */
-      .card-inline-reason { font-size: 12px; margin-top: 6px !important; font-weight: 500; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%; }
+      .card-inline-reason { font-size: 11px; margin-top: 6px !important; font-weight: 500; display: block; white-space: normal; word-break: break-word; }
       .reason-red { color: #f87171; }
       .reason-yellow { color: #fbbf24; }
       
-      /* নিয়ন স্ট্যাটাস ব্যাজ (updateProfile থিমের সাথে ম্যাচিং) */
+      /* নিয়ন স্ট্যাটাস ব্যাজ (মোবাইলের জন্য ফ্লেক্স-শ্রিঙ্ক ফিক্স) */
       .status-node { 
-        padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: 700; 
+        padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; 
         text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; 
-        display: flex; align-items: center; gap: 6px; flex-shrink: 0; 
+        display: flex; align-items: center; gap: 6px; flex-shrink: 0; white-space: nowrap;
       }
       .status-pending { background: rgba(0, 180, 216, 0.15); color: #00b4d8; border-color: rgba(0, 180, 216, 0.3); }
       .status-approved { background: rgba(46, 196, 182, 0.15); color: #2ec4b6; border-color: rgba(46, 196, 182, 0.3); }
@@ -81,12 +82,12 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       .req-expanded-panel { 
         max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
         background: rgba(0, 0, 0, 0.2); border: 0 solid rgba(255,255,255,0.06); border-top: none; 
-        border-radius: 0 0 8px 8px; margin-top: -14px; margin-bottom: 15px; padding: 0 20px; box-sizing: border-box;
+        border-radius: 0 0 8px 8px; margin-top: -14px; margin-bottom: 15px; padding: 0 15px; box-sizing: border-box;
       }
-      .req-expanded-panel.open { max-height: 2000px; padding: 25px 22px; border-width: 0 1px 1px 1px; }
+      .req-expanded-panel.open { max-height: 2000px; padding: 25px 15px; border-width: 0 1px 1px 1px; }
 
       /* ইউনিক ভার্টিক্যাল প্রোগ্রেস এবং টাইমলাইন এক্সিস */
-      .timeline-wrapper { position: relative; padding-left: 35px; margin-left: 15px; }
+      .timeline-wrapper { position: relative; padding-left: 25px; margin-left: 5px; }
       
       /* বাম পাশের ডাইনামিক প্রোগ্রেস লাইন বার */
       .vertical-progress-line { 
@@ -107,7 +108,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       
       /* বুলেট ডট */
       .timeline-bullet { 
-        position: absolute; left: -35px; top: 2px; width: 12px; height: 12px; 
+        position: absolute; left: -25px; top: 4px; width: 11px; height: 11px; 
         border-radius: 50%; background: #1f2937; border: 2px solid #4b5563; 
         box-shadow: 0 0 0 4px #111827; transition: 0.3s; z-index: 2;
       }
@@ -121,7 +122,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       .node-hold .timeline-bullet { border-color: #fbbf24; background: #fbbf24; box-shadow: 0 0 12px #fbbf24, 0 0 0 4px #111827; }
 
       /* কন্টেন্ট টেক্সট এবং সুন্দর টাইম বক্স */
-      .timeline-content h5 { font-size: 14px; font-weight: 700; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+      .timeline-content h5 { font-size: 13px; font-weight: 700; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; }
       .content-submitted h5 { color: #0077b6; }
       .content-resubmitted h5 { color: #00b4d8; }
       .content-pending h5 { color: #00b4d8; }
@@ -129,38 +130,48 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
       .content-rejected h5 { color: #f87171; }
       .content-hold h5 { color: #fbbf24; }
 
-      .timeline-content p { font-size: 13px; color: #e5e7eb; margin: 0 0 8px 0; line-height: 1.5; font-weight: 500; }
+      .timeline-content p { font-size: 12px; color: #e5e7eb; margin: 0 0 8px 0; line-height: 1.5; font-weight: 500; }
       
       /* সুন্দর বক্সের মধ্যে সময় */
       .time-box { 
         display: inline-flex; align-items: center; gap: 6px;
         background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); 
-        padding: 4px 10px; border-radius: 4px; font-size: 11px; color: #9ca3af; 
+        padding: 4px 8px; border-radius: 4px; font-size: 10px; color: #9ca3af; 
         font-family: 'Orbitron', monospace; font-weight: 600; box-shadow: inset 0 0 6px rgba(0,0,0,0.2);
       }
 
-      /* রিজেক্ট/হোল্ড রেসপন্স বক্স (কোড কালার প্যালেট অ্যালাইনড) */
+      /* রিজেক্ট/হোল্ড রেসপন্স বক্স */
       .reason-display-box { 
         background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.2); 
-        padding: 12px; border-radius: 6px; font-size: 13px; margin-top: 8px; color: #f87171; 
-        line-height: 1.4; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        padding: 10px; border-radius: 6px; font-size: 12px; margin-top: 8px; color: #f87171; 
+        line-height: 1.4; box-shadow: 0 2px 8px rgba(0,0,0,0.2); word-break: break-word;
       }
       .reason-display-box.hold-style { 
         background: rgba(245, 158, 11, 0.06); border-color: rgba(245, 158, 11, 0.2); color: #fbbf24; 
       }
 
       /* অ্যাকশন বাটন প্যানেল */
-      .action-trigger-area { margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; }
+      .action-trigger-area { margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; }
       .edit-redirect-btn { 
-        padding: 12px 24px; border-radius: 6px; background: linear-gradient(135deg, #fbbf24, #d97706); 
-        border: none; color: #020c1b; font-size: 13px; font-weight: 700; cursor: pointer; 
-        display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); 
-        transition: 0.3s; text-transform: uppercase; 
+        padding: 10px 20px; border-radius: 6px; background: linear-gradient(135deg, #fbbf24, #d97706); 
+        border: none; color: #020c1b; font-size: 12px; font-weight: 700; cursor: pointer; 
+        display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); 
+        transition: 0.3s; text-transform: uppercase; width: 100%; justify-content: center;
       }
       .edit-redirect-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5); }
 
-      .no-req-placeholder { text-align: center; padding: 45px; color: #6b7280; font-size: 14px; border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px; background: rgba(255,255,255,0.01); }
+      .no-req-placeholder { text-align: center; padding: 35px; color: #6b7280; font-size: 13px; border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px; background: rgba(255,255,255,0.01); }
       
+      /* ৫. বিশেষ মোবাইল রেসপন্সিভ মিডিয়া কোয়েরি ফিক্স */
+      @media (max-width: 600px) {
+        .req-compact-card { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; }
+        .card-left { width: 100%; }
+        .status-node { align-self: flex-end; width: auto; font-size: 10px; padding: 4px 10px; }
+        .my-req-container { padding: 20px 12px; border-radius: 8px; }
+        .timeline-wrapper { padding-left: 20px; margin-left: 0; }
+        .timeline-bullet { left: -20px; }
+      }
+
       @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
@@ -387,7 +398,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
           statusText: statusText,
           progressHeight: progressHeightPercent,
           progressFillModifier: progressFillModifier,
-          timelineHtml: nodesArray.join(''),
+     timelineHtml: nodesArray.join(''),
           actionHtml: editActionHtml,
           inlineReasonHtml: inlineReasonHtml, 
           title: "প্রোফাইল তথ্য পরিবর্তন",
@@ -400,7 +411,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     }
 
     // ==========================================
-// খ) প্রোফাইল ছবি পরিবর্তন আবেদন প্রসেসিং (IMAGE REQUEST)
+    // খ) প্রোফাইল ছবি পরিবর্তন আবেদন প্রসেসিং (IMAGE REQUEST)
     // ==========================================
     if (uData.imageApprovalStatus && uData.imageApprovalStatus !== "") {
       let isImgCurrent = uData.imageApprovalStatus === "submit" || uData.imageApprovalStatus === "pending";
@@ -525,7 +536,7 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     }
 
     // ==========================================
-    // ৩. সিরিয়াল নাম্বার (১, ২, ৩...) হ্যান্ডলিং সহ রেন্ডারার লুপ
+    // ৩. সিরিয়াল নাম্বার হ্যান্ডলিং সহ রেসপন্সিভ রেন্ডারার লুপ
     // ==========================================
     const renderCardEngine = (cardsArray) => {
       let output = "";
@@ -592,4 +603,4 @@ function loadMyRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc)
     });
 
   });
-}
+          }
