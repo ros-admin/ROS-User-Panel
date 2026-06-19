@@ -1,5 +1,5 @@
 // ROS Nexus - Enterprise Admin Password Control & Reset Request Module
-function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot) {
+export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot) {
   
   // ১. প্রিমিয়াম ডার্ক-ম্যাট্রিক্স থিম এবং অ্যাডমিন কন্ট্রোল প্যানেল ইউআই
   contentRoot.innerHTML = `
@@ -10,6 +10,7 @@ function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collectio
         --adm-danger: #ff4d6d;
         --adm-success: #2ec4b6;
         --adm-muted: #9ca3af;
+        --card-bg: rgba(17, 24, 39, 0.95);
       }
 
       .adm-pass-container { 
@@ -231,7 +232,7 @@ function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collectio
     queueRoot.innerHTML = queueHtml;
   });
 
-  // ৩. প্রোফাইল ভেরিফাই এবং ডাইনামিক ইমেজ লোডার ইঞ্জিন ক্লিক ইভেন্ট
+  // ৩. প্রোফাইল ভেরিফাই এবং স্মার্ট মোবাইল নম্বর ফিল্টারিং ইঞ্জিন (ডাটাবেজ ফিল্ড নেম স্ট্রাকচার অনুযায়ী ফিক্সড)
   contentRoot.addEventListener('click', async (e) => {
     const targetBtn = e.target.closest('.inspect-btn');
     if (!targetBtn) return;
@@ -243,51 +244,78 @@ function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collectio
     targetBtn.disabled = true;
 
     try {
-      // মেম্বার আইডি অথবা মোবাইল নম্বর দিয়ে ব্যবহারকারীকে ফায়ারস্টোর থেকে খুঁজে বের করা
+      let userDocSnapshot = null;
+      let uData = null;
+
+      // স্টেপ ১: প্রথমে memberId ফিল্ড দিয়ে সরাসরি ফায়ারস্টোরে সার্চ করা হচ্ছে
       let userQuery = query(collection(db, "users"), where("memberId", "==", identifier));
       let userSnap = await getDocs(userQuery);
 
-      if (userSnap.empty) {
-        // মোবাইল নম্বর দিয়েও সেকেন্ডারি ট্রাই করা হচ্ছে
-        userQuery = query(collection(db, "users"), where("mobile", "==", identifier));
-        userSnap = await getDocs(userQuery);
+      if (!userSnap.empty) {
+        userDocSnapshot = userSnap.docs[0];
+        uData = userDocSnapshot.data();
+      } else {
+        // স্টেপ ২: memberId না মিললে, mobileNumber ফিল্ডের জন্য বিভিন্ন সম্ভাব্য ডাইনামিক ফরম্যাট চেক করা হচ্ছে
+        let cleanNumber = identifier.replace(/[^0-9]/g, ''); // শুধু সংখ্যাগুলো আলাদা করা হলো
+        
+        let possibleNumbers = [];
+        if (cleanNumber.startsWith('880')) {
+          let base = cleanNumber.substring(2); // '017...'
+          possibleNumbers.push("+" + cleanNumber, cleanNumber, base);
+        } else if (cleanNumber.startsWith('0')) {
+          possibleNumbers.push(cleanNumber, "88" + cleanNumber, "+88" + cleanNumber);
+        } else {
+          possibleNumbers.push(cleanNumber, "0" + cleanNumber, "880" + cleanNumber, "+880" + cleanNumber);
+        }
+
+        // লুপ চালিয়ে ডাটাবেজে mobileNumber ফিল্ডের সাথে মেলানো হচ্ছে
+        for (let numVariant of possibleNumbers) {
+          let phoneQuery = query(collection(db, "users"), where("mobileNumber", "==", numVariant));
+          let phoneSnap = await getDocs(phoneQuery);
+          
+          if (!phoneSnap.empty) {
+            userDocSnapshot = phoneSnap.docs[0];
+            uData = userDocSnapshot.data();
+            break; // ইউজার পাওয়া গেলে লুপ সাথে সাথে বন্ধ হবে
+          }
+        }
       }
 
-      if (userSnap.empty) {
+      // যদি memberId বা mobileNumber কোনো কিছু দিয়েই ইউজার না পাওয়া যায়
+      if (!userDocSnapshot) {
         showPopup("এই আইডেন্টিফায়ারের বিপরীতে কোনো নিবন্ধিত মেম্বার প্রোফাইল খুঁজে পাওয়া যায়নি!", "error");
-        targetBtn.innerText = "প্রোফাইল ভেরিফাই করুন";
+        targetBtn.innerHTML = `<i class="fas fa-user-search"></i> প্রোফাইল ভেরিফাই করুন`;
         targetBtn.disabled = false;
         return;
       }
 
-      const userDocSnapshot = userSnap.docs[0];
-      const uData = userDocSnapshot.data();
+      // ইউজার পাওয়া গেলে গ্লোবাল ট্র্যাকার সেট করা
       activeUserDocId = userDocSnapshot.id;
       activeRequestData = { reqId: reqId, identifier: identifier };
 
-      // প্রোফাইল ছবি রেন্ডারিং (ফাইল বা ক্লাউড ইউআরএল বা বেস৬৪ সোর্স ডাইনামিক ডিটেকশন)
+      // প্রোফাইল ছবি ডাইনামিক রেন্ডারিং
       let avatarHtml = `<div class="member-avatar-placeholder"><i class="fas fa-user"></i></div>`;
       const finalImgSrc = uData.profileImageUrl || uData.tempBase64Image;
       if (finalImgSrc && finalImgSrc !== "") {
         avatarHtml = `<img src="${finalImgSrc}" class="member-avatar" alt="Member Avatar" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'member-avatar-placeholder\'><i class=\'fas fa-user-times\'></i></div>'">`;
       }
 
-      // হেডার ডাটা বসানো
+      // মোডাল হেডার কন্টেন্ট ইনজেকশন
       document.getElementById('modalProfileHeader').innerHTML = `
         ${avatarHtml}
         <h3>${uData.fullName || 'নাম পাওয়া যায়নি'}</h3>
-        <p>${uData.memberId || 'ID Pending'}</p>
+        <p>ID: ${uData.memberId || 'ID Pending'}</p>
       `;
 
-      // স্পেসিফিকেশন ডিটেইলস টেবিল রেন্ডার
+      // মোডাল স্পেসিফিকেশন টেবিল রেন্ডর (সঠিক ফিল্ড নেম সহ)
       document.getElementById('modalUserSpecs').innerHTML = `
         <div class="detail-row"><span class="detail-label">ইমেইল এড্রেস</span><span class="detail-value">${uData.email || 'নাই'}</span></div>
-        <div class="detail-row"><span class="detail-label">মোবাইল নম্বর</span><span class="detail-value">${uData.mobile || 'নাই'}</span></div>
+        <div class="detail-row"><span class="detail-label">মোবাইল নম্বর</span><span class="detail-value">${uData.mobileNumber || 'নাই'}</span></div>
         <div class="detail-row"><span class="detail-label">রোল / পদবি</span><span class="detail-value" style="color:var(--adm-yellow)">${uData.role || 'general_member'}</span></div>
         <div class="detail-row"><span class="detail-label">অ্যাকাউন্ট স্ট্যাটাস</span><span class="detail-value" style="color:${uData.status === 'approved' ? 'var(--adm-success)' : 'var(--adm-danger)'}">${uData.status || 'pending'}</span></div>
       `;
 
-      targetNewPasswordInput.value = "ROS@1234"; // ডিফল্ট রিকোয়েস্টেড পাসওয়ার্ড সাজেস্ট করে রাখা হলো
+      targetNewPasswordInput.value = "ROS@1234"; // ডিফল্ট সাজেস্টেড পাসওয়ার্ড
       detailModal.style.display = 'flex';
 
     } catch (err) {
@@ -309,9 +337,9 @@ function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collectio
     submitNewPassBtn.disabled = true;
 
     try {
-      // ১. মূল ইউজার ডকুমেন্টে পাসওয়ার্ড ফিল্ড আপডেট (অথবা অ্যাডমিন কমান্ড ফ্ল্যাগ ট্রিগার)
+      // ১. মূল ইউজার ডকুমেন্টে পাসওয়ার্ড ফিল্ড আপডেট (ফায়ারস্টোর ডাটাবেজ ট্র্যাকিং সিঙ্ক)
       await updateDoc(doc(db, "users", activeUserDocId), {
-        password: newPassValue, // ফায়ারস্টোর ডাটাবেজ ট্র্যাকিং সিঙ্ক
+        password: newPassValue,
         passwordUpdatedByAdminAt: new Date().toISOString()
       });
 
