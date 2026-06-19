@@ -64,7 +64,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       }
       .queue-action-btn:hover { box-shadow: 0 0 12px var(--adm-cyan); }
 
-      /* অ্যাডভান্সড মেম্বার ডিটেইলস ওভারলে মডাল */
+      /* ওভারলে মডাল */
       .adm-modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(10px);
@@ -78,7 +78,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         animation: modalSlideUp 0.4s ease; color: #fff;
       }
       
-      /* মেম্বার প্রোফাইল কার্ড স্টাইল */
+      /* মেম্বার প্রোফাইল কার্ড */
       .member-profile-header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 20px; }
       .member-avatar { 
         width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
@@ -92,7 +92,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       .member-profile-header h3 { font-size: 18px; margin: 0 0 4px 0; color: #fff; }
       .member-profile-header p { font-size: 12px; color: var(--adm-cyan); margin: 0; font-family: monospace; font-weight: bold; }
 
-      /* ডিটেইলস লিস্ট টেবিল */
+      /* ডিটেইলস টেবিল */
       .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
       .detail-label { color: var(--adm-muted); }
       .detail-value { color: #fff; font-weight: 500; }
@@ -118,7 +118,6 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         to { transform: translateY(0); opacity: 1; }
       }
 
-      /* রেসপন্সিভ মিডিয়া কোয়েরি ফিক্স */
       @media (max-width: 600px) {
         .queue-card { flex-direction: column; align-items: flex-start; gap: 12px; }
         .queue-action-btn { width: 100%; justify-content: center; }
@@ -168,10 +167,10 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
   const submitNewPassBtn = document.getElementById('admSubmitNewPass');
   const targetNewPasswordInput = document.getElementById('targetNewPassword');
 
-  let activeRequestData = null; // বর্তমানে ওপেন থাকা রিকোয়েস্ট ট্র্যাক মেমোরি
-  let activeUserDocId = null;  // টার্গেট ইউজারের ফায়ারস্টোর ডকুমেন্ট আইডি
+  let activeRequestData = null; 
+  let activeUserDocId = null;  
 
-  // ৩ সেকেন্ডের স্বয়ংক্রিয় পপআপ নোটিফিকেশন ইঞ্জিন
+  // নোটিফিকেশন ইঞ্জিন
   function showPopup(message, type = 'success') {
     let container = document.getElementById('notification-container');
     if (!container) {
@@ -199,7 +198,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
   // মোডাল ক্লোজ ইভেন্ট
   closeModalBtn.addEventListener('click', () => { detailModal.style.display = 'none'; });
 
-  // ২. রিয়েল-টাইম পাসওয়ার্ড রিসেট কিউ লিসেনার লুপ
+  // ২. রিয়েল-টাইম পাসওয়ার্ড রিসেট কিউ লিসেনার
   const qResets = query(collection(db, "password_resets"), where("status", "==", "pending"));
   onSnapshot(qResets, (snapshot) => {
     if (snapshot.empty) {
@@ -232,7 +231,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     queueRoot.innerHTML = queueHtml;
   });
 
-  // ৩. প্রোফাইল ভেরিফাই এবং স্মার্ট মোবাইল নম্বর ফিল্টারিং ইঞ্জিন (ডাটাবেজ ফিল্ড নেম স্ট্রাকচার অনুযায়ী ফিক্সড)
+  // ৩. প্রোফাইল ভেরিফাই এবং স্মার্ট মোবাইল নম্বর ফিল্টারিং ইঞ্জিন 
   contentRoot.addEventListener('click', async (e) => {
     const targetBtn = e.target.closest('.inspect-btn');
     if (!targetBtn) return;
@@ -247,7 +246,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       let userDocSnapshot = null;
       let uData = null;
 
-      // স্টেপ ১: প্রথমে memberId ফিল্ড দিয়ে সরাসরি ফায়ারস্টোরে সার্চ করা হচ্ছে
+      // স্টেপ ১: memberId ফিল্ড দিয়ে সরাসরি ফায়ারস্টোরে সার্চ
       let userQuery = query(collection(db, "users"), where("memberId", "==", identifier));
       let userSnap = await getDocs(userQuery);
 
@@ -255,12 +254,12 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         userDocSnapshot = userSnap.docs[0];
         uData = userDocSnapshot.data();
       } else {
-        // স্টেপ ২: memberId না মিললে, mobileNumber ফিল্ডের জন্য বিভিন্ন সম্ভাব্য ডাইনামিক ফরম্যাট চেক করা হচ্ছে
-        let cleanNumber = identifier.replace(/[^0-9]/g, ''); // শুধু সংখ্যাগুলো আলাদা করা হলো
+        // স্টেপ ২: memberId না মিললে, mobileNumber ফিল্ডের জন্য ডাইনামিক ফরম্যাট চেক
+        let cleanNumber = identifier.replace(/[^0-9]/g, ''); 
         
         let possibleNumbers = [];
         if (cleanNumber.startsWith('880')) {
-          let base = cleanNumber.substring(2); // '017...'
+          let base = cleanNumber.substring(2); 
           possibleNumbers.push("+" + cleanNumber, cleanNumber, base);
         } else if (cleanNumber.startsWith('0')) {
           possibleNumbers.push(cleanNumber, "88" + cleanNumber, "+88" + cleanNumber);
@@ -268,7 +267,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
           possibleNumbers.push(cleanNumber, "0" + cleanNumber, "880" + cleanNumber, "+880" + cleanNumber);
         }
 
-        // লুপ চালিয়ে ডাটাবেজে mobileNumber ফিল্ডের সাথে মেলানো হচ্ছে
+        // লুপ চালিয়ে ডাটাবেজে mobileNumber ফিল্ডের সাথে ম্যাচিং (Syntax fixed)
         for (let numVariant of possibleNumbers) {
           let phoneQuery = query(collection(db, "users"), where("mobileNumber", "==", numVariant));
           let phoneSnap = await getDocs(phoneQuery);
@@ -276,12 +275,11 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
           if (!phoneSnap.empty) {
             userDocSnapshot = phoneSnap.docs[0];
             uData = userDocSnapshot.data();
-            break; // ইউজার পাওয়া গেলে লুপ সাথে সাথে বন্ধ হবে
+            break; 
           }
         }
       }
 
-      // যদি memberId বা mobileNumber কোনো কিছু দিয়েই ইউজার না পাওয়া যায়
       if (!userDocSnapshot) {
         showPopup("এই আইডেন্টিফায়ারের বিপরীতে কোনো নিবন্ধিত মেম্বার প্রোফাইল খুঁজে পাওয়া যায়নি!", "error");
         targetBtn.innerHTML = `<i class="fas fa-user-search"></i> প্রোফাইল ভেরিফাই করুন`;
@@ -289,25 +287,21 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         return;
       }
 
-      // ইউজার পাওয়া গেলে গ্লোবাল ট্র্যাকার সেট করা
       activeUserDocId = userDocSnapshot.id;
       activeRequestData = { reqId: reqId, identifier: identifier };
 
-      // প্রোফাইল ছবি ডাইনামিক রেন্ডারিং
       let avatarHtml = `<div class="member-avatar-placeholder"><i class="fas fa-user"></i></div>`;
       const finalImgSrc = uData.profileImageUrl || uData.tempBase64Image;
       if (finalImgSrc && finalImgSrc !== "") {
         avatarHtml = `<img src="${finalImgSrc}" class="member-avatar" alt="Member Avatar" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'member-avatar-placeholder\'><i class=\'fas fa-user-times\'></i></div>'">`;
       }
 
-      // মোডাল হেডার কন্টেন্ট ইনজেকশন
       document.getElementById('modalProfileHeader').innerHTML = `
         ${avatarHtml}
         <h3>${uData.fullName || 'নাম পাওয়া যায়নি'}</h3>
         <p>ID: ${uData.memberId || 'ID Pending'}</p>
       `;
 
-      // মোডাল স্পেসিফিকেশন টেবিল রেন্ডর (সঠিক ফিল্ড নেম সহ)
       document.getElementById('modalUserSpecs').innerHTML = `
         <div class="detail-row"><span class="detail-label">ইমেইল এড্রেস</span><span class="detail-value">${uData.email || 'নাই'}</span></div>
         <div class="detail-row"><span class="detail-label">মোবাইল নম্বর</span><span class="detail-value">${uData.mobileNumber || 'নাই'}</span></div>
@@ -315,7 +309,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         <div class="detail-row"><span class="detail-label">অ্যাকাউন্ট স্ট্যাটাস</span><span class="detail-value" style="color:${uData.status === 'approved' ? 'var(--adm-success)' : 'var(--adm-danger)'}">${uData.status || 'pending'}</span></div>
       `;
 
-      targetNewPasswordInput.value = "ROS@1234"; // ডিফল্ট সাজেস্টেড পাসওয়ার্ড
+      targetNewPasswordInput.value = "ROS@1234"; 
       detailModal.style.display = 'flex';
 
     } catch (err) {
@@ -326,7 +320,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     }
   });
 
-  // ৪. পাসওয়ার্ড আপডেট এক্সিকিউশন মেকানিজম
+  // ৪. পাসওয়ার্ড আপডেট এক্সিকিউশন
   submitNewPassBtn.addEventListener('click', async () => {
     const newPassValue = targetNewPasswordInput.value.trim();
     if (!newPassValue || newPassValue.length < 6) {
@@ -337,13 +331,11 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     submitNewPassBtn.disabled = true;
 
     try {
-      // ১. মূল ইউজার ডকুমেন্টে পাসওয়ার্ড ফিল্ড আপডেট (ফায়ারস্টোর ডাটাবেজ ট্র্যাকিং সিঙ্ক)
       await updateDoc(doc(db, "users", activeUserDocId), {
         password: newPassValue,
         passwordUpdatedByAdminAt: new Date().toISOString()
       });
 
-      // ২. পেন্ডিং রিকোয়েস্ট কিউটি সফল ও ক্লোজড হিসেবে স্ট্যাটাস আপডেট মার্কার দেওয়া
       await updateDoc(doc(db, "password_resets", activeRequestData.reqId), {
         status: "resolved",
         resolvedAt: new Date().toISOString(),
