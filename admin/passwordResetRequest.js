@@ -1,7 +1,7 @@
 // ROS Nexus - Enterprise Admin Password Control & Reset Request Module
 export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot) {
   
-  // ১. প্রিমিয়াম ডার্ক-ম্যাট্রিক্স থিম এবং অ্যাডমিন কন্ট্রোল প্যানেল ইউআই (হুবহু আগের মতো)
+  // ১. প্রিমিয়াম ডার্ক-ম্যাট্রিক্স থিম এবং অ্যাডমিন কন্ট্রোল প্যানেল ইউআই
   contentRoot.innerHTML = `
     <style>
       :root {
@@ -32,7 +32,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       }
       .adm-module-title i { color: var(--adm-cyan); text-shadow: 0 0 10px rgba(0, 180, 216, 0.4); }
 
-      /* রিকোয়েস্ট গ্রিড লেআউট */
+      /* রিকোয়েস্ট গ্রিড લેআউট */
       .queue-grid { display: flex; flex-direction: column; gap: 14px; }
       
       .queue-card { 
@@ -73,43 +73,43 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       }
       .adm-modal-content {
         background: var(--card-bg); border: 1px solid rgba(0, 180, 216, 0.3);
-        max-width: 500px; width: 100%; border-radius: 12px; padding: 25px;
+        max-width: 520px; width: 100%; border-radius: 12px; padding: 25px;
         box-shadow: 0 0 30px rgba(0, 180, 216, 0.2); position: relative;
         animation: modalSlideUp 0.4s ease; color: #fff;
       }
       
-      /* মেম্বার প্রোফাইল কার্ড */
-      .member-profile-header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 20px; }
-      .member-avatar { 
-        width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
-        border: 2px solid var(--adm-cyan); box-shadow: 0 0 15px rgba(0, 180, 216, 0.3); margin-bottom: 12px;
+      /* পাশাপাশি দুই ছবি দেখানোর কন্টেইনার */
+      .verification-images-container {
+        display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;
       }
-      .member-avatar-placeholder {
-        width: 90px; height: 90px; border-radius: 50%; background: rgba(255,255,255,0.05);
-        border: 2px dashed var(--adm-muted); display: flex; align-items: center; justify-content: center;
-        font-size: 32px; color: var(--adm-muted); margin-bottom: 12px;
-      }
-      .member-profile-header h3 { font-size: 18px; margin: 0 0 4px 0; color: #fff; }
-      .member-profile-header p { font-size: 12px; color: var(--adm-cyan); margin: 0; font-family: monospace; font-weight: bold; }
+      .image-block { text-align: center; flex: 1; }
+      .image-block span { display: block; font-size: 11px; color: var(--adm-muted); margin-bottom: 6px; text-transform: uppercase; }
+      .verify-img { width: 110px; height: 110px; border-radius: 8px; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); }
+      .verify-img.live { border-color: var(--adm-danger); box-shadow: 0 0 10px rgba(255, 77, 109, 0.3); }
+      .verify-img.id-pic { border-color: var(--adm-cyan); box-shadow: 0 0 10px rgba(0, 180, 216, 0.3); }
+      .avatar-placeholder { width: 110px; height: 110px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--adm-muted); margin: 0 auto; border: 2px dashed rgba(255,255,255,0.1); }
 
       /* ডিটেইলস টেবিল */
       .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
       .detail-label { color: var(--adm-muted); }
       .detail-value { color: #fff; font-weight: 500; }
 
-      /* পাসওয়ার্ড কন্ট্রোল */
-      .pass-control-box { margin-top: 20px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
-      .pass-control-box h4 { font-size: 13px; color: var(--adm-yellow); margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+      /* পাসওয়ার্ড কন্ট্রোল এরিয়া */
+      .pass-control-box { margin-top: 15px; }
+      .pass-control-box h4 { font-size: 12px; color: var(--adm-yellow); margin: 0 0 8px 0; text-transform: uppercase; }
       
       .adm-input {
         width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 6px; color: #fff; font-size: 13px; box-sizing: border-box; margin-bottom: 12px;
+        border-radius: 6px; color: #fff; font-size: 13px; box-sizing: border-box; margin-bottom: 15px;
       }
       .adm-input:focus { outline: none; border-color: var(--adm-cyan); box-shadow: 0 0 8px rgba(0, 180, 216, 0.3); }
 
-      .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
-      .btn-dismiss { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; flex: 1; font-weight: 600; }
-      .btn-update-pass { background: linear-gradient(135deg, var(--adm-success), #1b9e91); border: none; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; flex: 2; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
+      /* মডাল অ্যাকশন বাটনসমূহ */
+      .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+      .action-row-buttons { display: flex; gap: 10px; }
+      .btn-cancel-request { background: linear-gradient(135deg, var(--adm-danger), #c9184a); border: none; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; flex: 1; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; }
+      .btn-update-pass { background: linear-gradient(135deg, var(--adm-success), #1b9e91); border: none; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; flex: 1.5; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
+      .btn-dismiss-top { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px; border-radius: 6px; font-size: 12px; cursor: pointer; text-align: center; }
       
       .empty-queue { text-align: center; padding: 40px; color: var(--adm-muted); font-size: 13px; border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px; }
 
@@ -121,9 +121,8 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       @media (max-width: 600px) {
         .queue-card { flex-direction: column; align-items: flex-start; gap: 12px; }
         .queue-action-btn { width: 100%; justify-content: center; }
-        .adm-modal-content { padding: 15px; }
-        .detail-row { flex-direction: column; gap: 2px; }
-        .detail-value { text-align: left; word-break: break-all; }
+        .verification-images-container { gap: 10px; }
+        .verify-img { width: 90px; height: 90px; }
       }
     </style>
 
@@ -138,19 +137,22 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     <div id="admDetailModal" class="adm-modal-overlay">
       <div class="adm-modal-content">
         
-        <div class="member-profile-header" id="modalProfileHeader">
-          </div>
+        <div class="verification-images-container" id="modalVerifyImages">
+           </div>
 
-        <div id="modalUserSpecs">
+        <div id="modalUserSpecs" style="margin-bottom: 15px;">
           </div>
 
         <div class="pass-control-box">
-          <h4><i class="fas fa-key"></i> অ্যাকশন: নতুন পাসওয়ার্ড সেট করুন</h4>
-          <input type="text" id="targetNewPassword" class="adm-input" placeholder="নতুন পাসওয়ার্ড লিখুন (যেমন: ROS@2026)">
+          <h4><i class="fas fa-key"></i> নতুন পাসওয়ার্ড লিখুন</h4>
+          <input type="text" id="targetNewPassword" class="adm-input" placeholder="পাসওয়ার্ড টাইপ করুন...">
           
           <div class="modal-actions">
-            <button type="button" class="btn-dismiss" id="admCloseModal">বন্ধ করুন</button>
-            <button type="button" class="btn-update-pass" id="admSubmitNewPass"><i class="fas fa-save"></i> পাসওয়ার্ড আপডেট করুন</button>
+            <div class="action-row-buttons">
+              <button type="button" class="btn-cancel-request" id="admCancelRequest"><i class="fas fa-user-times"></i> আবেদন বাতিল করুন</button>
+              <button type="button" class="btn-update-pass" id="admSubmitNewPass"><i class="fas fa-save"></i> পাসওয়ার্ড পরিবর্তন করুন</button>
+            </div>
+            <button type="button" class="btn-dismiss-top" id="admCloseModal">শুধুমাত্র উইন্ডোটি বন্ধ করুন</button>
           </div>
         </div>
 
@@ -162,12 +164,12 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
   const detailModal = document.getElementById('admDetailModal');
   const closeModalBtn = document.getElementById('admCloseModal');
   const submitNewPassBtn = document.getElementById('admSubmitNewPass');
+  const cancelRequestBtn = document.getElementById('admCancelRequest');
   const targetNewPasswordInput = document.getElementById('targetNewPassword');
 
   let activeRequestData = null; 
   let activeUserDocId = null;  
 
-  // ৩ সেকেন্ডের স্বয়ংক্রিয় পপআপ নোটিফিকেশন ইঞ্জিন
   function showPopup(message, type = 'success') {
     let container = document.getElementById('notification-container');
     if (!container) {
@@ -192,10 +194,9 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     }, 3000);
   }
 
-  // মোডাল ক্লোজ ইভেন্ট
   closeModalBtn.addEventListener('click', () => { detailModal.style.display = 'none'; });
 
-  // ২. রিয়েল-টাইম পাসওয়ার্ড রিসেট কিউ লিসেনার লুপ
+  // ২. রিয়েল-টাইম পাসওয়ার্ড রিসেট কিউ লিসেনার
   const qResets = query(collection(db, "password_resets"), where("status", "==", "pending"));
   onSnapshot(qResets, (snapshot) => {
     if (snapshot.empty) {
@@ -211,7 +212,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       const timeString = `${String(dateObj.getDate()).padStart(2,'0')}/${String(dateObj.getMonth()+1).padStart(2,'0')}/${dateObj.getFullYear()} — ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
 
       queueHtml += `
-        <div class="queue-card" data-req-id="${reqId}" data-identifier="${rData.identifier}">
+        <div class="queue-card" data-req-id="${reqId}">
           <div class="queue-left">
             <div class="queue-icon"><i class="fas fa-unlock-alt"></i></div>
             <div class="queue-info">
@@ -219,8 +220,8 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
               <p><i class="far fa-clock"></i> রিকোয়েস্ট টাইম: ${timeString}</p>
             </div>
           </div>
-          <button class="queue-action-btn inspect-btn" data-req-id="${reqId}" data-identifier="${rData.identifier}">
-            <i class="fas fa-user-search"></i> প্রোফাইল ভেরিফাই করুন
+          <button class="queue-action-btn inspect-btn" data-req-id="${reqId}" data-identifier="${rData.identifier}" data-live-img="${rData.liveImageUrl || ''}">
+            <i class="fas fa-user-search"></i> তথ্য ভেরিফাই করুন
           </button>
         </div>
       `;
@@ -228,13 +229,14 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     queueRoot.innerHTML = queueHtml;
   });
 
-  // ৩. প্রোফাইল ভেরিফাই এবং সিম্পল ও নিরাপদ সার্চ ইঞ্জিন (সরাসরি field matching লজিক)
+  // ৩. তথ্য ভেরিফাই লজিক (সরাসরি ফিল্ড চেকিং ও পাশাপাশি ডাবল ইমেজ রেন্ডারিং)
   contentRoot.addEventListener('click', async (e) => {
     const targetBtn = e.target.closest('.inspect-btn');
     if (!targetBtn) return;
 
     const reqId = targetBtn.getAttribute('data-req-id');
     const identifier = targetBtn.getAttribute('data-identifier');
+    const liveImgUrl = targetBtn.getAttribute('data-live-img');
 
     targetBtn.innerText = "ডাটা খোঁজা হচ্ছে...";
     targetBtn.disabled = true;
@@ -243,7 +245,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       let userDocSnapshot = null;
       let uData = null;
 
-      // কন্ডিশন ১: মেম্বার আইডি (memberId) দিয়ে প্রথমে খোঁজা হচ্ছে
+      // প্রথমে memberId দিয়ে সার্চ
       let userQuery = query(collection(db, "users"), where("memberId", "==", identifier));
       let userSnap = await getDocs(userQuery);
 
@@ -251,7 +253,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         userDocSnapshot = userSnap.docs[0];
         uData = userDocSnapshot.data();
       } else {
-        // কন্ডিশন ২: যদি মেম্বার আইডি না পাওয়া যায়, তবে সরাসরি মোবাইল নাম্বার (mobileNumber) দিয়ে খোঁজা হচ্ছে
+        // না মিললে সরাসরি mobileNumber দিয়ে সার্চ
         let phoneQuery = query(collection(db, "users"), where("mobileNumber", "==", identifier));
         let phoneSnap = await getDocs(phoneQuery);
         
@@ -261,58 +263,56 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         }
       }
 
-      // যদি কোনোটাই ম্যাচ না করে
       if (!userDocSnapshot) {
         showPopup("এই আইডেন্টিফায়ারের বিপরীতে কোনো নিবন্ধিত মেম্বার প্রোফাইল খুঁজে পাওয়া যায়নি!", "error");
-        targetBtn.innerHTML = `<i class="fas fa-user-search"></i> প্রোফাইল ভেরিফাই করুন`;
-        targetBtn.disabled = false;
         return;
       }
 
       activeUserDocId = userDocSnapshot.id;
       activeRequestData = { reqId: reqId, identifier: identifier };
 
-      // প্রোফাইল ছবি ডাইনামিক রেন্ডারিং
-      let avatarHtml = `<div class="member-avatar-placeholder"><i class="fas fa-user"></i></div>`;
-      const finalImgSrc = uData.profileImageUrl || uData.tempBase64Image;
-      if (finalImgSrc && finalImgSrc !== "") {
-        avatarHtml = `<img src="${finalImgSrc}" class="member-avatar" alt="Member Avatar" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'member-avatar-placeholder\'><i class=\'fas fa-user-times\'></i></div>'">`;
-      }
+      // পাশাপাশি লাইভ ছবি ও আইডির প্রোফাইল ছবি রেন্ডারিং
+      let liveImageHtml = liveImgUrl 
+        ? `<img src="${liveImgUrl}" class="verify-img live" alt="Live Face">`
+        : `<div class="avatar-placeholder"><i class="fas fa-camera-home"></i></div>`;
 
-      // মোডাল হেডার কন্টেন্ট ইনজেকশন
-      document.getElementById('modalProfileHeader').innerHTML = `
-        ${avatarHtml}
-        <h3>${uData.fullName || 'নাম পাওয়া যায়নি'}</h3>
-        <p>ID: ${uData.memberId || 'ID Pending'}</p>
+      const idImgSrc = uData.profileImageUrl || uData.tempBase64Image;
+      let idImageHtml = (idImgSrc && idImgSrc !== "")
+        ? `<img src="${idImgSrc}" class="verify-img id-pic" alt="ID Profile">`
+        : `<div class="avatar-placeholder"><i class="fas fa-user-shield"></i></div>`;
+
+      document.getElementById('modalVerifyImages').innerHTML = `
+        <div class="image-block"><span>লাইভ ছবি (Live Capture)</span>${liveImageHtml}</div>
+        <div class="image-block"><span>আইডির ছবি (Profile Pic)</span>${idImageHtml}</div>
       `;
 
-      // মোডাল স্পেসিফিকেশন টেবিল রেন্ডর (সঠিক ডাটাবেজ ফিল্ড নেম অনুযায়ী)
+      // নিচে নাম, রেজিস্ট্রেশন নাম্বার, মোবাইল নাম্বার আর ইমেইল এড্রেস অপশন
       document.getElementById('modalUserSpecs').innerHTML = `
+        <div class="detail-row"><span class="detail-label">নাম</span><span class="detail-value">${uData.fullName || 'নাম পাওয়া যায়নি'}</span></div>
+        <div class="detail-row"><span class="detail-label">রেজিস্ট্রেশন নাম্বার</span><span class="detail-value">${uData.memberId || 'ID Pending'}</span></div>
+        <div class="detail-row"><span class="detail-label">মোবাইল নাম্বার</span><span class="detail-value">${uData.mobileNumber || 'নাই'}</span></div>
         <div class="detail-row"><span class="detail-label">ইমেইল এড্রেস</span><span class="detail-value">${uData.email || 'নাই'}</span></div>
-        <div class="detail-row"><span class="detail-label">মোবাইল নম্বর</span><span class="detail-value">${uData.mobileNumber || 'নাই'}</span></div>
-        <div class="detail-row"><span class="detail-label">রোল / পদবি</span><span class="detail-value" style="color:var(--adm-yellow)">${uData.role || 'general_member'}</span></div>
-        <div class="detail-row"><span class="detail-label">অ্যাকাউন্ট স্ট্যাটাস</span><span class="detail-value" style="color:${uData.status === 'approved' ? 'var(--adm-success)' : 'var(--adm-danger)'}">${uData.status || 'pending'}</span></div>
       `;
 
-      targetNewPasswordInput.value = "ROS@1234"; 
+      targetNewPasswordInput.value = "ROS@1234"; // ডিফল্ট সাজেস্টেড পাসওয়ার্ড
       detailModal.style.display = 'flex';
 
     } catch (err) {
       showPopup("প্রোফাইল লোড করতে ব্যর্থ: " + err.message, "error");
     } finally {
-      targetBtn.innerHTML = `<i class="fas fa-user-search"></i> প্রোফাইল ভেরিফাই করুন`;
+      targetBtn.innerHTML = `<i class="fas fa-user-search"></i> তথ্য ভেরিফাই করুন`;
       targetBtn.disabled = false;
     }
   });
 
-  // ৪. পাসওয়ার্ড আপডেট এক্সিকিউশন মেকানিজম (হুবহু আগের মতো)
+  // ৪. পাসওয়ার্ড পরিবর্তন করুন অ্যাকশন
   submitNewPassBtn.addEventListener('click', async () => {
     const newPassValue = targetNewPasswordInput.value.trim();
     if (!newPassValue || newPassValue.length < 6) {
       return showPopup("পাসওয়ার্ড অবশ্যই সর্বনিম্ন ৬ অক্ষরের হতে হবে!", "warning");
     }
 
-    submitNewPassBtn.innerText = "আপডেট হচ্ছে...";
+    submitNewPassBtn.innerText = "পরিবর্তন হচ্ছে...";
     submitNewPassBtn.disabled = true;
 
     try {
@@ -331,10 +331,34 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       detailModal.style.display = 'none';
 
     } catch (error) {
-      showPopup("পাসওয়ার্ড রিসেট ফেইল্ড: " + error.message, "error");
+      showPopup("পাসওয়ার্ড পরিবর্তন ব্যর্থ: " + error.message, "error");
     } finally {
-      submitNewPassBtn.innerHTML = `<i class="fas fa-save"></i> পাসওয়ার্ড আপডেট করুন`;
+      submitNewPassBtn.innerHTML = `<i class="fas fa-save"></i> পাসওয়ার্ড পরিবর্তন করুন`;
       submitNewPassBtn.disabled = false;
+    }
+  });
+
+  // ৫. আবেদন বাতিল করুন অ্যাকশন
+  cancelRequestBtn.addEventListener('click', async () => {
+    if (!confirm("আপনি কি নিশ্চিত যে এই পাসওয়ার্ড রিসেট আবেদনটি বাতিল করতে চান?")) return;
+
+    cancelRequestBtn.innerText = "বাতিল হচ্ছে...";
+    cancelRequestBtn.disabled = true;
+
+    try {
+      await updateDoc(doc(db, "password_resets", activeRequestData.reqId), {
+        status: "rejected",
+        rejectedAt: new Date().toISOString()
+      });
+
+      showPopup("আবেদনটি সফলভাবে বাতিল করা হয়েছে।", "warning");
+      detailModal.style.display = 'none';
+
+    } catch (error) {
+      showPopup("আবেদন বাতিল করতে সমস্যা হয়েছে: " + error.message, "error");
+    } finally {
+      cancelRequestBtn.innerHTML = `<i class="fas fa-user-times"></i> আবেদন বাতিল করুন`;
+      cancelRequestBtn.disabled = false;
     }
   });
 
