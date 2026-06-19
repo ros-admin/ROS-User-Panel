@@ -7,10 +7,41 @@ const forgotPasswordLink = document.getElementById('forgotPasswordLink');
 const resetModal = document.getElementById('resetModal');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const submitResetBtn = document.getElementById('submitResetBtn');
+const loginBtn = document.getElementById('loginBtn');
+
+// ৩ সেকেন্ডে স্লাইড-আউট হয়ে চলে যাওয়া গ্লোবাল নোটিফিকেশন পপআপ ইঞ্জিন
+function showPopupNotification(message, type = 'success') {
+  const container = document.getElementById('notification-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast-popup toast-${type}`;
+  
+  // টাইপ অনুযায়ী আইকন নির্ধারণ
+  let icon = '<i class="fas fa-check-circle" style="color: #00b4d8;"></i>';
+  if (type === 'error') icon = '<i class="fas fa-times-circle" style="color: #ff4d6d;"></i>';
+  if (type === 'warning') icon = '<i class="fas fa-exclamation-circle" style="color: #fbbf24;"></i>';
+
+  toast.innerHTML = `${icon} <span>${message}</span>`;
+  container.appendChild(toast);
+
+  // ঠিক ৩ সেকেন্ড পর হারিয়ে যাওয়ার মেকানিজম
+  setTimeout(() => {
+    toast.style.animation = 'fadeOut 0.4s ease forwards';
+    setTimeout(() => {
+      toast.remove();
+    }, 400);
+  }, 3000);
+}
 
 // মডাল কন্ট্রোল
-forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); resetModal.style.display = 'block'; });
-closeModalBtn.addEventListener('click', () => { resetModal.style.display = 'none'; });
+forgotPasswordLink.addEventListener('click', (e) => { 
+  e.preventDefault(); 
+  resetModal.style.display = 'block'; 
+});
+closeModalBtn.addEventListener('click', () => { 
+  resetModal.style.display = 'none'; 
+});
 
 // মেম্বার আইডি অবজেক্ট থেকে রিয়েল ইমেইল বের করার মেকানিজম
 async function findEmailByIdentifier(identifier) {
@@ -24,42 +55,58 @@ async function findEmailByIdentifier(identifier) {
   return snap.docs[0].data().email;
 }
 
-// সাইন-ইন এবং রোল-ভিত্তিক রাউটিং লজিক
+// সাইন-ইন এবং রোল-ভিত্তিক রাউটিং লজিক (কোড লজিক সম্পূর্ণ অক্ষুণ্ণ)
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const loginBtn = document.getElementById('loginBtn');
-  loginBtn.innerText = "অথেনটিকেশন যাচাই হচ্ছে...";
-  loginBtn.disabled = true;
-
+  
   const identifier = document.getElementById('loginIdentifier').value.trim();
   const password = document.getElementById('loginPassword').value;
 
-  try {
-    const resolvedEmail = await findEmailByIdentifier(identifier);
-    const userCredential = await signInWithEmailAndPassword(auth, resolvedEmail, password);
-    
-    // ফায়ারস্টোর থেকে রোল এবং স্ট্যাটাস চেক
-    const userDoc = await getDocs(query(collection(db, "users"), where("uid", "==", userCredential.user.uid)));
-    const userData = userDoc.docs[0].data();
+  loginBtn.innerText = "যাচাই করা হচ্ছে...";
+  loginBtn.disabled = true;
 
-    // স্ট্যাটাস পেন্ডিং হলে ড্যাশবোর্ডে ঢুকতে দেওয়া হবে না
-    if (userData.status === "pending") {
-      alert("আপনার অ্যাকাউন্টটি এখনো পেন্ডিং অবস্থায় আছে। অ্যাডমিনের অনুমোদনের জন্য অপেক্ষা করুন।");
+  try {
+    // ইডি বা ইমেইল থেকে রিয়েল ইমেইল ডিটেকশন
+    const resolvedEmail = await findEmailByIdentifier(identifier);
+    
+    // Firebase Auth সাইন ইন
+    const userCredential = await signInWithEmailAndPassword(auth, resolvedEmail, password);
+    const user = userCredential.user;
+
+    // মেম্বার ডেটাবেজ স্ন্যাপশট চেক
+    const userDocRef = query(collection(db, "users"), where("uid", "==", user.uid));
+    const querySnapshot = await getDocs(userDocRef);
+
+    if (querySnapshot.empty) {
+      showPopupNotification("আপনার প্রোফাইল ডাটাবেজে খুঁজে পাওয়া যায়নি!", "error");
       auth.signOut();
       return;
     }
 
-    // রোল অনুযায়ী স্পেসিফিক ড্যাশবোর্ড ফোল্ডারে রিডাইরেকশন
-    if (userData.role === "super_admin" || userData.role === "president" || userData.role === "secretary") {
-      window.location.href = "admin/dashboard.html";
-    } else if (userData.role === "general_member") {
-      window.location.href = "member/dashboard.html";
-    } else {
-      alert("রোল ডিফাইন করা নেই! অ্যাডমিনের সাথে যোগাযোগ করুন।");
+    const userData = querySnapshot.docs[0].data();
+
+    // স্ট্যাটাস পেন্ডিং হলে ড্যাশবোর্ডে ঢুকতে দেওয়া হবে না
+    if (userData.status === "pending") {
+      showPopupNotification("আপনার অ্যাকাউন্টটি এখনো পেন্ডিং অবস্থায় আছে। অ্যাডমিনের অনুমোদনের জন্য অপেক্ষা করুন।", "warning");
+      auth.signOut();
+      return;
     }
 
+    showPopupNotification("লগইন সফল হয়েছে! ড্যাশবোর্ডে রিডাইরেক্ট করা হচ্ছে...", "success");
+
+    // রোল অনুযায়ী স্পেসিফিক ড্যাশবোর্ড ফোল্ডারে রিডাইরেকশন
+    setTimeout(() => {
+      if (userData.role === "super_admin" || userData.role === "president" || userData.role === "secretary") {
+        window.location.href = "admin/dashboard.html";
+      } else if (userData.role === "general_member") {
+        window.location.href = "member/dashboard.html";
+      } else {
+        showPopupNotification("রোল ডিফাইন করা নেই! অ্যাডমিনের সাথে যোগাযোগ করুন।", "error");
+      }
+    }, 1000);
+
   } catch (error) {
-    alert("লগইন ব্যর্থ হয়েছে: " + error.message);
+    showPopupNotification("লগইন ব্যর্থ হয়েছে: " + error.message, "error");
   } finally {
     loginBtn.innerText = "পোর্টালে প্রবেশ করুন";
     loginBtn.disabled = false;
@@ -69,7 +116,7 @@ loginForm.addEventListener('submit', async (e) => {
 // পাসওয়ার্ড রিসেট রিকোয়েস্ট কুউতে পুশ লজিক
 submitResetBtn.addEventListener('click', async () => {
   const resetIdentifier = document.getElementById('resetIdentifier').value.trim();
-  if (!resetIdentifier) return alert("মেম্বার আইডি বা মোবাইল নম্বর দিন!");
+  if (!resetIdentifier) return showPopupNotification("মেম্বার আইডি বা মোবাইল নম্বর দিন!", "warning");
 
   try {
     await addDoc(collection(db, "password_resets"), {
@@ -77,9 +124,10 @@ submitResetBtn.addEventListener('click', async () => {
       status: "pending",
       requestedAt: new Date().toISOString()
     });
-    alert("আপনার পাসওয়ার্ড রিসেট রিকোয়েস্ট অ্যাডমিনদের প্যানেলে পাঠানো হয়েছে। সফল রিসেটের পর আপনার পাসওয়ার্ড হবে ROS@1234");
+    showPopupNotification("আপনার পাসওয়ার্ড রিসেট রিকোয়েস্ট অ্যাডমিনদের প্যানেলে পাঠানো হয়েছে।", "success");
     resetModal.style.display = 'none';
+    document.getElementById('resetIdentifier').value = "";
   } catch (err) {
-    alert("রিকোয়েস্ট পাঠাতে সমস্যা হয়েছে: " + err.message);
+    showPopupNotification("রিকোয়েস্ট সাবমিট করা যায়নি। আবার চেষ্টা করুন।", "error");
   }
 });
