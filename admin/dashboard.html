@@ -54,6 +54,13 @@
 </head>
 <body id="nexusCoreBody" style="display: none;">
 
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      alert("System Alert!\nError: " + message + "\nLine: " + lineno + "\nFile: " + source);
+      return false;
+    };
+  </script>
+
   <div class="top-bar cyber-glass">
     <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
     <div style="flex-grow: 1;"></div>
@@ -83,7 +90,7 @@
           <i class="fas fa-shield-alt" style="color: var(--neon-blue); font-size: 20px;"></i>
         </div>
         <h3 style="color: #fff; font-size: 18px; font-weight: 600;">সিকিউর ক্রেডেন্সিয়াল আপডেট</h3>
-        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">আপনার অ্যাকাউন্টের নিরাপত্তা নিশ্চিত করতে নতুন পাসওয়ার্ড ইনপুট দিন</p>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">আপনার অ্যাকাуন্টের নিরাপত্তা নিশ্চিত করতে নতুন পাসওয়ার্ড ইনপুট দিন</p>
       </div>
 
       <form id="passwordUpdateForm">
@@ -106,13 +113,7 @@
       </form>
     </div>
   </div>
-<script>
-  window.onerror = function(message, source, lineno, colno, error) {
-    alert("Error: " + message + "\nLine: " + lineno + "\nSource: " + source);
-    return false;
-  };
-</script>
-  
+
   <script>
     function togglePassVisibility(inputId, iconEl) {
       const input = document.getElementById(inputId);
@@ -127,12 +128,14 @@
   </script>
 
   <script src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/navigation.js"></script>
+
   <script src="../admin/dashboard.js"></script>
   <script src="../admin/members.js"></script>
   <script src="../admin/committee.js"></script>
   <script src="../admin/comHistory.js"></script>
   <script src="../admin/events.js"></script>
   <script src="../admin/volunteers.js"></script>
+  <script src="../admin/attendence.js"></script>
   <script src="../admin/logistics.js"></script>
   <script src="../admin/treasury.js"></script>
   <script src="../admin/documents.js"></script>
@@ -142,17 +145,15 @@
   <script src="../admin/qrVerify.js"></script>
   <script src="../admin/reports.js"></script>
   <script src="../admin/logs.js"></script>
-  <script src="../admin/passwordResetRequest.js"></script>
   <script src="../admin/infoUpdateRequest.js"></script>
   
   <script type="module">
-    // আপনার প্রজেক্টের রিয়েল-টাইম ক্লাউড স্ট্যাবল সিডিএন লিঙ্ক এখানে বসানো হলো
     import { db, auth } from '../firebase-config.js';
     import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    
-    // আপনার তৈরি করা login.js মডিউলের লিঙ্ক
-    import { loadAdminPasswordManagementModule } from './login.js';
+
+    // ক্র্যাশ করা মডিউল ফাইলটি এখানে টাইপ-মডিউলের মাধ্যমে নিরাপদে সেভ করে ইম্পোর্ট করা হলো
+    import { loadAdminPasswordManagementModule } from '../admin/passwordResetRequest.js';
 
     const erpModules = [
       { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
@@ -161,6 +162,7 @@
       { id: 'comHistory', name: '📜 কমিটির ইতিহাস' },
       { id: 'events', name: '📅 ইভেন্ট প্যানেল' },
       { id: 'volunteers', name: '🙋 স্বেচ্ছাসেবক উইং' },
+      { id: 'attendance', name: '⏱️ ডিজিটাল উপস্থিতি' },
       { id: 'logistics', name: '📦 লজিস্টিকস ও নোটস' },
       { id: 'treasury', name: '💰 সেন্ট্রাল ট্রেজারি' },
       { id: 'documents', name: '📁 ডকুমেন্ট হাব' },
@@ -220,32 +222,23 @@
       }
       try {
         const adminSnap = await getDoc(doc(db, "users", user.uid));
-        if (adminSnap.exists()) {
-          const uData = adminSnap.data();
-          if (["super_admin", "president", "secretary", "treasurer"].includes(uData.role)) {
-            currentAdminData = uData;
-            setupAdminHeaderProfile();
-            initSidebarMenu();
-            switchModuleView('dashboard'); 
-            document.getElementById('nexusCoreBody').style.display = 'flex';
-            startTrackingInactivity();
-          } else {
-            alert("অনাধিকার প্রবেশ নিষিদ্ধ!"); 
-            signOut(auth);
-          }
+        if (adminSnap.exists() && ["super_admin", "president", "secretary", "treasurer"].includes(adminSnap.data().role)) {
+          currentAdminData = adminSnap.data();
+          setupAdminHeaderProfile();
+          initSidebarMenu();
+          switchModuleView('dashboard'); 
+          document.getElementById('nexusCoreBody').style.display = 'flex';
+          startTrackingInactivity();
         } else {
-          alert("অ্যাকাউন্ট ডাটা খুঁজে পাওয়া যায়নি।");
-          signOut(auth);
+          alert("অনাধিকার প্রবেশ নিষিদ্ধ!"); window.location.href = "../login.html";
         }
-      } catch (err) { 
-        console.error("Auth System Error:", err); 
-      }
+      } catch (err) { console.error(err); }
     });
 
     function setupAdminHeaderProfile() {
-      document.getElementById('headerAdminRole').innerText = currentAdminData.role ? currentAdminData.role.toUpperCase().replace('_', ' ') : 'SECURE NODE';
+      document.getElementById('headerAdminRole').innerText = currentAdminData.role ? currentAdminData.role.toUpperCase().replace('_', ' ') : 'ADMIN';
       document.getElementById('topAdminAvatar').src = currentAdminData.photoUrl || currentAdminData.profileImageUrl || '../placeholder.png';
-      document.getElementById('dropAdminName').innerText = currentAdminData.englishName || currentAdminData.fullName || "Admin";
+      document.getElementById('dropAdminName').innerText = currentAdminData.englishName || currentAdminData.fullName || 'Admin';
       document.getElementById('dropAdminEmail').innerText = auth.currentUser.email;
     }
 
@@ -290,6 +283,9 @@
       else if (id === 'volunteers') {
         loadVolunteersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, updateDoc, deleteDoc);
       }
+      else if (id === 'attendance') {
+        loadAttendanceModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc);
+      }
       else if (id === 'logistics') {
         loadLogisticsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc);
       }
@@ -318,6 +314,7 @@
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
       }
       else if (id === 'resetUserPassword') {
+        // সিনট্যাক্স ফিক্স ও মডিউল রান সেকশন
         if (typeof loadAdminPasswordManagementModule === "function") {
           loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
         } else {
@@ -332,7 +329,7 @@
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
             <i class="fas fa-microchip" style="font-size:40px; color:var(--neon-blue); margin-bottom:15px;"></i>
             <h3>${erpModules.find(m => m.id === id).name}</h3>
-            <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">মডিউল ফাইলটি এক্সটার্নাল স্ক্রিপ্ট হিসেবেযুক্ত করার জন্য স্ট্যান্ডবাই মোডে আছে।</p>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">মডিউল ফাইলটি এক্সটার্নাল স্ক্রিপ্ট হিসেবে যুক্ত করার জন্য স্ট্যান্ডবাই মোডে আছে。</p>
           </div>
         `;
       }
