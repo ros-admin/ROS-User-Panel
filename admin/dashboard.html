@@ -306,7 +306,7 @@
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
       }
       else if (id === 'resetUserPassword') {
-        // এখানে আপনার দেওয়া কাস্টম অটো-ডিলিট ইঞ্জিনযুক্ত অ্যাডমিন ফাংশনটি লোড হবে
+        // ফায়ারবেসের অন-স্ন্যাপশট ডুপ্লিকেট কনফ্লিক্ট এড়াতে এখানে সুনির্দিষ্ট প্যারামিটার রেন্ডার ইঞ্জিন পাস করা হলো
         loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
       }
       else if (id === 'adminRequests') {
