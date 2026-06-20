@@ -195,7 +195,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       activeRequestData = { reqId: reqId, identifier: identifier, pubId: pubId };
 
       let liveImageHtml = liveImgUrl ? `<img src="${liveImgUrl}" class="verify-img live">` : `<div class="avatar-placeholder"><i class="fas fa-camera"></i></div>`;
-      const idImgSrc = uData.profileImageUrl || uData.tempBase64Image;
+      const idImgSrc = uData.photoUrl || uData.tempBase64Image;
       let idImageHtml = idImgSrc ? `<img src="${idImgSrc}" class="verify-img id-pic">` : `<div class="avatar-placeholder"><i class="fas fa-user-shield"></i></div>`;
 
       document.getElementById('modalVerifyImages').innerHTML = `
@@ -204,7 +204,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       `;
 
       document.getElementById('modalUserSpecs').innerHTML = `
-        <div class="detail-row"><span class="detail-label">নাম</span><span class="detail-value">${uData.fullName || 'নাই'}</span></div>
+        <div class="detail-row"><span class="detail-label">নাম</span><span class="detail-value">${uData.englishName || 'নাই'}</span></div>
         <div class="detail-row"><span class="detail-label">রেজিস্ট্রেশন নাম্বার</span><span class="detail-value">${uData.memberId || 'নাই'}</span></div>
         <div class="detail-row"><span class="detail-label">মোবাইল নাম্বার</span><span class="detail-value">${uData.mobileNumber || 'নাই'}</span></div>
         <div class="detail-row"><span class="detail-label">ইমেইল এড্রেস</span><span class="detail-value">${uData.email || 'নাই'}</span></div>
