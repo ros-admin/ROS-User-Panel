@@ -90,7 +90,7 @@
           <i class="fas fa-shield-alt" style="color: var(--neon-blue); font-size: 20px;"></i>
         </div>
         <h3 style="color: #fff; font-size: 18px; font-weight: 600;">সিকিউর ক্রেডেন্সিয়াল আপডেট</h3>
-        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">আপনার অ্যাকাуন্টের নিরাপত্তা নিশ্চিত করতে নতুন পাসওয়ার্ড ইনপুট দিন</p>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">আপনার অ্যাকাউন্টের নিরাপত্তা নিশ্চিত করতে নতুন পাসওয়ার্ড ইনপুট দিন</p>
       </div>
 
       <form id="passwordUpdateForm">
@@ -150,9 +150,11 @@
   <script type="module">
     import { db, auth } from '../firebase-config.js';
     import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    
+    // ফায়ারবেস অথেন্টিকেশনের সব রিকোয়ার্ড মেথড একসাথে ইম্পোর্ট করা হলো (কোনো ডুপ্লিকেট থাকবে না)
+    import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ক্র্যাশ করা মডিউল ফাইলটি এখানে টাইপ-মডিউলের মাধ্যমে নিরাপদে সেভ করে ইম্পোর্ট করা হলো
+    // মডিউল বেসড পাসওয়ার্ড রিসেট ফাইল ইম্পোর্ট
     import { loadAdminPasswordManagementModule } from '../admin/passwordResetRequest.js';
 
     const erpModules = [
@@ -314,7 +316,6 @@
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
       }
       else if (id === 'resetUserPassword') {
-        // সিনট্যাক্স ফিক্স ও মডিউল রান সেকশন
         if (typeof loadAdminPasswordManagementModule === "function") {
           loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
         } else {
@@ -341,68 +342,60 @@
     document.getElementById('openPassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'flex');
     document.getElementById('closePassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'none');
     
-    // ফায়ারবেস রি-অথেন্টিকেশনের জন্য প্রয়োজনীয় মেথড ইম্পোর্ট করতে হবে (আপনার ইম্পোর্ট লাইনে EmailAuthProvider যুক্ত করুন)
-import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+// রি-অথেন্টিকেশন সহ সিকিউর পাসওয়ার্ড আপডেট লজিক
+    document.getElementById('passwordUpdateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newPass = document.getElementById('newPassword').value;
+      const confirmPass = document.getElementById('confirmNewPassword').value;
 
-// পাসওয়ার্ড আপডেট ফর্ম সাবমিট হ্যান্ডলার (ফিক্সড)
-document.getElementById('passwordUpdateForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const newPass = document.getElementById('newPassword').value;
-  const confirmPass = document.getElementById('confirmNewPassword').value;
+      if (newPass !== confirmPass) { 
+        alert("নতুন পাসওয়ার্ড দুটি মিলছে না!"); 
+        return; 
+      }
 
-  if (newPass !== confirmPass) { 
-    alert("নতুন পাসওয়ার্ড দুটি মিলছে না!"); 
-    return; 
-  }
+      if (newPass.length < 6) {
+        alert("নিরাপত্তার স্বার্থে পাসওয়ার্ড কমপক্ষে ৬ ক্যারেক্টারের হতে হবে!");
+        return;
+      }
 
-  // পাসওয়ার্ডের মিনিমাম লেন্থ চেক (ফায়ারবেসের জন্য কমপক্ষে ৬ ক্যারেক্টার হওয়া বাধ্যতামূলক)
-  if (newPass.length < 6) {
-    alert("নিরাপত্তার স্বার্থে পাসওয়ার্ড কমপক্ষে ৬ ক্যারেক্টারের হতে হবে!");
-    return;
-  }
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          alert("ইউজার সেশন পাওয়া যায়নি। দয়া করে আবার লগইন করুন।");
+          window.location.href = "../login.html";
+          return;
+        }
 
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      alert("ইউজার সেশন পাওয়া যায়নি। দয়া করে আবার লগইন করুন।");
-      window.location.href = "../login.html";
-      return;
-    }
+        // সিকিউরিটি টোকেন রিফ্রেশ নিশ্চিত করতে বর্তমান পাসওয়ার্ড প্রম্পট করা হচ্ছে
+        const currentPassword = prompt("নিরাপত্তার স্বার্থে আপনার বর্তমান (আগের) পাসওয়ার্ডটি আবার লিখুন:");
+        if (!currentPassword) {
+          alert("পাসওয়ার্ড পরিবর্তন বাতিল করা হয়েছে।");
+          return;
+        }
 
-    // সিকিউরিটি টোকেন রিফ্রেশ ও রি-অথেন্টিকেশন নিশ্চিত করতে ইউজারের বর্তমান পাসওয়ার্ড প্রম্পট করা ভালো
-    const currentPassword = prompt("নিরাপত্তার স্বার্থে আপনার বর্তমান (আগের) পাসওয়ার্ডটি আবার লিখুন:");
-    if (!currentPassword) {
-      alert("পাসওয়ার্ড পরিবর্তন বাতিল করা হয়েছে।");
-      return;
-    }
+        // ক্রিয়েটিং ক্রেডেন্সিয়াল এবং রিয়েল-টাইম রি-অথেন্টিকেশন
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPass); 
+        
+        alert("🔒 পাসওয়ার্ড সফলভাবে আপডেট হয়েছে! নতুন পাসওয়ার্ড দিয়ে আবার লগইন করুন।"); 
+        passwordChangeModal.style.display = 'none'; 
+        document.getElementById('passwordUpdateForm').reset();
+        
+        // পাসওয়ার্ড চেঞ্জ শেষে সেশন ডিলিট করে লগইন রিডাইরেক্ট (নিরাপদ অভ্যাস)
+        await signOut(auth);
+        window.location.href = "../login.html";
 
-    // ক্রেডেন্সিয়াল তৈরি এবং রি-অথেন্টিকেশন রান
-    const credential = EmailAuthProvider.credential(user.email, currentPassword);
-    
-    // ১. প্রথমে ব্যাকএন্ডে রি-অথেন্টিকেট করা হচ্ছে
-    await reauthenticateWithCredential(user, credential);
-    
-    // ২. এবার নতুন পাসওয়ার্ডটি ফায়ারবেস সার্ভারে সফলভাবে সেভ হবে
-    await updatePassword(user, newPass); 
-    
-    alert("🔒 পাসওয়ার্ড সফলভাবে আপডেট হয়েছে! নতুন পাসওয়ার্ড দিয়ে আবার লগইন করুন।"); 
-    passwordChangeModal.style.display = 'none'; 
-    document.getElementById('passwordUpdateForm').reset();
-    
-    // পাসওয়ার্ড চেঞ্জ হলে ইউজারকে সাইন আউট করে লগইন পেজে পাঠিয়ে দেওয়া সবচেয়ে নিরাপদ অভ্যাস
-    await signOut(auth);
-    window.location.href = "../login.html";
-
-  } catch (err) { 
-    console.error("Password Update Error:", err);
-    if (err.code === "auth/wrong-password") {
-      alert("ভুল বর্তমান পাসওয়ার্ড দিয়েছেন! আবার চেষ্টা করুন।");
-    } else {
-      alert("পাসওয়ার্ড পরিবর্তন করা যায়নি: " + err.message); 
-    }
-  }
-});
-
+      } catch (err) { 
+        console.error("Password Update Error:", err);
+        if (err.code === "auth/wrong-password") {
+          alert("ভুল বর্তমান পাসওয়ার্ড দিয়েছেন! আবার চেষ্টা করুন।");
+        } else {
+          alert("পাসওয়ার্ড পরিবর্তন করা যায়নি: " + err.message); 
+        }
+      }
+    });
 
     document.getElementById('adminSignOutBtn').addEventListener('click', () => { if (confirm("লগআউট করবেন?")) signOut(auth).then(() => { window.location.href = "../login.html"; }); });
   </script>
