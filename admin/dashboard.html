@@ -101,7 +101,7 @@
 
         <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px;">
           <button type="button" id="closePassModalBtn" style="padding: 10px 20px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 6px; cursor: pointer; transition: 0.2s;">বাতিল</button>
-          <button type="submit" style="padding: 10px 25px; background: linear-gradient(135deg, var(--neon-blue), #0077b6); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);">আপডেটაცია স্টেশন</button>
+          <button type="submit" style="padding: 10px 25px; background: linear-gradient(135deg, var(--neon-blue), #0077b6); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);">আপডেট স্টেশন</button>
         </div>
       </form>
     </div>
@@ -121,6 +121,7 @@
   </script>
 
   <script src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/navigation.js"></script>
+
   <script src="../admin/dashboard.js"></script>
   <script src="../admin/members.js"></script>
   <script src="../admin/committee.js"></script>
@@ -137,14 +138,13 @@
   <script src="../admin/qrVerify.js"></script>
   <script src="../admin/reports.js"></script>
   <script src="../admin/logs.js"></script>
+  <script src="../admin/passwordResetRequest.js"></script>
   <script src="../admin/infoUpdateRequest.js"></script>
   
   <script type="module">
     import { db, auth } from '../firebase-config.js';
     import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    
-    // আপনার নতুন মডিউল ইঞ্জিনটি এখান থেকে ইম্পোর্ট হবে 
     import { loadAdminPasswordManagementModule } from './login.js';
 
     const erpModules = [
@@ -230,7 +230,7 @@
     function setupAdminHeaderProfile() {
       document.getElementById('headerAdminRole').innerText = currentAdminData.role.toUpperCase().replace('_', ' ');
       document.getElementById('topAdminAvatar').src = currentAdminData.photoUrl || '../placeholder.png';
-      document.getElementById('dropAdminName').innerText = currentAdminData.englishName || "Admin";
+      document.getElementById('dropAdminName').innerText = currentAdminData.englishName;
       document.getElementById('dropAdminEmail').innerText = auth.currentUser.email;
     }
 
@@ -306,7 +306,6 @@
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
       }
       else if (id === 'resetUserPassword') {
-        // ফায়ারবেসের অন-স্ন্যাপশট ডুপ্লিকেট কনফ্লিক্ট এড়াতে এখানে সুনির্দিষ্ট প্যারামিটার রেন্ডার ইঞ্জিন পাস করা হলো
         loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
       }
       else if (id === 'adminRequests') {
