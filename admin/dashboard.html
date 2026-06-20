@@ -106,7 +106,13 @@
       </form>
     </div>
   </div>
-
+<script>
+  window.onerror = function(message, source, lineno, colno, error) {
+    alert("Error: " + message + "\nLine: " + lineno + "\nSource: " + source);
+    return false;
+  };
+</script>
+  
   <script>
     function togglePassVisibility(inputId, iconEl) {
       const input = document.getElementById(inputId);
