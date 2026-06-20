@@ -133,7 +133,6 @@
   <script src="../admin/comHistory.js"></script>
   <script src="../admin/events.js"></script>
   <script src="../admin/volunteers.js"></script>
-  <script src="../admin/attendence.js"></script>
   <script src="../admin/logistics.js"></script>
   <script src="../admin/treasury.js"></script>
   <script src="../admin/documents.js"></script>
@@ -162,7 +161,6 @@
       { id: 'comHistory', name: '📜 কমিটির ইতিহাস' },
       { id: 'events', name: '📅 ইভেন্ট প্যানেল' },
       { id: 'volunteers', name: '🙋 স্বেচ্ছাসেবক উইং' },
-      { id: 'attendance', name: '⏱️ ডিজিটাল উপস্থিতি' },
       { id: 'logistics', name: '📦 লজিস্টিকস ও নোটস' },
       { id: 'treasury', name: '💰 সেন্ট্রাল ট্রেজারি' },
       { id: 'documents', name: '📁 ডকুমেন্ট হাব' },
@@ -291,9 +289,6 @@
       }
       else if (id === 'volunteers') {
         loadVolunteersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, updateDoc, deleteDoc);
-      }
-      else if (id === 'attendance') {
-        loadAttendanceModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc);
       }
       else if (id === 'logistics') {
         loadLogisticsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc);
