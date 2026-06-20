@@ -121,7 +121,6 @@
   </script>
 
   <script src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/navigation.js"></script>
-
   <script src="../admin/dashboard.js"></script>
   <script src="../admin/members.js"></script>
   <script src="../admin/committee.js"></script>
@@ -142,9 +141,12 @@
   <script src="../admin/infoUpdateRequest.js"></script>
   
   <script type="module">
+    // আপনার প্রজেক্টের রিয়েল-টাইম ক্লাউড স্ট্যাবল সিডিএন লিঙ্ক এখানে বসানো হলো
     import { db, auth } from '../firebase-config.js';
     import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    
+    // আপনার তৈরি করা login.js মডিউলের লিঙ্ক
     import { loadAdminPasswordManagementModule } from './login.js';
 
     const erpModules = [
@@ -214,23 +216,32 @@
       }
       try {
         const adminSnap = await getDoc(doc(db, "users", user.uid));
-        if (adminSnap.exists() && ["super_admin", "president", "secretary", "treasurer"].includes(adminSnap.data().role)) {
-          currentAdminData = adminSnap.data();
-          setupAdminHeaderProfile();
-          initSidebarMenu();
-          switchModuleView('dashboard'); 
-          document.getElementById('nexusCoreBody').style.display = 'flex';
-          startTrackingInactivity();
+        if (adminSnap.exists()) {
+          const uData = adminSnap.data();
+          if (["super_admin", "president", "secretary", "treasurer"].includes(uData.role)) {
+            currentAdminData = uData;
+            setupAdminHeaderProfile();
+            initSidebarMenu();
+            switchModuleView('dashboard'); 
+            document.getElementById('nexusCoreBody').style.display = 'flex';
+            startTrackingInactivity();
+          } else {
+            alert("অনাধিকার প্রবেশ নিষিদ্ধ!"); 
+            signOut(auth);
+          }
         } else {
-          alert("অনাধিকার প্রবেশ নিষিদ্ধ!"); window.location.href = "../login.html";
+          alert("অ্যাকাউন্ট ডাটা খুঁজে পাওয়া যায়নি।");
+          signOut(auth);
         }
-      } catch (err) { console.error(err); }
+      } catch (err) { 
+        console.error("Auth System Error:", err); 
+      }
     });
 
     function setupAdminHeaderProfile() {
-      document.getElementById('headerAdminRole').innerText = currentAdminData.role.toUpperCase().replace('_', ' ');
-      document.getElementById('topAdminAvatar').src = currentAdminData.photoUrl || '../placeholder.png';
-      document.getElementById('dropAdminName').innerText = currentAdminData.englishName;
+      document.getElementById('headerAdminRole').innerText = currentAdminData.role ? currentAdminData.role.toUpperCase().replace('_', ' ') : 'SECURE NODE';
+      document.getElementById('topAdminAvatar').src = currentAdminData.photoUrl || currentAdminData.profileImageUrl || '../placeholder.png';
+      document.getElementById('dropAdminName').innerText = currentAdminData.englishName || currentAdminData.fullName || "Admin";
       document.getElementById('dropAdminEmail').innerText = auth.currentUser.email;
     }
 
@@ -306,7 +317,11 @@
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
       }
       else if (id === 'resetUserPassword') {
-        loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
+        if (typeof loadAdminPasswordManagementModule === "function") {
+          loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
+        } else {
+          contentRoot.innerHTML = `<p style="color:var(--neon-red); padding:20px;">Password Module function reference error!</p>`;
+        }
       }
       else if (id === 'adminRequests') {
         loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, collection, query, where, serverTimestamp);
@@ -316,7 +331,7 @@
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
             <i class="fas fa-microchip" style="font-size:40px; color:var(--neon-blue); margin-bottom:15px;"></i>
             <h3>${erpModules.find(m => m.id === id).name}</h3>
-            <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">মডিউল ফাইলটি এক্সটার্নাল স্ক্রিপ্ট হিসেবে যুক্ত করার জন্য স্ট্যান্ডবাই মোডে আছে।</p>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">মডিউল ফাইলটি এক্সটার্নাল স্ক্রিপ্ট হিসেবেযুক্ত করার জন্য স্ট্যান্ডবাই মোডে আছে।</p>
           </div>
         `;
       }
