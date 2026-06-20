@@ -13,340 +13,223 @@
       --text-main: #f3f4f6; --text-muted: #9ca3af;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', 'Orbitron', sans-serif; }
-    body { background-color: var(--cyber-bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
-    .cyber-glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+    body { background-color: var(--cyber-bg); color: var(--text-main); min-height: 100vh; display: flex; overflow-x: hidden; }
     
-    /* হেডার ও রেসপন্সিভ লেআউট ফিক্স */
-    .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
-    .mobile-menu-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: #fff; padding: 10px 14px; border-radius: 4px; cursor: pointer; display: none; }
-    
-    .erp-wrapper { display: flex; flex: 1; position: relative; margin-top: 60px; margin-bottom: 50px; }
-    .sidebar-nav { width: 280px; height: calc(100vh - 110px); position: fixed; top: 60px; left: 0; display: flex; flex-direction: column; z-index: 99; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; }
-    .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid var(--glass-border); }
-    .sidebar-header h2 { font-size: 18px; color: var(--neon-blue); letter-spacing: 1px; text-shadow: 0 0 10px rgba(0, 180, 216, 0.5); }
-    .sidebar-menu { list-style: none; padding: 15px 0; }
-    .menu-item a { display: flex; align-items: center; padding: 12px 20px; color: var(--text-muted); text-decoration: none; font-size: 14px; border-left: 4px solid transparent; transition: all 0.3s ease; }
-    .menu-item a:hover, .menu-item.active a { color: #fff; background: rgba(0, 180, 216, 0.1); border-left-color: var(--neon-blue); text-shadow: 0 0 8px var(--neon-blue); }
-    
-    .main-content-node { margin-left: 280px; flex: 1; padding: 30px; min-height: calc(100vh - 110px); transition: all 0.4s ease; overflow-x: auto; }
-    .admin-profile-trigger { cursor: pointer; display: flex; align-items: center; gap: 10px; position: relative; }
-    .admin-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--neon-blue); box-shadow: 0 0 10px rgba(0, 180, 216, 0.4); object-fit: cover; }
-    .profile-dropdown { position: absolute; top: 50px; right: 0; width: 220px; border-radius: 8px; padding: 10px 0; display: none; flex-direction: column; z-index: 1001; }
-    .dropdown-info { padding: 10px 20px; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
-    .profile-dropdown a { padding: 10px 20px; color: var(--text-muted); text-decoration: none; font-size: 13px; transition: 0.2s; }
-    .profile-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    
-    /* মডাল ও ইনপুট */
-    .nexus-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
-    .modal-body { width: 90%; max-width: 450px; padding: 30px; border-radius: 12px; border: 1px solid rgba(0, 180, 216, 0.4); box-shadow: 0 0 30px rgba(0, 180, 216, 0.2); }
-    .input-group-cyber { position: relative; margin-bottom: 20px; display: flex; align-items: center; }
-    .input-group-cyber i.prefix-icon { position: absolute; left: 15px; color: var(--neon-blue); font-size: 14px; }
-    .cyber-input-premium { width: 100%; padding: 12px 40px 12px 45px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; outline: none; transition: all 0.3s ease; font-size: 14px; letter-spacing: 1.5px; }
-    .cyber-input-premium:focus { border-color: var(--neon-blue); box-shadow: 0 0 12px rgba(0, 180, 216, 0.4); background: rgba(0, 0, 0, 0.8); }
-    .toggle-password-btn { position: absolute; right: 15px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
-    .toggle-password-btn:hover { color: var(--neon-blue); }
+    /* লেআউট আর্কিটেকচার */
+    .sidebar { width: 260px; background: var(--glass-bg); border-right: 1px solid var(--glass-border); padding: 25px 15px; display: flex; flex-direction: column; gap: 20px; transition: transform 0.3s ease; z-index: 100; }
+    .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .topbar { height: 70px; background: var(--glass-bg); border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; }
+    .content-area { padding: 30px; flex: 1; overflow-y: auto; }
 
-    /* মিডিয়া কোয়েরি - মোবাইল ভিউ ফিক্স */
-    @media (max-width: 992px) { 
-      .mobile-menu-btn { display: block; } 
-      .sidebar-nav { left: -280px; height: calc(100vh - 60px); top: 60px; } 
-      .sidebar-nav.active { left: 0; } 
-      .main-content-node { margin-left: 0; padding: 15px; padding-top: 20px; } 
+    /* টাইপোগ্রাফি ও লোগো */
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--neon-blue); font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+    .brand span { font-family: 'Galada', cursive; color: var(--text-main); font-size: 22px; }
+
+    /* নেভিগেশনাল কিউবস */
+    .nav-group { display: flex; flex-direction: column; gap: 8px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-muted); text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600; transition: all 0.2s; border: 1px solid transparent; cursor: pointer; }
+    .nav-item:hover, .nav-item.active { color: #fff; background: rgba(0, 180, 216, 0.1); border-color: rgba(0, 180, 216, 0.3); box-shadow: 0 0 15px rgba(0, 180, 216, 0.1); }
+    .nav-item i { width: 20px; font-size: 16px; transition: 0.2s; }
+    .nav-item:hover i, .nav-item.active i { color: var(--neon-blue); text-shadow: 0 0 8px var(--neon-blue); }
+
+    /* টপবার ইউজার প্রোফাইল হাব */
+    .profile-area { display: flex; align-items: center; gap: 15px; position: relative; }
+    .profile-trigger { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 6px 12px; border-radius: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
+    .profile-trigger img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--neon-blue); }
+    .profile-name { font-size: 13px; font-weight: 600; }
+    
+    .profile-dropdown { position: absolute; top: 50px; right: 0; background: #0f172a; border: 1px solid var(--glass-border); border-radius: 8px; width: 220px; display: none; flex-direction: column; padding: 8px 0; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 200; }
+    .dropdown-item { padding: 10px 20px; font-size: 13px; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .dropdown-item:hover { background: rgba(255,255,255,0.03); color: #fff; }
+
+    /* মডাল উইন্ডোজ */
+    .cyber-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3,7,18,0.8); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-box { background: #0f172a; border: 1px solid var(--glass-border); border-radius: 12px; width: 90%; max-width: 450px; padding: 25px; box-shadow: 0 0 30px rgba(0, 180, 216, 0.2); }
+    .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: var(--neon-blue); display: flex; align-items: center; gap: 8px; }
+    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .cyber-input { width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; color: #fff; font-size: 13px; }
+    .cyber-input:focus { outline: none; border-color: var(--neon-blue); }
+    
+    .btn-submit { width: 100%; padding: 10px; background: linear-gradient(135deg, #0077b6, var(--neon-blue)); border: none; border-radius: 6px; color: #fff; font-weight: 700; cursor: pointer; margin-top: 10px; }
+
+    .menu-toggle { display: none; font-size: 20px; color: var(--text-main); cursor: pointer; }
+
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
+      .sidebar.active { transform: translateX(0); }
+      .menu-toggle { display: block; }
     }
   </style>
 </head>
-<body id="nexusCoreBody" style="display: none;">
+<body>
 
-  <!-- রেসপন্সিভ টপ হেডার বার -->
-  <div class="top-bar cyber-glass">
-    <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
-    <div style="flex-grow: 1;"></div>
-    <div class="admin-profile-trigger" id="profileTrigger">
-      <span id="headerAdminRole" style="font-size: 11px; color: var(--neon-green); font-weight: bold;">SECURE NODE</span>
-      <img src="../placeholder.png" id="topAdminAvatar" class="admin-avatar">
-      <div class="profile-dropdown cyber-glass" id="profileDropdown">
-        <div class="dropdown-info"><h4 id="dropAdminName">লোড হচ্ছে...</h4><small id="dropAdminEmail">admin@ros.org</small></div>
-        <a href="#" id="openPassModalBtn"><i class="fas fa-key"></i> পাসওয়ার্ড পরিবর্তন</a>
-        <a href="#" id="adminSignOutBtn" style="color: var(--neon-red);"><i class="fas fa-sign-out-alt"></i> লগআউট</a>
-      </div>
+  <aside class="sidebar" id="sidebarNode">
+    <div class="brand">
+      <i class="fas fa-project-diagram"></i>
+      <span>ROS নেক্সাস</span>
     </div>
-  </div>
+    
+    <nav class="nav-group">
+      <div class="nav-item active" id="menuPassControlLink">
+        <i class="fas fa-user-shield"></i> পাসওয়ার্ড কন্ট্রোল
+      </div>
+      <div class="nav-item" id="menuOtherLogsLink">
+        <i class="fas fa-layer-group"></i> অন্যান্য মডিউল
+      </div>
+    </nav>
+  </aside>
 
-  <div class="erp-wrapper">
-    <aside class="sidebar-nav cyber-glass" id="sidebarNode">
-      <div class="sidebar-header"><h2>ROS NEXUS ERP</h2><small style="color: var(--text-muted); font-size: 10px;">SYSTEM CONTROL STATION</small></div>
-      <ul class="sidebar-menu" id="centralMenuContainer"></ul>
-    </aside>
-    <main class="main-content-node" id="spaContentRoot"></main>
-  </div>
-
-  <div class="nexus-modal" id="passwordChangeModal">
-    <div class="modal-body cyber-glass">
-      <div style="text-align: center; margin-bottom: 25px;">
-        <div style="width: 50px; height: 50px; background: rgba(0, 180, 216, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 1px solid var(--neon-blue);">
-          <i class="fas fa-shield-alt" style="color: var(--neon-blue); font-size: 20px;"></i>
-        </div>
-        <h3 style="color: #fff; font-size: 18px; font-weight: 600;">সিকিউর ক্রেডেন্সিয়াল আপডেট</h3>
-        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">আপনার অ্যাকাউন্টের নিরাপত্তা নিশ্চিত করতে নতুন পাসওয়ার্ড ইনপুট দিন</p>
+  <main class="main-content">
+    <header class="topbar">
+      <div class="menu-toggle" id="mobileMenuToggle">
+        <i class="fas fa-bars"></i>
+      </div>
+      
+      <div style="font-weight: 600; font-size: 14px; color: var(--neon-blue);">
+        ADMIN CONTROL PANEL <span style="color: var(--text-muted); font-weight: 400;">| v2.4</span>
       </div>
 
-      <form id="passwordUpdateForm">
-        <div class="input-group-cyber">
-          <i class="fas fa-lock prefix-icon"></i>
-          <input type="password" id="newPassword" class="cyber-input-premium" placeholder="নতুন পাসওয়ার্ড" required>
-          <i class="fas fa-eye toggle-password-btn" onclick="togglePassVisibility('newPassword', this)"></i>
+      <div class="profile-area">
+        <div class="profile-trigger" id="profileTrigger">
+          <img id="adminAvatar" src="https://via.placeholder.com/150" alt="Admin">
+          <span class="profile-name" id="adminName">Loading...</span>
+          <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--text-muted);"></i>
         </div>
         
-        <div class="input-group-cyber">
-          <i class="fas fa-check-double prefix-icon"></i>
-          <input type="password" id="confirmNewPassword" class="cyber-input-premium" placeholder="পাসওয়ার্ড নিশ্চিত করুন" required>
-          <i class="fas fa-eye toggle-password-btn" onclick="togglePassVisibility('confirmNewPassword', this)"></i>
+        <div class="profile-dropdown" id="profileDropdown">
+          <div class="dropdown-item" id="openPassModalBtn"><i class="fas fa-key"></i> পাসওয়ার্ড পরিবর্তন</div>
+          <div class="dropdown-item" id="adminSignOutBtn" style="color: var(--neon-red);"><i class="fas fa-sign-out-alt"></i> লগআউট করুন</div>
         </div>
+      </div>
+    </header>
 
-        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px;">
-          <button type="button" id="closePassModalBtn" style="padding: 10px 20px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 6px; cursor: pointer; transition: 0.2s;">বাতিল</button>
-          <button type="submit" style="padding: 10px 25px; background: linear-gradient(135deg, var(--neon-blue), #0077b6); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);">আপডেট স্টেশন</button>
+    <section class="content-area" id="adminMainContentRoot">
+      </section>
+  </main>
+
+  <div class="cyber-modal" id="passwordChangeModal">
+    <div class="modal-box">
+      <h3 class="modal-title"><i class="fas fa-lock"></i> অ্যাকাউন্ট পাসওয়ার্ড আপডেট</h3>
+      <form id="passwordUpdateForm">
+        <div class="form-group">
+          <label>নতুন পাসওয়ার্ড লিখুন</label>
+          <input type="password" id="newPassword" class="cyber-input" required placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label>পাসওয়ার্ডটি পুনরায় লিখুন</label>
+          <input type="password" id="confirmNewPassword" class="cyber-input" required placeholder="••••••••">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+          <button type="submit" class="btn-submit">আপডেট করুন</button>
+          <button type="button" id="closePassModalBtn" class="btn-submit" style="background: #374151;">বন্ধ করুন</button>
         </div>
       </form>
     </div>
   </div>
 
-  <script>
-    function togglePassVisibility(inputId, iconEl) {
-      const input = document.getElementById(inputId);
-      if (input.type === "password") {
-        input.type = "text";
-        iconEl.classList.replace("fa-eye", "fa-eye-slash");
-      } else {
-        input.type = "password";
-        iconEl.classList.replace("fa-eye-slash", "fa-eye");
-      }
-    }
-  </script>
-
-  <script src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/navigation.js"></script>
-
-  <script src="../admin/dashboard.js"></script>
-  <script src="../admin/members.js"></script>
-  <script src="../admin/committee.js"></script>
-  <script src="../admin/comHistory.js"></script>
-  <script src="../admin/events.js"></script>
-  <script src="../admin/volunteers.js"></script>
-  <script src="../admin/attendence.js"></script>
-  <script src="../admin/logistics.js"></script>
-  <script src="../admin/treasury.js"></script>
-  <script src="../admin/documents.js"></script>
-  <script src="../admin/notifications.js"></script>
-  <script src="../admin/support.js"></script>
-  <script src="../admin/idCard.js"></script>
-  <script src="../admin/qrVerify.js"></script>
-  <script src="../admin/reports.js"></script>
-  <script src="../admin/logs.js"></script>
-  <script src="../admin/passwordResetRequest.js"></script>
-  <script src="../admin/infoUpdateRequest.js"></script>
-  
   <script type="module">
-    import { db, auth } from '../firebase-config.js';
-    // এখানে serverTimestamp ইম্পোর্ট করা হয়েছে
-    import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
+    import { db, auth } from './firebase-config.js';
+    import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     
-    const erpModules = [
-      { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
-      { id: 'members', name: '👥 সদস্য ম্যানেজমেন্ট' },
-      { id: 'committee', name: '🏛️ কমিটি ফরমেশন' },
-      { id: 'comHistory', name: '📜 কমিটির ইতিহাস' },
-      { id: 'events', name: '📅 ইভেন্ট প্যানেল' },
-      { id: 'volunteers', name: '🙋 স্বেচ্ছাসেবক উইং' },
-      { id: 'attendance', name: '⏱️ ডিজিটাল উপস্থিতি' },
-      { id: 'logistics', name: '📦 লজিস্টিকস ও নোটস' },
-      { id: 'treasury', name: '💰 সেন্ট্রাল ট্রেজারি' },
-      { id: 'documents', name: '📁 ডকুমেন্ট হাব' },
-      { id: 'notifications', name: '🔔 নোটিফিকেশন সেন্টার' },
-      { id: 'support', name: '💬 মেসেজ ও সাপোর্ট টিকিট' },
-      { id: 'idCards', name: '🪪 মেম্বারশিপ কার্ড জোন' },
-      { id: 'qrVerify', name: '🔍 QR কোড ভেরিфикации' },
-      { id: 'reports', name: '📈 এন্টারপ্রাইজ রিপোর্টস' },
-      { id: 'logs', name: '🔐 সিস্টেম অ্যাক্টিভিটি লগ' },
-      { id: 'resetUserPassword', name: 'Password Reset Request' },
-      { id: 'adminRequests', name: '<i class="fas fa-tasks"></i> তথ্য পরিবর্তনের আবেদন' }
-    ];
+    // আপনার এডমিন মডিউলটি ইম্পোর্ট করা হচ্ছে
+    import { loadAdminPasswordManagementModule } from './login.js';
 
-    const menuContainer = document.getElementById('centralMenuContainer');
-    const contentRoot = document.getElementById('spaContentRoot');
-    const sidebarNode = document.getElementById('sidebarNode');
+    const contentRoot = document.getElementById('adminMainContentRoot');
+    const profileTrigger = document.getElementById('profileTrigger');
     const profileDropdown = document.getElementById('profileDropdown');
+    const sidebarNode = document.getElementById('sidebarNode');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const passwordChangeModal = document.getElementById('passwordChangeModal');
-    let currentAdminData = null;
 
-    let inactivityTimeout;
-    const INACTIVITY_TIME = 3 * 60 * 1000; 
-
-    function triggerAutoLogout() {
-      alert("নিষ্ক্রিয়তার কারণে আপনার সেশনটি শেষ হয়ে গেছে। পুনরায় লগইন করুন।");
-      signOut(auth).then(() => { window.location.href = "../login.html"; });
-    }
-
-    function resetInactivityTimer() {
-      clearTimeout(inactivityTimeout);
-      if (auth.currentUser) {
-        inactivityTimeout = setTimeout(triggerAutoLogout, INACTIVITY_TIME);
-      }
-    }
-
-    function startTrackingInactivity() {
-      window.addEventListener('mousemove', resetInactivityTimer);
-      window.addEventListener('keypress', resetInactivityTimer);
-      window.addEventListener('scroll', resetInactivityTimer);
-      window.addEventListener('click', resetInactivityTimer);
-      resetInactivityTimer();
-    }
-
-    function stopTrackingInactivity() {
-      window.removeEventListener('mousemove', resetInactivityTimer);
-      window.removeEventListener('keypress', resetInactivityTimer);
-      window.removeEventListener('scroll', resetInactivityTimer);
-      window.removeEventListener('click', resetInactivityTimer);
-      clearTimeout(inactivityTimeout);
-    }
-
+    // মেম্বার সেশন ট্র্যাকিং এবং সিকিউরিটি প্রোটেকশন গার্ড
     onAuthStateChanged(auth, async (user) => {
-      if (!user) { 
-        stopTrackingInactivity();
-        window.location.href = "../login.html"; 
-        return; 
+      if (!user) {
+        window.location.href = "../login.html";
+        return;
       }
+
       try {
-        const adminSnap = await getDoc(doc(db, "users", user.uid));
-        if (adminSnap.exists() && ["super_admin", "president", "secretary", "treasurer"].includes(adminSnap.data().role)) {
-          currentAdminData = adminSnap.data();
-          setupAdminHeaderProfile();
-          initSidebarMenu();
-          switchModuleView('dashboard'); 
-          document.getElementById('nexusCoreBody').style.display = 'flex';
-          startTrackingInactivity();
-        } else {
-          alert("অনাধিকার প্রবেশ নিষিদ্ধ!"); window.location.href = "../login.html";
+        const q = query(collection(db, "users"), where("email", "==", user.email));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+          alert("অননুমোদিত অ্যাক্সেস!");
+          signOut(auth);
+          return;
         }
-      } catch (err) { console.error(err); }
+
+        const adminData = snap.docs[0].data();
+        
+        // হেডার প্রোফাইল ইনফো পপুলেট
+        document.getElementById('adminName').innerText = adminData.fullName || "Admin Node";
+        if (adminData.profileImageUrl || adminData.tempBase64Image) {
+          document.getElementById('adminAvatar').src = adminData.profileImageUrl || adminData.tempBase64Image;
+        }
+
+        // মডিউল লোড করার সময় সঠিক আর্গুমেন্ট সিকোয়েন্স পাঠানো হলো (যাতে ব্ল্যাঙ্ক স্ক্রিন না আসে)
+        loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
+
+      } catch (err) {
+        console.error("Dashboard Boot Error:", err);
+      }
     });
 
-    function setupAdminHeaderProfile() {
-      document.getElementById('headerAdminRole').innerText = currentAdminData.role.toUpperCase().replace('_', ' ');
-      document.getElementById('topAdminAvatar').src = currentAdminData.photoUrl || '../placeholder.png';
-      document.getElementById('dropAdminName').innerText = currentAdminData.englishName;
-      document.getElementById('dropAdminEmail').innerText = auth.currentUser.email;
-    }
+    // সাইডবার ডাইনামিক সুইচিং
+    document.getElementById('menuPassControlLink').addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.getElementById('menuPassControlLink').classList.add('active');
+      loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
+    });
 
-    function initSidebarMenu() {
-      menuContainer.innerHTML = "";
-      erpModules.forEach((mod, index) => {
-        const li = document.createElement('li');
-        li.className = `menu-item ${index === 0 ? 'active' : ''}`;
-        li.innerHTML = `<a href="#" data-mod-id="${mod.id}">${mod.name}</a>`;
-        menuContainer.appendChild(li);
-      });
+    document.getElementById('menuOtherLogsLink').addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.getElementById('menuOtherLogsLink').classList.add('active');
+      contentRoot.innerHTML = `
+        <div style="padding:40px; text-align:center; color:var(--text-muted); border:1px dashed var(--glass-border); border-radius:8px;">
+          <i class="fas fa-terminal" style="font-size:24px; color:var(--neon-blue); margin-bottom:10px;"></i>
+          <p>এই নোডটি বর্তমানে স্ট্যান্ডবাই মোডে আছে।</p>
+        </div>
+      `;
+    });
 
-      document.querySelectorAll('.menu-item a').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          document.querySelectorAll('.menu-item').forEach(li => li.classList.remove('active'));
-          link.parentElement.classList.add('active');
-          switchModuleView(link.getAttribute('data-mod-id'));
-          if (window.innerWidth <= 992) sidebarNode.classList.remove('active');
-        });
-      });
-    }
-
-    function switchModuleView(id) {
-      contentRoot.innerHTML = "";
-
-      if (id === 'dashboard') {
-        loadDashboardModule(contentRoot, currentAdminData, db, collection, onSnapshot, doc, updateDoc, deleteDoc);
-      } 
-      else if (id === 'members') {
-        loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc);
-      } 
-      else if (id === 'committee') {
-        loadCommitteeModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc);
-      }
-      else if (id === 'comHistory') {
-        loadComHistoryModule(contentRoot, db, collection, onSnapshot);
-      }
-      else if (id === 'events') {
-        loadEventsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'volunteers') {
-        loadVolunteersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, updateDoc, deleteDoc);
-      }
-      else if (id === 'attendance') {
-        loadAttendanceModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, collection, doc);
-      }
-      else if (id === 'logistics') {
-        loadLogisticsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc);
-      }
-      else if (id === 'treasury') {
-        loadTreasuryModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'documents') {
-        loadDocumentsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'notifications') {
-        loadNotificationsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'support') {
-        loadSupportModule(contentRoot, db, collection, onSnapshot, doc, updateDoc, deleteDoc);
-      }
-      else if (id === 'idCards') {
-        loadIdCardsModule(contentRoot, db, collection, onSnapshot, doc, updateDoc);
-      }
-      else if (id === 'qrVerify') {
-        loadQrVerifyModule(contentRoot, db, collection, onSnapshot, doc, getDocs);
-      }
-      else if (id === 'reports') {
-        loadReportsModule(contentRoot, db, collection, onSnapshot, getDocs);
-      }
-      else if (id === 'logs') {
-        loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
-      }
-      else if (id === 'resetUserPassword') {
-  // পাসওয়ার্ড চেঞ্জ ও রিসেট রিকোয়েস্ট ম্যানেজমেন্ট মডিউল লোড করা হলো
-        loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot)
-      else if (id === 'adminRequests') {
-        // এখানে query এবং where ডিফাইন করা ছিল যা ওপরে সফলভাবে ইম্পোর্ট করা হয়েছে।
-        loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, collection, query, where, serverTimestamp);
-      }
-      else {
-        contentRoot.innerHTML = `
-          <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
-            <i class="fas fa-microchip" style="font-size:40px; color:var(--neon-blue); margin-bottom:15px;"></i>
-            <h3>${erpModules.find(m => m.id === id).name}</h3>
-            <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">মডিউল ফাইলটি এক্সটার্নাল স্ক্রিপ্ট হিসেবে যুক্ত করার জন্য স্ট্যান্ডবাই মোডে আছে।</p>
-          </div>
-        `;
-      }
-    }
-
-    profileTrigger.addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.style.display = profileDropdown.style.display === 'flex' ? 'none' : 'flex'; });
+    // ড্রপডাউন ও ইউজার ইন্টারফেস ইন্টারেকশন কন্ট্রোল
+    profileTrigger.addEventListener('click', (e) => { 
+      e.stopPropagation(); 
+      profileDropdown.style.display = profileDropdown.style.display === 'flex' ? 'none' : 'flex'; 
+    });
+    
     document.addEventListener('click', () => { profileDropdown.style.display = 'none'; });
     mobileMenuToggle.addEventListener('click', () => { sidebarNode.classList.toggle('active'); });
     document.getElementById('openPassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'flex');
     document.getElementById('closePassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'none');
     
+    // নিজস্ব একাউন্ট পাসওয়ার্ড আপডেট অ্যাকশন
     document.getElementById('passwordUpdateForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const newPass = document.getElementById('newPassword').value;
-      if (newPass !== document.getElementById('confirmNewPassword').value) { alert("পাসওয়ার্ড মিলছে না!"); return; }
+      if (newPass !== document.getElementById('confirmNewPassword').value) { 
+        alert("পাসওয়ার্ড মিলছে না!"); 
+        return; 
+      }
       try { 
         await updatePassword(auth.currentUser, newPass); 
         alert("🔒 পাসওয়ার্ড সফলভাবে আপডেট হয়েছে!"); 
         passwordChangeModal.style.display = 'none'; 
         document.getElementById('passwordUpdateForm').reset();
-      } catch (err) { alert(err.message); }
+      } catch (err) { 
+        alert(err.message); 
+      }
     });
 
-    document.getElementById('adminSignOutBtn').addEventListener('click', () => { if (confirm("লগআউট করবেন?")) signOut(auth).then(() => { window.location.href = "../login.html"; }); });
+    // গ্লোবাল সাইন আউট বাটন
+    document.getElementById('adminSignOutBtn').addEventListener('click', () => { 
+      if (confirm("লগআউট করবেন?")) { 
+        signOut(auth).then(() => { window.location.href = "../login.html"; }); 
+      } 
+    });
   </script>
 </body>
 </html>
