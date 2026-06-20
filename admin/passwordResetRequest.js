@@ -1,5 +1,5 @@
 // ROS Nexus - Enterprise Admin Password Control & Reset Request Module
-export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot) {
+function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot) {
   
   contentRoot.innerHTML = `
     <style>
