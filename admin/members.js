@@ -295,7 +295,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       return;
     }
 
-    filtered.forEach(u => {
+    filtered.forEach((u, idx) => {
       const tr = document.createElement('tr');
       tr.style.borderBottom = "1px solid rgba(255, 255, 255, 0.05)";
       tr.style.background = "rgba(0,0,0,0.1)";
