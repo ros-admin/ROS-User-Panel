@@ -1,5 +1,5 @@
 // ROS Nexus - Enterprise Admin Password Control & Reset Request Module
-export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot) {
+function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot) {
   
   contentRoot.innerHTML = `
     <style>
@@ -13,7 +13,8 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       }
 
       .adm-pass-container { 
-        max-width: 1050px; width: 100%; margin: 0 auto; padding: 25px 15px; border-radius: 16px; \n        position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.95); 
+        max-width: 1050px; width: 100%; margin: 0 auto; padding: 25px 15px; border-radius: 16px; 
+        position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.95); 
         backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
         border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
         box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; color: #fff; 
@@ -37,7 +38,6 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       .action-btn { background: linear-gradient(135deg, var(--adm-cyan), #0077b6); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; }
       .action-btn:hover { opacity: 0.9; box-shadow: 0 0 10px rgba(0, 180, 216, 0.4); }
       
-      /* মডাল ডিজাইন */
       .adm-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(8px); }
       .adm-modal-content { background: #0f172a; border: 1px solid rgba(0,180,216,0.3); width: 100%; max-width: 550px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); animation: modalFade 0.3s ease; }
       
@@ -57,12 +57,9 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       .modal-footer { padding: 15px 20px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 10px; justify-content: flex-end; }
       .btn-secondary { background: rgba(255,255,255,0.05); color: var(--adm-muted); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
       .btn-secondary:hover { background: rgba(255,255,255,0.1); color: #fff; }
-      .btn-danger { background: var(--adm-danger); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
-      .btn-danger:hover { opacity: 0.9; }
       .btn-success { background: var(--adm-success); color: #fff; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
       .btn-success:hover { opacity: 0.9; }
 
-      /* গ্লোবাল পপআপ টোস্ট নোটিফিকেশন */
       .cyber-popup { position: fixed; bottom: 25px; right: 25px; padding: 12px 25px; border-radius: 8px; font-size: 13px; font-weight: bold; z-index: 100000; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; animation: slideIn 0.3s ease; }
       @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
@@ -106,7 +103,6 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     <div id="cyberToastPopup" class="cyber-popup"></div>
   `;
 
-  // এলিমেন্ট রেফারেন্স রিট্রিভাল
   const tableContainer = document.getElementById('tableContainer');
   const tbody = document.getElementById('requestQueueTableBody');
   const loadingStatus = document.getElementById('loadingStatus');
@@ -123,13 +119,14 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
 
   function showPopup(msg, type) {
     const toast = document.getElementById('cyberToastPopup');
-    toast.innerText = msg;
-    toast.style.background = type === 'success' ? 'var(--adm-success)' : type === 'warning' ? 'var(--adm-yellow)' : 'var(--adm-danger)';
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    if(toast) {
+      toast.innerText = msg;
+      toast.style.background = type === 'success' ? 'var(--adm-success)' : type === 'warning' ? 'var(--adm-yellow)' : 'var(--adm-danger)';
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
   }
 
-  // ক্লাউডিনারি থেকে স্ক্রিনশট ডিলিট করার মেকানিজম (যদি এপিআই সচল থাকে)
   async function deleteCloudinaryImage(publicId) {
     if (!publicId) return;
     try {
@@ -141,20 +138,20 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     } catch (e) { console.warn("Cloudinary delete error:", e); }
   }
 
-  // রিয়েল-টাইম ডাটা ফেচিং (Firebase Firestore Listener)
+  // ফায়ারবেস রিয়েল-টাইম ডাটা লিসেনার
   const q = query(collection(db, "password_resets"), where("status", "==", "pending"));
   onSnapshot(q, (snapshot) => {
-    loadingStatus.style.display = 'none';
+    if(loadingStatus) loadingStatus.style.display = 'none';
     tbody.innerHTML = "";
 
     if (snapshot.empty) {
-      tableContainer.style.display = 'none';
-      emptyQueueMessage.style.display = 'block';
+      if(tableContainer) tableContainer.style.display = 'none';
+      if(emptyQueueMessage) emptyQueueMessage.style.display = 'block';
       return;
     }
 
-    emptyQueueMessage.style.display = 'none';
-    tableContainer.style.display = 'block';
+    if(emptyQueueMessage) emptyQueueMessage.style.display = 'none';
+    if(tableContainer) tableContainer.style.display = 'block';
 
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
@@ -172,9 +169,9 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       tbody.appendChild(tr);
     });
 
-    // ক্লিক ইভেন্ট লিসেনার সংযুক্তি
+    // ক্লিক ইভেন্ট সংযুক্তি
     document.querySelectorAll('.view-req-trigger').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener('click', async () => {
         const reqId = btn.getAttribute('data-req-id');
         const uid = btn.getAttribute('data-uid');
         const pubId = btn.getAttribute('data-pubid');
@@ -182,12 +179,11 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
         activeRequestData = { reqId, uid, pubId };
 
         try {
-          // ইউজারের Firestore ডাটাবেস চেক করা হচ্ছে মডালের বিস্তারিত প্রদর্শনের জন্য
           const userQuery = query(collection(db, "users"), where("uid", "==", uid));
           const userSnap = await getDocs(userQuery);
           
           if (userSnap.empty) {
-            showPopup("এই ব্যবহারকারীর কোনো ডাটাবেস প্রোফাইল পাওয়া যায়নি!", "error");
+            showPopup("এই ব্যবহারকারীর প্রোফাইল পাওয়া যায়নি!", "error");
             return;
           }
 
@@ -195,7 +191,6 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
           activeUserDocId = uDoc.id;
           const uData = uDoc.data();
 
-          // মডাল কন্টেন্ট জেনারেশন
           detailModalBody.innerHTML = `
             <div style="text-align:center; margin-bottom:15px;">
               <img src="${uData.profileImageUrl || uData.photoUrl || '../placeholder.png'}" style="width:75px; height:75px; border-radius:50%; border:2px solid var(--adm-cyan); object-fit:cover;">
@@ -207,7 +202,7 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
             <div class="detail-row"><span class="detail-label">রেজিস্ট্রেশন আইডি</span><span class="detail-value">${uData.registrationId || 'নাই'}</span></div>
             
             <div style="background: rgba(251, 191, 36, 0.05); border: 1px dashed var(--adm-yellow); border-radius: 6px; padding: 10px; font-size: 12px; color: var(--adm-yellow); margin-top: 15px; line-height: 1.5;">
-              <i class="fas fa-exclamation-triangle"></i> <strong>সতর্কতা:</strong> নিচের বাটনে ক্লিক করলে ফায়ারবেস অথেন্টিকেশন সার্ভার থেকে স্বয়ংক্রিয়ভাবে ব্যবহারকারীর অফিশিয়াল ইমেইলে একটি সিকিউর <strong>পাসওয়ার্ড রিসেট লিংক</strong> চলে যাবে। ব্যবহারকারী ওই লিংকে ক্লিক করে তার নিজের নতুন পাসওয়ার্ড সেট করে নিতে পারবেন।
+              <i class="fas fa-exclamation-triangle"></i> <strong>সতর্কতা:</strong> বোতামে ক্লিক করলে ফায়ারবেস থেকে স্বয়ংক্রিয়ভাবে ব্যবহারকারীর ইমেইলে একটি <strong>পাসওয়ার্ড রিসেট লিংক</strong> চলে যাবে। ব্যবহারকারী ওই লিংকে ক্লিক করে তার নিজের নতুন পাসওয়ার্ড সেট করতে পারবেন।
             </div>
           `;
 
@@ -220,74 +215,66 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
     });
   });
 
-  // মডাল ক্লোজ লজিক
-  closeDetailModalBtn.addEventListener('click', () => detailModal.style.display = 'none');
+  if(closeDetailModalBtn) closeDetailModalBtn.addEventListener('click', () => detailModal.style.display = 'none');
 
-  // রিসেট ইমেইল লিঙ্ক পাঠানো এবং সাকসেস ট্রিগার (পদ্ধতি ২ এর মূল রূপায়ন)
-  submitNewPassBtn.addEventListener('click', async () => {
-    const userEmailEl = document.getElementById('targetUserEmailHub');
-    const userEmail = userEmailEl ? userEmailEl.innerText.trim() : '';
+  // ইমেইলে অফিশিয়াল রিসেট লিংক পাঠানোর মেথড (পদ্ধতি ২)
+  if(submitNewPassBtn) {
+    submitNewPassBtn.addEventListener('click', async () => {
+      const userEmailEl = document.getElementById('targetUserEmailHub');
+      const userEmail = userEmailEl ? userEmailEl.innerText.trim() : '';
 
-    if (!userEmail || userEmail === 'নাই' || !userEmail.includes('@')) {
-      return showPopup("ব্যবহারকারীর কোনো বৈধ ইমেইল অ্যাড্রেস পাওয়া যায়নি! লিঙ্ক পাঠানো অসম্ভব।", "error");
-    }
-
-    try {
-      submitNewPassBtn.disabled = true;
-      submitNewPassBtn.innerText = "পাঠানো হচ্ছে...";
-
-      // ১. ফায়ারবেস ক্লায়েন্ট-সাইড মেথডের মাধ্যমে ইউজারের ইমেইলে রিসেট লিঙ্ক পাঠানো
-      // ROS Nexus আর্কিটেকচার অনুযায়ী window.firebaseAuth বা auth গ্লোবাল ভ্যারিয়েবল ব্যবহারের আধুনিক নিয়ম
-      const firebaseAuthInstance = auth.app ? auth : (window.auth || auth);
-      
-      // ফায়ারবেস v10 মডিউলার সিনট্যাক্স অনুযায়ী sendPasswordResetEmail ইম্পোর্ট ছাড়া সরাসরি ফায়ারবেস কোর উইন্ডো মেথড কল করা হচ্ছে
-      // যদি আপনার প্রোজেক্টে পূর্বে sendPasswordResetEmail ইম্পোর্ট না থাকে তবে এটি গ্লোবাল ফায়ারবেস রিলেশন ব্যবহার করবে
-      if (window.firebase && typeof window.firebase.auth === 'function') {
-        await window.firebase.auth().sendPasswordResetEmail(userEmail);
-      } else {
-        // মডিউলার ফায়ারবেস মেথড সাপোর্ট (উইন্ডো লেভেল অবজেক্ট ব্যাকআপ)
-        const { sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-        await sendPasswordResetEmail(firebaseAuthInstance, userEmail);
+      if (!userEmail || userEmail === 'নাই' || !userEmail.includes('@')) {
+        return showPopup("ব্যবহারকারীর কোনো বৈধ ইমেইল অ্যাড্রেস পাওয়া যায়নি! লিঙ্ক পাঠানো অসম্ভব।", "error");
       }
-      
-      // ২. ডাটাবেসে পাসওয়ার্ড ফিল্ডে একটি ট্র্যাক রেকর্ড রাখা (ইউজারকে বোঝার সুবিধার্থে)
-      await updateDoc(doc(db, "users", activeUserDocId), { password: "Reset Link Sent To Email" });
-      
-      // ৩. পাসওয়ার্ড রিসেট রিকোয়েস্টের স্ট্যাটাস পরিবর্তন করে 'resolved' করা
-      await updateDoc(doc(db, "password_resets", activeRequestData.reqId), { status: "resolved" });
-      
-      // ৪. ক্লাউডিনারি থেকে প্রুফ স্ক্রিনশট ইমেজ মুছে ফেলা
-      await deleteCloudinaryImage(activeRequestData.pubId);
 
-      showPopup("🔒 সফলভাবে ব্যবহারকারীর অফিশিয়াল ইমেইলে পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে!", "success");
-      detailModal.style.display = 'none';
-    } catch (e) { 
-      console.error("Firebase Reset Email Error:", e);
-      showPopup("লিঙ্ক পাঠাতে ব্যর্থ হয়েছে: " + (e.message || "সার্ভার এরর"), "error"); 
-    } finally {
-      submitNewPassBtn.disabled = false;
-      submitNewPassBtn.innerHTML = `<i class="fas fa-paper-plane"></i> রিসেট লিঙ্ক পাঠান`;
-    }
-  });
+      try {
+        submitNewPassBtn.disabled = true;
+        submitNewPassBtn.innerText = "পাঠানো হচ্ছে...";
 
-  // অনুরোধ প্রত্যাখ্যান করা
-  cancelRequestBtn.addEventListener('click', async () => {
-    if (!confirm("আপনি কি নিশ্চিত যে এই পাসওয়ার্ড রিসেট আবেদনটি বাতিল করতে চান?")) return;
-    try {
-      cancelRequestBtn.disabled = true;
-      
-      // রিকোয়েস্ট স্ট্যাটাস পরিবর্তন করা হচ্ছে
-      await updateDoc(doc(db, "password_resets", activeRequestData.reqId), { status: "rejected" });
-      
-      // ক্লাউডিনারি ইমেজ রিমুভাল ট্রিগার
-      await deleteCloudinaryImage(activeRequestData.pubId);
+        // মডিউলার ফায়ারবেস Auth থেকে sendPasswordResetEmail মেথড ডাইনামিকালি ইম্পোর্ট করা হচ্ছে
+        const { sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+        
+        // ড্যাশবোর্ড থেকে পাস করা অথ ইনস্ট্যান্স ব্যবহার করে লিংক পাঠানো হচ্ছে
+        await sendPasswordResetEmail(auth, userEmail);
+        
+        // Firestore ডাটাবেস আপডেট ও রেকর্ড ট্র্যাকিং
+        await updateDoc(doc(db, "users", activeUserDocId), { password: "Reset Link Sent To Email" });
+        await updateDoc(doc(db, "password_resets", activeRequestData.reqId), { status: "resolved" });
+        
+        // ক্লাউডিনারি স্ক্রিনশট ডিলিট
+        await deleteCloudinaryImage(activeRequestData.pubId);
 
-      showPopup("❌ আবেদনটি সফলভাবে বাতিল ও ডিলিট করা হয়েছে।", "warning");
-      detailModal.style.display = 'none';
-    } catch (e) { 
-      showPopup("বাতিল করতে ব্যর্থ হয়েছে", "error"); 
-    } finally {
-      cancelRequestBtn.disabled = false;
-    }
-  });
+        showPopup("🔒 সফলভাবে ব্যবহারকারীর অফিশিয়াল ইমেইলে পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে!", "success");
+        detailModal.style.display = 'none';
+      } catch (e) { 
+        console.error("Firebase Reset Email Error:", e);
+        showPopup("লিঙ্ক পাঠাতে ব্যর্থ হয়েছে: " + (e.message || "সার্ভার এরর"), "error"); 
+      } finally {
+        submitNewPassBtn.disabled = false;
+        submitNewPassBtn.innerHTML = `<i class="fas fa-paper-plane"></i> রিসেট লিঙ্ক পাঠান`;
+      }
+    });
+  }
+
+  // অনুরোধ বাতিল/প্রত্যাখ্যান করা
+  if(cancelRequestBtn) {
+    cancelRequestBtn.addEventListener('click', async () => {
+      if (!confirm("আপনি কি নিশ্চিত যে এই পাসওয়ার্ড রিসেট আবেদনটি বাতিল করতে চান?")) return;
+      try {
+        cancelRequestBtn.disabled = true;
+        await updateDoc(doc(db, "password_resets", activeRequestData.reqId), { status: "rejected" });
+        await deleteCloudinaryImage(activeRequestData.pubId);
+
+        showPopup("❌ আবেদনটি সফলভাবে বাতিল ও ডিলিট করা হয়েছে।", "warning");
+        detailModal.style.display = 'none';
+      } catch (e) { 
+        showPopup("বাতিল করতে ব্যর্থ হয়েছে", "error"); 
+      } finally {
+        cancelRequestBtn.disabled = false;
+      }
+    });
+  }
 }
+
+// গ্লোবাল উইন্ডো অবজেক্টে মেথডটি অ্যাসাইন করা হলো যাতে HTML ফাইল সহজেই এটিকে মডিউল বা সাধারণ কোড দুইভাবেই খুঁজে পায়
+window.loadAdminPasswordManagementModule = loadAdminPasswordManagementModule;
