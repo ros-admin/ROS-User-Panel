@@ -42,7 +42,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         background: rgba(4, 11, 26, 0.9); backdrop-filter: blur(10px);
       }
       .modal-body {
-        width: 95%; max-width: 800px; max-height: 85vh; overflow-y: auto;
+        width: 95%; max-width: 850px; max-height: 85vh; overflow-y: auto;
         border-radius: 16px; border: 1px solid rgba(0, 180, 216, 0.4); padding: 25px;
         box-shadow: 0 0 30px rgba(0, 180, 216, 0.2);
       }
@@ -54,11 +54,14 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         align-items: flex-start; flex-wrap: wrap;
       }
       .profile-avatar-zone {
-        text-align: center; flex: 0 0 160px;
+        text-align: center; flex: 0 0 200px; display: flex; flex-direction: column; gap: 10px;
       }
       .profile-avatar-zone img {
-        width: 140px; height: 140px; object-fit: cover; border-radius: 12px;
+        width: 100%; height: 200px; object-fit: cover; border-radius: 12px;
         border: 2px solid #00b4d8; box-shadow: 0 0 20px rgba(0,180,216,0.3);
+      }
+      .profile-avatar-meta {
+        background: rgba(0, 180, 216, 0.1); padding: 8px; border-radius: 8px; border: 1px solid rgba(0, 180, 216, 0.2);
       }
       .profile-info-grid {
         flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; min-width: 280px;
@@ -66,6 +69,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       @media (max-width: 650px) { 
         .profile-card-container { flex-direction: column; align-items: center; }
         .profile-info-grid { grid-template-columns: 1fr; width: 100%; }
+        .profile-avatar-zone { flex: 1; width: 100%; max-width: 220px; }
       }
       .info-badge-item {
         background: rgba(11, 15, 25, 0.6); padding: 10px 14px; border-radius: 8px;
@@ -111,14 +115,15 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         <option value="inactive">Inactive</option>
       </select>
 
-      <div style="display:flex; gap:10px;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="export-btn btn-excel" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Excel ডাউনলোড (All Data)</button>
+        <button class="export-btn btn-pdf" id="exportAllPdfBtn"><i class="fas fa-file-pdf"></i> PDF ডাউনলোড (Table Info)</button>
       </div>
     </div>
 
     <!-- ডাটা টেবিল কন্টেইনার -->
     <div class="cyber-glass" style="overflow-x:auto; padding:5px; border-radius:8px;">
-      <table style="width:100%; border-collapse:collapse; font-size:13.5px; text-align:left; color:#e5e7eb;">
+      <table id="mainMembersDataTable" style="width:100%; border-collapse:collapse; font-size:13.5px; text-align:left; color:#e5e7eb;">
         <thead style="background:rgba(0, 180, 216, 0.15); color:#00b4d8; border-bottom:2px solid rgba(0, 180, 216, 0.3);">
           <tr>
             <th style="padding:14px 12px;">নিবন্ধন নাম্বার</th>
@@ -154,7 +159,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
 
     <!-- নতুন সদস্য যুক্ত করার প্রিমিয়াম মডাল ফর্ম পপআপ -->
     <div class="nexus-modal" id="createMemberModal" style="display:none;">
-      <div class="modal-body cyber-glass" style="max-width: 650px;">
+      <div class="modal-body cyber-glass" style="max-width: 700px;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(251,191,36,0.3); padding-bottom:12px; margin-bottom:15px;">
           <h3 style="color:#fbbf24; margin:0; font-size:18px;"><i class="fas fa-user-plus"></i> নতুন সদস্য ডাটাবেজে যুক্ত করুন</h3>
           <button id="closeCreateModalBtnTop" style="background:none; border:none; color:#ff4d6d; font-size:20px; cursor:pointer;"><i class="fas fa-times"></i></button>
@@ -166,6 +171,8 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
             <div class="form-group"><label>মোবাইল নম্বর *</label><input type="text" id="fmMobile" class="cyber-input" required placeholder="017XXXXXXXX"></div>
             <div class="form-group"><label>ইমেইল এড্রেস</label><input type="email" id="fmEmail" class="cyber-input" placeholder="example@mail.com"></div>
             <div class="form-group"><label>সদস্যের নাম (বাংলা)</label><input type="text" id="fmNameBn" class="cyber-input" placeholder="জন ডো"></div>
+            <div class="form-group"><label>হোয়াটসঅ্যাপ নম্বর</label><input type="text" id="fmWhatsapp" class="cyber-input" placeholder="017XXXXXXXX"></div>
+            <div class="form-group"><label>ফেসবুক আইডি লিংক</label><input type="url" id="fmFacebook" class="cyber-input" placeholder="https://facebook.com/username"></div>
             <div class="form-group"><label>পিতার নাম</label><input type="text" id="fmFather" class="cyber-input"></div>
             <div class="form-group"><label>মাতার নাম</label><input type="text" id="fmMother" class="cyber-input"></div>
             <div class="form-group"><label>জন্ম তারিখ</label><input type="date" id="fmDob" class="cyber-input" style="color:#fff;"></div>
@@ -176,10 +183,10 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
             <div class="form-group"><label>NID / জন্ম নিবন্ধন নম্বর</label><input type="text" id="fmNid" class="cyber-input"></div>
             <div class="form-group"><label>পেশা</label><input type="text" id="fmProfession" class="cyber-input" placeholder="Student / Employee"></div>
             <div class="form-group"><label>শিক্ষা প্রতিষ্ঠান / কর্মস্থল</label><input type="text" id="fmInstitution" class="cyber-input"></div>
-            <div class="form-group"><label>শিক্ষাগত যোগ্যতা</label><input type="text" id="fmEducation" class="cyber-input"></div>
+            <div class="form-group"><label>शिक्षাগত যোগ্যতা</label><input type="text" id="fmEducation" class="cyber-input"></div>
             <div class="form-group"><label>শিক্ষাবর্ষ (Academic Year)</label><input type="text" id="fmAcademicYear" class="cyber-input" placeholder="2023-24"></div>
             <div class="form-group">
-              <label>সিস্টেম পদবি (Role)</label>
+              <label>সিস্টем পদবি (Role)</label>
               <select id="fmRole" class="cyber-input" style="background:#0b0f19; color:#fff;"></select>
             </div>
           </div>
@@ -194,7 +201,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </div>
     </div>
 
-    <!-- ব্যাকগ্রাউন্ড হিডেন কন্টেইনার (এখানে পিডিএফ কোডিং করে তৈরি হবে, ওয়ান পেজ ফিট সিস্টেম) -->
+    <!-- ব্যাকগ্রাউন্ড হিডেন কন্টেইনার (এখানে সিঙ্গেল মেম্বার পিডিএফ রেন্ডার হবে) -->
     <div id="hiddenPdfRenderArea" style="position: absolute; left: -9999px; top: -9999px; width: 210mm; height: 297mm; overflow: hidden;"></div>
   `;
 
@@ -242,7 +249,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
   }
   fmRoleSelect.innerHTML = roleOptionsHtml;
 
-  // ৩. রিয়েল-টাইম ফায়ারবেস লিসেনার (সিরিয়াল বা মেম্বার আইডি ক্রমানুসারে ডাটা সর্ট)
+  // ৩. রিয়েল-টাইম ফায়ারবেস লিসেনার (সিরিয়াল অনুসারে অ্যালফানিউমেরিক সর্টিং)
   onSnapshot(collection(db, "users"), (snap) => {
     localMembersArray = [];
     snap.forEach(userDoc => {
@@ -251,7 +258,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       }
     });
 
-    // সিরিয়াল নাম্বার ক্রমানুসারে অ্যালফানিউমেরিক সর্টিং লজিক
     localMembersArray.sort((a, b) => {
       const idA = a.memberId || "ZZZZ";
       const idB = b.memberId || "ZZZZ";
@@ -320,37 +326,46 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       tbody.appendChild(tr);
     });
 
-    // 🌟 ইউনিক এবং সম্পূর্ণ নতুন প্রিমিয়াম প্রোফাইল কার্ড রেন্ডারিং লজিক (বিস্তারিত বাটন)
+    // 🌟 ইউনিক এবং আপডেটেড প্রিমিয়াম প্রোফাইল মডাল রেন্ডারিং (বিস্তারিত বাটন)
     document.querySelectorAll('.btn-view').forEach(b => b.addEventListener('click', (e) => {
       const id = e.currentTarget.getAttribute('data-id');
       const member = localMembersArray.find(m => m.id === id);
       if (!member) return;
       selectedMemberForForm = member;
 
+      // মেম্বারশিপ জয়েনিং টাইমস্ট্যাম্প ফরম্যাট
+      let joiningDateTime = "N/A";
+      if (member.createdAt) {
+        joiningDateTime = new Date(member.createdAt).toLocaleString('bn-BD');
+      }
+
       document.getElementById('modalMemberCardContent').innerHTML = `
         <div class="profile-card-container">
+           <!-- বাম পাশে ইউজারের ছবি, নিচে মেম্বার আইডি এবং ইংরেজি নাম -->
           <div class="profile-avatar-zone">
             <img src="${member.photoUrl || 'https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png'}">
-            <div style="margin-top: 12px; padding: 6px; background: rgba(0, 180, 216, 0.1); border-radius: 6px; border: 1px solid rgba(0, 180, 216, 0.2);">
-              <span style="font-size: 11px; color: #00b4d8; font-weight: bold; text-transform: uppercase;">${member.status || 'PENDING'} NODE</span>
+            <div class="profile-avatar-meta">
+              <div style="font-size: 13px; color: #fbbf24; font-weight: bold; font-family: monospace; letter-spacing:0.5px;">${member.memberId || '⏳ PENDING'}</div>
+              <div style="font-size: 12px; color: #fff; font-weight: 600; margin-top: 3px; word-break: break-all;">${member.englishName || 'N/A'}</div>
             </div>
           </div>
           
+          <!-- ডান পাশে টেবিল ও ডাটা গ্রিড (নতুন ফিল্ডসমূহ সহ) -->
           <div class="profile-info-grid">
-            <div class="info-badge-item" style="grid-column: span 2;"><small>Full Name (English)</small><p style="color: #fbbf24; font-size:16px;">${member.englishName || 'N/A'}</p></div>
             <div class="info-badge-item"><small>সদস্যের নাম (বাংলা)</small><p>${member.banglaName || 'N/A'}</p></div>
-            <div class="info-badge-item"><small>নিবন্ধন আইডি (Member ID)</small><p style="color:#00b4d8; font-family: monospace;">${member.memberId || '⏳ Pending'}</p></div>
             <div class="info-badge-item"><small>মোবাইল নম্বর</small><p>${member.mobileNumber || 'N/A'}</p></div>
             <div class="info-badge-item"><small>হোয়াটসঅ্যাপ নম্বর</small><p>${member.whatsappNumber || 'N/A'}</p></div>
-            <div class="info-badge-item" style="grid-column: span 2;"><small>ইমেইল এড্রেস</small><p style="color:#ffd700;">${member.email || 'N/A'}</p></div>
-            <div class="info-badge-item"><small>পিতার নাম</small><p>${member.fatherName || 'N/A'}</p></div>
-            <div class="info-badge-item"><small>মাতার নাম</small><p>${member.motherName || 'N/A'}</p></div>
-            <div class="info-badge-item"><small>জন্ম তারিখ</small><p>${member.dob || 'N/A'}</p></div>
             <div class="info-badge-item"><small>লিঙ্গ (Gender)</small><p>${member.gender || 'N/A'}</p></div>
+            <div class="info-badge-item" style="grid-column: span 2;"><small>ইমেইল এড্রেস</small><p style="color:#00b4d8;">${member.email || 'N/A'}</p></div>
+            <div class="info-badge-item" style="grid-column: span 2;"><small>ফেসবুক আইডি লিংক</small><p>${member.facebookUrl ? `<a href="${member.facebookUrl}" target="_blank" style="color:#fbbf24; text-decoration:none;"><i class="fab fa-facebook"></i> ${member.facebookUrl}</a>` : 'N/A'}</p></div>
+            <div class="info-badge-item"><small>সদস্য হওয়ার তারিখ ও সময়</small><p style="color:#1f804b; font-size:12.5px;">${joiningDateTime}</p></div>
+            <div class="info-badge-item"><small>জন্ম তারিখ</small><p>${member.dob || 'N/A'}</p></div>
+            <div class="info-badge-item"><small>পিতার নাম</small><p>${member.fatherName || 'N/A'}</p></div>
+            <div class="info-badge-item"><small>مাতার নাম</small><p>${member.motherName || 'N/A'}</p></div>
             <div class="info-badge-item"><small>NID / জন্ম নিবন্ধন</small><p>${member.nidOrBrn || 'N/A'}</p></div>
             <div class="info-badge-item"><small>পেশা</small><p>${member.profession || 'N/A'}</p></div>
             <div class="info-badge-item" style="grid-column: span 2;"><small>শিক্ষা প্রতিষ্ঠান / কর্মস্থল</small><p>${member.institution || 'N/A'}</p></div>
-            <div class="info-badge-item"><small>शिक्षাগত যোগ্যতা (Education)</small><p>${member.education || 'N/A'}</p></div>
+            <div class="info-badge-item"><small>শিক্ষাগত যোগ্যতা</small><p>${member.education || 'N/A'}</p></div>
             <div class="info-badge-item"><small>শিক্ষাবর্ষ (Academic Year)</small><p>${member.academicYear || 'N/A'}</p></div>
             <div class="info-badge-item" style="grid-column: span 2;"><small>সিস্টেম পদবি (Current Role)</small><p style="color: #fbbf24; text-transform: uppercase;">${roleLabels[member.role] || member.role}</p></div>
             <div class="info-badge-item" style="grid-column: span 2;"><small>বর্তমান ঠিকানা</small><p style="font-size:12.5px; line-height:1.4;">${member.presentAddress || 'N/A'}</p></div>
@@ -361,16 +376,16 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       detailsModal.style.display = 'flex';
     }));
 
-    // ডাটাবেজ ডিলিট হ্যান্ডলার
+    // ডিলিট বোতাম হ্যান্ডলার
     document.querySelectorAll('.btn-delete-mem').forEach(b => b.addEventListener('click', async (e) => {
       const id = e.currentTarget.getAttribute('data-id');
       if (confirm("🚨 আপনি কি নিশ্চিত? এই সদস্য ডাটাবেজ থেকে চিরতরে মুছে যাবে!")) {
         await deleteDoc(doc(db, "users", id));
-        alert("সদস্য ডিলিট হয়েছে।");
+        alert("সদস্য সফলভাবে ডিলিট হয়েছে।");
       }
     }));
 
-    // স্ট্যাটাস চেঞ্জার হ্যান্ডলার
+    // স্ট্যাটাস চেঞ্জার হ্যান্ডলার (সর্বশেষ আইডি ট্র্যাক করে পরবর্তী আইডি অটো-জেনারেশন)
     document.querySelectorAll('.erp-status-changer').forEach(s => s.addEventListener('change', async (e) => {
       const id = e.target.getAttribute('data-id');
       const newStatus = e.target.value;
@@ -381,17 +396,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         const currentMem = localMembersArray.find(m => m.id === id);
         
         if (newStatus === 'active' && !currentMem.memberId) {
-          const currentYear = new Date().getFullYear();
-          const querySnapshot = await getDocs(collection(db, "users"));
-          let maxSerial = 0;
-          querySnapshot.forEach((doc) => {
-            const memberId = doc.data().memberId;
-            if (memberId && memberId.startsWith(`ROS-${currentYear}-`)) {
-              const serialNum = parseInt(memberId.split('-')[2], 10);
-              if (serialNum > maxSerial) maxSerial = serialNum;
-            }
-          });
-          updateData.memberId = `ROS-${currentYear}-${String(maxSerial + 1).padStart(4, '0')}`;
+          updateData.memberId = await generateNextMemberId(getDocs, collection, db);
         }
         await updateDoc(doc(db, "users", id), updateData);
         alert("স্ট্যাটাস সফলভাবে আপডেট হয়েছে।");
@@ -424,7 +429,28 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     }));
   }
 
-  // 📊 ৫. এক্সেল ফাইল এক্সপোর্ট লজিক (নাম থেকে শুরু করে ডাটাবেজের সকল তথ্য অন্তর্ভুক্ত করা হয়েছে)
+  // 🆔 ফায়ারবেসের সর্বশেষ সর্বোচ্চ রেজিস্ট্রেশন আইডির পরের নম্বরটি অটোমেটিক তৈরি করার কোর ফাংশন
+  async function generateNextMemberId(getDocs, collection, db) {
+    const currentYear = new Date().getFullYear();
+    const querySnapshot = await getDocs(collection(db, "users"));
+    let maxSerial = 0;
+    
+    querySnapshot.forEach((doc) => {
+      const mId = doc.data().memberId;
+      if (mId && mId.startsWith(`ROS-${currentYear}-`)) {
+        const parts = mId.split('-');
+        if (parts.length === 3) {
+          const serialNum = parseInt(parts[2], 10);
+          if (!isNaN(serialNum) && serialNum > maxSerial) {
+            maxSerial = serialNum;
+          }
+        }
+      }
+    });
+    return `ROS-${currentYear}-${String(maxSerial + 1).padStart(4, '0')}`;
+  }
+
+  // 📊 ৫. এক্সেল ফাইল এক্সপোর্ট লজিক (ইউজারের সকল তথ্য সহ)
   document.getElementById('exportExcelBtn').addEventListener('click', () => {
     if (!window.XLSX || localMembersArray.length === 0) return;
     const excelRows = localMembersArray.map((m, idx) => ({
@@ -435,6 +461,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       "Mobile Number": m.mobileNumber || "",
       "WhatsApp Number": m.whatsappNumber || "",
       "Email Address": m.email || "",
+      "Facebook Profile": m.facebookUrl || "",
       "Father's Name": m.fatherName || "",
       "Mother's Name": m.motherName || "",
       "Date of Birth": m.dob || "",
@@ -448,41 +475,49 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       "Current Status": m.status || "pending",
       "Present Address": m.presentAddress || "",
       "Permanent Address": m.permanentAddress || "",
-      "Created At": m.createdAt || ""
+      "Joining Date Time": m.createdAt ? new Date(m.createdAt).toLocaleString() : ""
     }));
     const worksheet = XLSX.utils.json_to_sheet(excelRows);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "ROS All Data Members");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "ROS All Members");
     XLSX.writeFile(workbook, `ROS_Complete_Database.xlsx`);
   });
 
-  // 💎 ৬. সাইবার ডার্ক আলটিমেট কোডেড পিডিএফ জেনারেশন (১০০% কোডিং লেআউট ও ইউজার স্পেসিফাইড ফিল্ড ডিস্ট্রিবিউশন)
+  // 📄 ৬. টেবিলের ডাটা দিয়ে তাৎক্ষণিক PDF তালিকা ডাউনলোড করার বাটন অ্যাকশন (All Data)
+  document.getElementById('exportAllPdfBtn').addEventListener('click', () => {
+    if (!window.html2pdf || localMembersArray.length === 0) return;
+    
+    const element = document.getElementById('mainMembersDataTable');
+    const opt = {
+      margin: 10,
+      filename: `ROS_Table_Members_Report.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } // ল্যান্ডস্কেপ মোড টেবিলের জন্য পারফেক্ট
+    };
+    html2pdf().from(element).set(opt).save();
+  });
+
+  // 💎 ৭. একক মেম্বার ফর্ম পিডিএফ ডাউনলোড (১০০% নিখুঁত স্পেসিফাইড লেআউট)
   document.getElementById('downloadFormPdfBtn').addEventListener('click', () => {
     if (!selectedMemberForForm || !window.html2pdf || !window.QRCode) return;
     
     const m = selectedMemberForForm;
-    
-    // সিরিয়াল নাম্বার খুঁজে বের করা
     const serialIndex = localMembersArray.findIndex(x => x.id === m.id) + 1;
     const renderTarget = document.getElementById('hiddenPdfRenderArea');
 
-    // একদম পিওর এইচটিএমএল/সিএসএস কোডিং ভিত্তিক জিরো-ব্লিড ডিজাইন ফ্রেম (বামপাশে লোগো, ডানে ছবি)
     renderTarget.innerHTML = `
       <div id="pdfAbsoluteContainer" style="width: 210mm; height: 297mm; background: linear-gradient(135deg, #020c1b, #07162b); color: #f1f5f9; position: relative; box-sizing: border-box; overflow: hidden; padding: 0; margin: 0;">
-        
-        <!-- ডাবল স্ট্রাকচার্ড নিওন সাইবার বর্ডার ফ্রেম -->
         <div style="position: absolute; top: 8mm; left: 8mm; right: 8mm; bottom: 8mm; border: 2px solid rgba(0, 180, 216, 0.6); border-radius: 10px; pointer-events: none; box-shadow: inset 0 0 15px rgba(0,180,216,0.15);"></div>
         <div style="position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 1px dashed rgba(255, 215, 0, 0.25); border-radius: 8px; pointer-events: none;"></div>
         
-        <!-- ব্যাকগ্রাউন্ড হাই-ডেফিনিশন ওয়াটারমার্ক -->
         <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 1;">
           <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 60%; opacity: .045; filter: grayscale(100%);">
         </div>
 
         <div style="position: relative; z-index: 2; padding: 16mm; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-          
-          <!-- হেডার ব্লক: বাম পাশে লোগো, মাঝে টেক্সট এবং ডান পাশে ছবি বর্ডার ঘেঁষে -->
           <div>
+            <!-- হেডার ব্লক: বামে লোগো এবং ডানে ছবি বর্ডার ঘেঁষে -->
             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(0, 180, 216, 0.4); padding-bottom: 15px; margin-bottom: 20px;">
               <div style="display: flex; align-items: center; gap: 15px;">
                 <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="height: 65px; object-fit: contain;">
@@ -491,14 +526,12 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
                   <p style="color: #00b4d8; font-size: 11.5px; margin: 2px 0 0 0; font-weight: 600; letter-spacing: 1px;">RAJSHAHI OLYMPIAD SOCIETY (ROS)</p>
                 </div>
               </div>
-              
-              <!-- ইউজারের ছবি বরাবর ডানদিকে বর্ডার ঘেঁষে -->
               <img src="${m.photoUrl || 'https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png'}" style="width: 95px; height: 115px; object-fit: cover; border: 2px solid #00b4d8; border-radius: 6px; background: rgba(0,0,0,0.4);">
             </div>
 
-            <!-- মেম্বার ম্যাট্রিক্স তথ্য টেবিল (ইউজার স্পেসিফাইড ফিল্ড ডিস্ট্রিবিউশন) -->
+            <!-- স্পেসিফাইড ফিল্ড টেবিল: সিরিয়াল, রেজিস্ট্রেশন নাম্বার, নাম, মোবাইল, হোয়াটসঅ্যাপ, ইমেইল, ঠিকানা -->
             <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(0, 180, 216, 0.2); border-radius: 6px; overflow: hidden;">
-              <div style="background: rgba(0, 180, 216, 0.15); padding: 8px 12px; font-weight: bold; color: #ffd700; font-size: 13px; border-bottom: 1px solid rgba(0, 180, 216, 0.2); letter-spacing: 0.5px;">SECURE PROFILE CREDENTIALS DATA-NODE</div>
+              <div style="background: rgba(0, 180, 216, 0.15); padding: 8px 12px; font-weight: bold; color: #ffd700; font-size: 13px; border-bottom: 1px solid rgba(0, 180, 216, 0.2);">SECURE PROFILE CREDENTIALS DATA-NODE</div>
               
               <table style="width: 100%; border-collapse: collapse; font-size: 12px; color: #f1f5f9;">
                 <tr>
@@ -535,48 +568,31 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
                 </tr>
               </table>
             </div>
-
-            <!-- মেম্বারশিপ রেগুলেটরি ডিক্লেয়ারেশন শর্তাবলী -->
-            <div style="margin-top: 25px; background: rgba(230, 57, 70, 0.05); border: 1px dashed rgba(0, 180, 216, 0.3); padding: 12px 16px; border-radius: 6px;">
-              <div style="font-size: 12px; color: #ffd700; font-weight: bold; margin-bottom: 6px; font-family: 'Poppins'; text-transform: uppercase; letter-spacing: 0.5px;">Membership Terms & Regulatory Declarations:</div>
-              <ul style="margin: 0; padding-left: 15px; font-size: 10.5px; color: #94a3b8; line-height: 1.6;">
-                <li>1. The Authority reserves the absolute right to suspend or cancel membership at any given time without prior notice.</li>
-                <li>2. Members must comply with the rules, constitution, and core values of Rajshahi Olympiad Society (ROS).</li>
-                <li>3. Any anti-social or non-disciplinary activities inside or associated with the node will lead to instant termination.</li>
-                <li>4. All provided profiling credentials must be legit. Fabrication of documents will trigger immediate structural blocks.</li>
-              </ul>
-            </div>
           </div>
 
-          <!-- বটম কিউআর জোন এবং সিগনেচারের জন্য উম্মুক্ত ফাঁকা স্থান -->
+          <!-- কিউআর জোন এবং অথরাইজড সিগনেচার এরিয়া -->
           <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
               <div>
-                <div id="formQrCodeContainer" style="background: #fff; padding: 5px; border-radius: 4px; display: inline-block; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>
+                <div id="formQrCodeContainer" style="background: #fff; padding: 5px; border-radius: 4px; display: inline-block;"></div>
                 <div style="font-size: 9px; color: #94a3b8; margin-top: 4px;" id="pdfTimestampArea"></div>
               </div>
-
-              <!-- পেন সাইন বা কলম দিয়ে সিগনেচারের জন্য সম্পূর্ণ ফাঁকা এরিয়া -->
               <div style="text-align: center; width: 200px;">
                 <div style="height: 45px;"></div> 
                 <div style="border-top: 1.5px solid #00b4d8; width: 100%;"></div>
-                <div style="font-size: 11px; color: #ffd700; font-weight: bold; margin-top: 5px; font-family: 'Poppins';">Authorized Signature</div>
-                <div style="font-size: 9px; color: #94a3b8; font-weight: 500;">Rajshahi Olympiad Society</div>
+                <div style="font-size: 11px; color: #ffd700; font-weight: bold; margin-top: 5px;">Authorized Signature</div>
               </div>
             </div>
-
-            <!-- ফুটার নোটিশ -->
             <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #94a3b8;">
-              <div>CRITICAL PRIVACY NODE // SECURE REGISTRY GENERATED VIA ROS NEXUS BACKEND</div>
+              <div>CRITICAL PRIVACY NODE // GENERATED VIA ROS NEXUS BACKEND</div>
               <div style="font-weight: 600; color: #00b4d8;">Developed By, Utsab Sarker</div>
             </div>
           </div>
-
         </div>
       </div>
     `;
 
-    // কিউআর কোড রেন্ডার
+    // কিউআর কোড জেনারেশন
     new QRCode(document.getElementById("formQrCodeContainer"), {
       text: `https://ros-user-panel.vercel.app/member/${m.memberId || 'Pending'}`,
       width: 75, height: 75
@@ -584,20 +600,18 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
 
     document.getElementById("pdfTimestampArea").innerText = "Registry Log: " + new Date().toLocaleString();
 
-    // সরাসরি পিএইচপি/এইচটিএমএল পিডিএফ ডাউনলোড প্রোটোকল
     const element = document.getElementById('pdfAbsoluteContainer');
     html2pdf().set({
       margin: 0,
       filename: `ROS_Form_${m.memberId || 'Pending'}.pdf`,
       html2canvas: { scale: 2.5, useCORS: true, logging: false },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["avoid-all"] }
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
     }).from(element).save().then(() => {
-      renderTarget.innerHTML = ""; // মেমোরি ফ্ল্যাশ
+      renderTarget.innerHTML = "";
     });
   });
 
-  // ৭. ম্যানুয়াল এন্ট্রি মডাল পপআপ কন্ট্রোল লজিক
+  // ৮. ম্যানুয়াল এন্ট্রি মডাল পপআপ কন্ট্রোল লজিক
   document.getElementById('openCreateMemberModalBtn').addEventListener('click', () => {
     document.getElementById('newMemberForm').reset();
     createModal.style.display = 'flex';
@@ -607,54 +621,30 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
   document.getElementById('closeCreateModalBtn').addEventListener('click', closeCreateModal);
   document.getElementById('closeCreateModalBtnTop').addEventListener('click', closeCreateModal);
 
-  // ম্যানুয়াল এন্ট্রি ফর্ম সাবমিশন হ্যান্ডলার
+  // ম্যানুয়াল মেম্বার তৈরি ফর্ম সাবমিশন (এখানেও অটো-আইডি প্রোটোকল সেট করা আছে)
   document.getElementById('newMemberForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const name = document.getElementById('fmName').value.trim();
-    const mobile = document.getElementById('fmMobile').value.trim();
-    const email = document.getElementById('fmEmail').value.trim();
-    const nameBn = document.getElementById('fmNameBn').value.trim();
-    const father = document.getElementById('fmFather').value.trim();
-    const mother = document.getElementById('fmMother').value.trim();
-    const dob = document.getElementById('fmDob').value;
-    const gender = document.getElementById('fmGender').value;
-    const nid = document.getElementById('fmNid').value.trim();
-    const profession = document.getElementById('fmProfession').value.trim();
-    const institution = document.getElementById('fmInstitution').value.trim();
-    const education = document.getElementById('fmEducation').value.trim();
-    const academicYear = document.getElementById('fmAcademicYear').value.trim();
-    const role = document.getElementById('fmRole').value;
-
-    // মেম্বার আইডি জেনারেশন প্রোটোকল
-    const currentYear = new Date().getFullYear();
-    const querySnapshot = await getDocs(collection(db, "users"));
-    let maxSerial = 0;
-    querySnapshot.forEach((doc) => {
-      const memberId = doc.data().memberId;
-      if (memberId && memberId.startsWith(`ROS-${currentYear}-`)) {
-        const serialNum = parseInt(memberId.split('-')[2], 10);
-        if (serialNum > maxSerial) maxSerial = serialNum;
-      }
-    });
-    const generatedId = `ROS-${currentYear}-${String(maxSerial + 1).padStart(4, '0')}`;
+    const generatedId = await generateNextMemberId(getDocs, collection, db);
 
     try {
       await addDoc(collection(db, "users"), {
-        englishName: name,
-        mobileNumber: mobile,
-        email: email || "",
-        banglaName: nameBn || "",
-        fatherName: father || "",
-        motherName: mother || "",
-        dob: dob || "",
-        gender: gender || "",
-        nidOrBrn: nid || "",
-        profession: profession || "",
-        institution: institution || "",
-        education: education || "",
-        academicYear: academicYear || "",
-        role: role || "general_member",
+        englishName: document.getElementById('fmName').value.trim(),
+        mobileNumber: document.getElementById('fmMobile').value.trim(),
+        email: document.getElementById('fmEmail').value.trim() || "",
+        banglaName: document.getElementById('fmNameBn').value.trim() || "",
+        whatsappNumber: document.getElementById('fmWorkspace') ? "" : document.getElementById('fmWhatsapp').value.trim() || "",
+        facebookUrl: document.getElementById('fmFacebook').value.trim() || "",
+        fatherName: document.getElementById('fmFather').value.trim() || "",
+        motherName: document.getElementById('fmMother').value.trim() || "",
+        dob: document.getElementById('fmDob').value || "",
+        gender: document.getElementById('fmGender').value || "",
+        nidOrBrn: document.getElementById('fmNid').value.trim() || "",
+        profession: document.getElementById('fmProfession').value.trim() || "",
+        institution: document.getElementById('fmInstitution').value.trim() || "",
+        education: document.getElementById('fmEducation').value.trim() || "",
+        academicYear: document.getElementById('fmAcademicYear').value.trim() || "",
+        role: document.getElementById('fmRole').value || "general_member",
         status: "active",
         memberId: generatedId,
         presentAddress: document.getElementById('fmPresentAddr').value.trim() || "",
@@ -662,7 +652,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         createdAt: new Date().toISOString()
       });
       
-      alert(`🎉 সফলভাবে নতুন সদস্য যুক্ত করা হয়েছে!\nমেম্বার আইডি: ${generatedId}`);
+      alert(`🎉 সফলভাবে নতুন সদস্য ডাটাবেজে যুক্ত হয়েছে!\nঅটো-জেনারেটেড মেম্বার আইডি: ${generatedId}`);
       closeCreateModal();
     } catch (err) {
       console.error(err);
@@ -670,12 +660,10 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     }
   });
 
-  // বিস্তারিত প্রোফাইল মডাল ক্লোজ
   const closeDetails = () => { detailsModal.style.display = 'none'; selectedMemberForForm = null; };
   document.getElementById('closeMemberModalBtn').addEventListener('click', closeDetails);
   document.getElementById('closeMemberModalBtnTop').addEventListener('click', closeDetails);
 
-  // লাইভ ফিল্টারিং ও সার্চ হ্যান্ডলার
   searchInput.addEventListener('input', renderFilteredMembers);
   statusFilter.addEventListener('change', renderFilteredMembers);
 }
