@@ -309,7 +309,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       }
 
       tr.innerHTML = `
-      <td style="padding:14px 12px;">${ idx + 1'}</td>
+      <td style="padding:14px 12px;">${idx + 1}</td>
         <td style="padding:14px 12px; color:#00b4d8; font-weight:bold;">${u.memberId || '⏳ Pending'}</td>
         <td style="padding:14px 12px; font-weight:600;">${u.englishName || 'N/A'}</td>
         <td style="padding:14px 12px;">${u.mobileNumber || 'N/A'}</td>
@@ -591,7 +591,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
             </div>
 
             <!-- সুবিন্যস্ত ডাটা টেবিল বক্স কন্টেইনার -->
-            <div style="background: rgba(255, 255, 255, 0.85); border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <div style="background: transparent; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
               <div style="background: rgba(0, 180, 216, 0.08); padding: 6px 12px; font-weight: bold; color: #0077b6; font-size: 12px; border-bottom: 1px solid #cbd5e1; letter-spacing: 0.5px;">SECURE PROFILE CREDENTIALS DATA-NODE</div>
               
               <table style="width: 100%; border-collapse: collapse; font-size: 11px; color: #334155;">
