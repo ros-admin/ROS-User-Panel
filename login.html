@@ -186,9 +186,9 @@
       </div>
     </form>
 
-    <div id="resetModal" class="cyber-card" style="display: none; border-color: var(--neon-danger);">
-      <h3 style="color: var(--neon-danger); font-size: 15px; margin: 0 0 15px 0; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-        <i class="fas fa-exclamation-triangle"></i> পাসওয়ার্ড রিসেট রিকোয়েস্ট কিউ
+    <div id="resetModal" class="cyber-card" style="display: none; border-color: var(--neon-cyan);">
+      <h3 style="color: var(--neon-cyan); font-size: 15px; margin: 0 0 15px 0; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-key"></i> ইনস্ট্যান্ট পাসওয়ার্ড রিসেট পোর্টাল
       </h3>
       
       <div class="form-group">
@@ -196,26 +196,193 @@
         <input type="text" id="resetIdentifier" class="cyber-input" placeholder="ROS-2026-0001 / 017XXXXXXXX">
       </div>
 
-      <div class="form-group">
-        <label><i class="fas fa-camera"></i> ভেরিফিকেশনের জন্য আপনার একটি সেলফি তুলুন</label>
-        <input type="file" id="resetSelfieInput" accept="image/*" capture="user" style="display: none;">
-        <button type="button" id="triggerSelfieBtn" class="cyber-btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); box-shadow: none;">
-          <i class="fas fa-camera"></i> সেলফি ক্যামেরা ওপেন করুন
-        </button>
-        <span id="selfieStatusText" style="display: block; font-size: 12px; color: var(--neon-yellow); margin-top: 6px; font-weight: 500;"></span>
-      </div>
-
-      <div style="background: rgba(251, 191, 36, 0.05); border: 1px dashed rgba(251, 191, 36, 0.3); padding: 12px; border-radius: 6px; font-size: 11px; color: #fbbf24; line-height: 1.5; margin-bottom: 15px;">
-        <i class="fas fa-shield-alt"></i> <strong>নিরাপত্তা নোটিশ:</strong> এই সেলফিটি শুধুমাত্র আপনি আসল মেম্বার কিনা তা অ্যাডমিন কর্তৃক যাচাইয়ের জন্য ব্যবহৃত হবে। ভেরিফিকেশন সম্পন্ন হওয়া মাত্রই (আবেদন অনুমোদন বা বাতিল হলে) ছবিটি সার্ভার থেকে চিরতরে স্বয়ংক্রিয়ভাবে মুছে ফেলা হবে।
+      <div style="background: rgba(0, 180, 216, 0.05); border: 1px dashed rgba(0, 180, 216, 0.3); padding: 12px; border-radius: 6px; font-size: 12px; color: #e5e7eb; line-height: 1.5; margin-bottom: 15px;">
+        <i class="fas fa-info-circle" style="color: var(--neon-cyan);"></i> আপনার আইডি বা ফোন নম্বরটি ডাটাবেসের সাথে মিললে, আপনার অ্যাকাউন্টে রেজিস্টার্ড ইমেইলে সরাসরি ফায়ারবেস থেকে একটি পাসওয়ার্ড রিসেট লিংক চলে যাবে।
       </div>
 
       <div style="display: flex; gap: 10px;">
-        <button type="button" id="submitResetBtn" class="cyber-btn" style="background: linear-gradient(135deg, #ff4d6d, #c9184a);">রিকোয়েস্ট পাঠান</button>
+        <button type="button" id="submitResetBtn" class="cyber-btn">লিঙ্ক পাঠান</button>
         <button type="button" id="closeModalBtn" class="cyber-btn" style="background: #374151; box-shadow: none;">বন্ধ করুন</button>
       </div>
     </div>
   </div>
 
-  <script type="module" src="login.js"></script>
+  <script type="module">
+    // ফায়ারবেস মডিউলার এসডিকে ইম্পোর্ট (Firebase v10)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // 🔑 আপনার ফায়ারবেস প্রজেক্টের ক্রেডেনশিয়াল (আপনার আসল কি-গুলো এখানে বসিয়ে দিন)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // ফায়ারবেস ইনিশিয়ালাইজেশন
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ডম (DOM) এলিমেন্ট রেফারেন্সসমূহ
+    const loginForm = document.getElementById('loginForm');
+    const loginIdentifierInput = document.getElementById('loginIdentifier');
+    const loginPasswordInput = document.getElementById('loginPassword');
+    const loginBtn = document.getElementById('loginBtn');
+
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+    const resetModal = document.getElementById('resetModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const submitResetBtn = document.getElementById('submitResetBtn');
+    const resetIdentifierInput = document.getElementById('resetIdentifier');
+    const notificationContainer = document.getElementById('notification-container');
+
+    // গ্লোবাল সাইবার টোস্ট নোটিফিকেশন সিস্টেম
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast-popup toast-${type}`;
+      toast.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-times-circle'}"></i> 
+        <span>${message}</span>
+      `;
+      notificationContainer.appendChild(toast);
+
+      // ৪ সেকেন্ড পর স্বয়ংক্রিয়ভাবে মুছে যাওয়ার অ্যানিমেশন
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ==========================================
+    // 🔐 ১. মূল লগইন হ্যান্ডলার (Login Logic)
+    // ==========================================
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const identifier = loginIdentifierInput.value.trim();
+      const password = loginPasswordInput.value;
+
+      try {
+        loginBtn.disabled = true;
+        loginBtn.innerText = "যাচাই করা হচ্ছে...";
+
+        let targetEmail = identifier;
+
+        // ইউজার যদি ইমেইলের বদলে মেম্বার আইডি (ROS-) দিয়ে লগইন করতে চায়
+        if (!identifier.includes('@')) {
+          const userQuery = query(collection(db, "users"), where("memberId", "==", identifier));
+          const querySnapshot = await getDocs(userQuery);
+
+          if (querySnapshot.empty) {
+            showToast("এই মেম্বার আইডিটি ডাটাবেসে পাওয়া যায়নি!", "error");
+            return;
+          }
+          
+          // মেম্বার আইডির বিপরীতে থাকা ইমেইলটি তুলে আনা হলো
+          targetEmail = querySnapshot.docs[0].data().email;
+        }
+
+        // ফায়ারবেস অথেন্টিকেশন দিয়ে সাইন-ইন
+        await signInWithEmailAndPassword(auth, targetEmail, password);
+        showToast("পোর্টালে সফলভাবে প্রবেশ করেছেন! রিডাইরেক্ট হচ্ছে...", "success");
+        
+        // সফল লগইনের পর ড্যাশবোর্ডে পাঠানোর কোড (প্রয়োজন হলে অন করুন)
+        // window.location.href = "dashboard.html";
+
+      } catch (error) {
+        console.error("Login Error:", error);
+        let errorMsg = "লগইন ব্যর্থ হয়েছে! পাসওয়ার্ড চেক করুন।";
+        if (error.code === 'auth/invalid-credential') errorMsg = "ভুল ইমেইল/আইডি অথবা পাসওয়ার্ড দিয়েছেন!";
+        if (error.code === 'auth/user-not-found') errorMsg = "এই ব্যবহারকারীকে খুঁজে পাওয়া যায়নি।";
+        
+        showToast(errorMsg, "error");
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerText = "পোর্টালে প্রবেশ করুন";
+      }
+    });
+
+    // ==========================================
+    // 🔄 ২. ইনস্ট্যান্ট অটো-রিসেট মেইল হ্যান্ডলার
+    // ==========================================
+
+    // রিসেট প্যানেল ওপেন
+    forgotPasswordLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      resetModal.style.display = 'block';
+      resetIdentifierInput.focus();
+    });
+
+    // রিসেট প্যানেল ক্লোজ
+    closeModalBtn.addEventListener('click', () => {
+      resetModal.style.display = 'none';
+      resetIdentifierInput.value = '';
+    });
+
+    // মেম্বার আইডি/ফোন নম্বর সার্চ ও লিঙ্ক পাঠানোর ট্রিগার
+    submitResetBtn.addEventListener('click', async () => {
+      const searchKey = resetIdentifierInput.value.trim();
+
+      if (!searchKey) {
+        showToast("অনুগ্রহ করে আপনার Member ID অথবা মোবাইল নম্বর দিন।", "warning");
+        return;
+      }
+
+      try {
+        submitResetBtn.disabled = true;
+        submitResetBtn.innerText = "সার্চ করা হচ্ছে...";
+
+        let userQuery;
+        
+        // কন্ডিশন: ইনপুট যদি 'ROS' দিয়ে শুরু হয় তবে memberId, না হলে mobileNumber ফিল্ডে খুঁজবে
+        if (searchKey.toUpperCase().startsWith('ROS')) {
+          userQuery = query(collection(db, "users"), where("memberId", "==", searchKey));
+        } else {
+          userQuery = query(collection(db, "users"), where("mobileNumber", "==", searchKey));
+        }
+
+        const querySnapshot = await getDocs(userQuery);
+
+        // যদি ডাটাবেসে তথ্য না মেলে
+        if (querySnapshot.empty) {
+          showToast("দুঃখিত, এই তথ্য দিয়ে কোনো নিবন্ধিত অ্যাকাউন্ট পাওয়া যায়নি!", "error");
+          return;
+        }
+
+        // অ্যাকাউন্ট পাওয়া গেছে, এবার ডাটা এক্সট্র্যাক্ট করা হচ্ছে
+        const userData = querySnapshot.docs[0].data();
+        const userEmail = userData.email;
+        const userName = userData.banglaName || userData.englishName || "মেম্বার";
+
+        if (!userEmail || !userEmail.includes('@')) {
+          showToast("এই অ্যাকাউন্টের সাথে কোনো বৈধ ইমেইল যুক্ত নেই। অ্যাডমিনের সাহায্য নিন।", "error");
+          return;
+        }
+
+        submitResetBtn.innerText = "লিঙ্ক পাঠানো হচ্ছে...";
+
+        // 🚀 ফায়ারবেস সার্ভার থেকে সরাসরি অফিশিয়াল মেইল প্রেরণ
+        await sendPasswordResetEmail(auth, userEmail);
+
+        showToast(`🔒 প্রিয় ${userName}, আপনার রেজিস্টার্ড ইমেইলে (${userEmail}) পাসওয়ার্ড রিসেট লিঙ্কটি পাঠানো হয়েছে!`, "success");
+        
+        // সফল হলে মোডাল বন্ধ ও ইনপুট ক্লিন
+        resetModal.style.display = 'none';
+        resetIdentifierInput.value = '';
+
+      } catch (error) {
+        console.error("Reset Email Error: ", error);
+        showToast("সার্ভার রেসপন্স করছে না! অনুগ্রহ করে কিছুক্ষণ পর চেষ্টা করুন।", "error");
+      } finally {
+        submitResetBtn.disabled = false;
+        submitResetBtn.innerText = "লিঙ্ক পাঠান";
+      }
+    });
+  </script>
 </body>
 </html>
