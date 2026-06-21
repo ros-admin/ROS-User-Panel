@@ -10,95 +10,63 @@ function loadDashboardModule(contentRoot, currentAdminData, db, collection, onSn
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px;">
       
-      <div class="cyber-glass dashboard-click-node" data-target-mod="members" style="padding: 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h3 style="font-size: 24px; font-weight: bold; color: var(--neon-yellow);" id="cntPendingMembers">...</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">পেন্ডিং মেম্বার রিকোয়েস্ট</p>
-          </div>
-          <i class="fas fa-user-plus" style="font-size: 30px; color: rgba(253, 191, 36, 0.2);"></i>
-        </div>
+      <div class="cyber-glass dashboard-click-redirect-trigger" data-target-mod="members" style="padding: 20px; border-radius: 6px; cursor: pointer; position: relative; transition: all 0.3s ease;">
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">মোট সদস্য সংখ্যা</div>
+        <div style="font-size: 32px; font-weight: bold; margin: 10px 0; color: #fff;" id="cntTotalMembers">⏳</div>
+        <div style="font-size: 11px; color: var(--neon-blue);"><i class="fas fa-arrow-right"></i> ডাটাবেজ ভিউ করুন</div>
       </div>
 
-      <div class="cyber-glass dashboard-click-node" data-target-mod="adminRequests" style="padding: 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h3 style="font-size: 24px; font-weight: bold; color: var(--neon-blue);" id="cntInfoRequests">...</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">তথ্য পরিবর্তনের আবেদন</p>
-          </div>
-          <i class="fas fa-tasks" style="font-size: 30px; color: rgba(0, 180, 216, 0.2);"></i>
-        </div>
+      <div class="cyber-glass dashboard-click-redirect-trigger" data-target-mod="members" style="padding: 20px; border-radius: 6px; cursor: pointer; position: relative; transition: all 0.3s ease;">
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">অ্যাক্টিভ সদস্য সংখ্যা</div>
+        <div style="font-size: 32px; font-weight: bold; margin: 10px 0; color: var(--neon-green);" id="cntActiveMembers">⏳</div>
+        <div style="font-size: 11px; color: var(--neon-blue);"><i class="fas fa-arrow-right"></i> ডাটাবেজ ভিউ করুন</div>
       </div>
 
-      <div class="cyber-glass dashboard-click-node" data-target-mod="resetUserPassword" style="padding: 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h3 style="font-size: 24px; font-weight: bold; color: var(--neon-red);" id="cntPassRequests">...</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Password Reset Queue</p>
-          </div>
-          <i class="fas fa-shield-alt" style="font-size: 30px; color: rgba(230, 57, 70, 0.2);"></i>
-        </div>
+      <div class="cyber-glass dashboard-click-redirect-trigger" data-target-mod="members" style="padding: 20px; border-radius: 6px; cursor: pointer; position: relative; transition: all 0.3s ease;">
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">পেন্ডিং মেম্বার রিকোয়েস্ট</div>
+        <div style="font-size: 32px; font-weight: bold; margin: 10px 0; color: var(--neon-yellow);" id="cntPendingMembers">⏳</div>
+        <div style="font-size: 11px; color: var(--neon-blue);"><i class="fas fa-arrow-right"></i> মেম্বার ডাটাবেজে যান</div>
+      </div>
+
+      <div class="cyber-glass dashboard-click-redirect-trigger" data-target-mod="profile_requests" style="padding: 20px; border-radius: 6px; cursor: pointer; position: relative; transition: all 0.3s ease;">
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">প্রোফাইল আপডেট রিকোয়েস্ট</div>
+        <div style="font-size: 32px; font-weight: bold; margin: 10px 0; color: var(--neon-cyan);" id="cntDashboardInfoReqs">⏳</div>
+        <div style="font-size: 11px; color: var(--neon-blue);"><i class="fas fa-arrow-right"></i> রিকোয়েস্ট হাব ওপেন করুন</div>
       </div>
 
     </div>
 
-    <div id="dashboardLiveStatusHub" class="cyber-glass" style="padding: 20px; border-radius: 8px; display: none;">
-      <h3 id="workspaceTitle" style="font-size: 16px; color: #fff; margin-bottom: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px;"></h3>
-      <div id="workspaceTableResponsive" style="overflow-x: auto;">
-         </div>
+    <div class="cyber-glass" style="padding: 20px; border-radius: 8px;">
+      <h3 style="font-size: 16px; margin-bottom: 12px; color: #fff;"><i class="fas fa-shield-alt"></i> সিস্টেম সিকিউরিটি লগ ও প্রোটোকল নোটিশ</h3>
+      <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: var(--text-muted); line-height: 1.5;">
+        <li><span style="color: var(--neon-green);">● SECURITY:</span> প্রতিটি সেশন SSL/TLS এন্ড-টু-এন্ড এনক্রিপশনের মাধ্যমে সুরক্ষিত। কর্তৃপক্ষের অনুমতি ব্যতিরেকে কোনো তথ্য ডিরেক্টরি থেকে কপি বা এক্সপোর্ট করা দণ্ডনীয় অপরাধ।</li>
+        <li><span style="color: var(--neon-blue);">● DISCONNECT PROTOCOL:</span> প্যানেল ব্যবহার শেষে ব্রাউজার বন্ধ করার পূর্বে অবশ্যই ড্যাশবোর্ড থেকে সুরক্ষিতভাবে লগআউট সম্পন্ন করুন।</li>
+      </ul>
     </div>
   `;
 
-  // ---- 🎯 সিএসএস হোভার ইফেক্ট স্টাইল ডাইনামিকালি অ্যাড করা ----
-  if (!document.getElementById('dashboard-hover-style')) {
-    const style = document.createElement('style');
-    style.id = 'dashboard-hover-style';
-    style.innerHTML = `
-      .dashboard-click-node:hover {
-        transform: translateY(-4px);
-        border-color: var(--neon-blue) !important;
-        box-shadow: 0 4px 20px rgba(0, 180, 216, 0.2) !important;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  // ---- 🧭 ডিরেক্ট মডিউল নেভিগেশন লজিক (আপনার মূল চাহিদা) ----
-  document.querySelectorAll('.dashboard-click-node').forEach(card => {
-    card.addEventListener('click', () => {
-      const targetModuleId = card.getAttribute('data-target-mod');
-      
-      // dashboard.html-এর বামপাশের সাইডবারের নির্দিষ্ট মেনু বাটনটি খুঁজে বের করা
-      const sidebarMenuLink = document.querySelector(`.menu-item a[data-mod-id="${targetModuleId}"]`);
-      
-      if (sidebarMenuLink) {
-        // সাইডবারের ওই বাটনে অটোমেটিক ক্লিক ইভেন্ট ট্রিগার করা
-        sidebarMenuLink.click();
-      } else {
-        alert("নির্দিষ্ট মডিউলটি সিস্টেমে খুঁজে পাওয়া যায়নি।");
-      }
-    });
-  });
-
-  // ---- 📊 রিয়েল-টাইম কাউন্টার লজিক (নিরাপদ ও ক্র্যাশ-মুক্ত উপায়ে) ----
-  
-  // ১. পেন্ডিং মেম্বার কাউন্টার
+  // ---- 📊 ড্যাশবোর্ড কন্টেন্ট ইন্টারনাল কাউন্টার সিঙ্ক লজিক ----
   onSnapshot(collection(db, "users"), (snap) => {
-    const pendingCount = snap.docs.filter(d => d.data().status === "pending").length;
-    const el = document.getElementById('cntPendingMembers');
-    if (el) el.innerText = pendingCount;
-  }, (err) => console.log("Users Counter Error:", err));
+    // মোট ব্যবহারকারী (যাদের রোল 'member')
+    const totalMembers = snap.docs.filter(d => d.data().role === "member").length;
+    // একটিভ সদস্য (status === "active")
+    const activeCount = snap.docs.filter(d => d.data().role === "member" && d.data().status === "active").length;
+    // পেন্ডিং সদস্য (status === "pending")
+    const pendingCount = snap.docs.filter(d => d.data().role === "member" && d.data().status === "pending").length;
 
-  // ২. প্রোফাইল আপডেট রিকোয়েস্ট কাউন্টার
+    const elTotal = document.getElementById('cntTotalMembers');
+    const elActive = document.getElementById('cntActiveMembers');
+    const elPending = document.getElementById('cntPendingMembers');
+
+    if (elTotal) elTotal.innerText = totalMembers;
+    if (elActive) elActive.innerText = activeCount;
+    if (elPending) elPending.innerText = pendingCount;
+  }, (err) => console.log("Dashboard internal users loader error:", err));
+
   onSnapshot(collection(db, "profile_update_requests"), (snap) => {
-    const el = document.getElementById('cntInfoRequests');
+    const el = document.getElementById('cntDashboardInfoReqs');
     if (el) el.innerText = snap.size;
-  }, (err) => console.log("Profile Request Counter Error:", err));
-
-  // ৩. পাসওয়ার্ড রিসেট রিকোয়েস্ট কাউন্টার
-  onSnapshot(collection(db, "password_resets"), (snap) => {
-    const pendingResetCount = snap.docs.filter(d => d.data().status === "pending").length;
-    const el = document.getElementById('cntPassRequests');
-    if (el) el.innerText = pendingResetCount;
-  }, (err) => console.log("Password Reset Counter Error:", err));
+  }, (err) => console.log("Dashboard internal requests loader error:", err));
 }
+
+export { loadDashboardModule };
