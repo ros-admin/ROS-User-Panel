@@ -207,11 +207,10 @@
   </div>
 
   <script type="module">
-    // 🌐 ফায়ারবেস অথ এবং স্টোর মেথড ইম্পোর্ট
     import { signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 🔗 আপনার মূল ফাইল থেকে সচল auth এবং db ভ্যারিয়েবল ইম্পোর্ট করা হলো
+    // 🔗 আপনার মূল ফাইল থেকে সচল auth এবং db ভ্যারিয়েবল ইম্পোর্ট
     import { auth, db } from "../firebase-config.js";
 
     const loginForm = document.getElementById('loginForm');
@@ -248,7 +247,7 @@
       resetIdentifierInput.value = '';
     });
 
-    // 🔐 ১. মূল লগইন হ্যান্ডলার
+    // 🔐 ১. মূল লগইন হ্যান্ডলার (Role Based Dashboard Redirect)
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const identifier = loginIdentifierInput.value.trim();
@@ -258,7 +257,9 @@
         loginBtn.disabled = true;
         loginBtn.innerText = "যাচাই করা হচ্ছে...";
         let targetEmail = identifier;
+        let userDocId = null;
 
+        // যদি মেম্বার আইডি ইনপুট দেওয়া হয়
         if (!identifier.includes('@')) {
           const userQuery = query(collection(db, "users"), where("memberId", "==", identifier));
           const querySnapshot = await getDocs(userQuery);
@@ -266,13 +267,60 @@
             showToast("এই মেম্বার আইডিটি ডাটাবেসে পাওয়া যায়নি!", "error");
             return;
           }
-          targetEmail = querySnapshot.docs[0].data().email;
+          const uData = querySnapshot.docs[0].data();
+          targetEmail = uData.email;
+          userDocId = querySnapshot.docs[0].id; // ফায়ারস্টোর ডকুমেন্ট আইডি সংরক্ষণ
         }
 
-        await signInWithEmailAndPassword(auth, targetEmail, password);
-        showToast("সফলভাবে প্রবেশ করেছেন! রিডাইরেক্ট হচ্ছে...", "success");
+        // ফায়ারবেস অথেন্টিকেশন দিয়ে সাইন-ইন
+        const userCredential = await signInWithEmailAndPassword(auth, targetEmail, password);
+        const user = userCredential.user;
+
+        // যদি লগইন সরাসরি ইমেইল দিয়ে করা হয়ে থাকে, তবে তার ডকুমেন্ট আইডি বের করার জন্য uid ব্যবহার করা হচ্ছে
+        if (!userDocId) {
+          userDocId = user.uid;
+        }
+
+        loginBtn.innerText = "রোল চেক করা হচ্ছে...";
+
+        // 🎯 ফায়ারস্টোর থেকে ইউজারের ডাটা তুলে আনা (Role চেক করার জন্য)
+        // নোট: যদি ফায়ারস্টোর ডকুমেন্টের নাম ইউজারের Auth UID-এর সাথে মিল রেখে তৈরি করা হয়, তবে doc(db, "users", user.uid) সরাসরি কাজ করবে।
+        // অন্যথায় সার্চ করা ডকুমেন্ট আইডি ব্যবহার করা হচ্ছে।
+        let userDocRef = doc(db, "users", userDocId);
+        let userDocSnap = await getDoc(userDocRef);
+
+        // সেফটি চেক: যদি সরাসরি আইডি দিয়ে না পাওয়া যায়, তবে ইমেইল দিয়ে আবার কুয়েরি করা হচ্ছে
+        if (!userDocSnap.exists()) {
+          const emailQuery = query(collection(db, "users"), where("email", "==", targetEmail));
+          const emailSnapshot = await getDocs(emailQuery);
+          if (!emailSnapshot.empty) {
+            userDocSnap = emailSnapshot.docs[0];
+          }
+        }
+
+        if (userDocSnap.exists() && (userDocSnap.data ? userDocSnap.data() : userDocSnap.data)) {
+          const userData = typeof userDocSnap.data === 'function' ? userDocSnap.data() : userDocSnap.data;
+          const userRole = userData.role ? userData.role.toLowerCase().trim() : 'member';
+
+          showToast("লগইন সফল হয়েছে! ড্যাশবোর্ডে নিয়ে যাওয়া হচ্ছে...", "success");
+
+          // 🔀 Role অনুযায়ী আলাদা আলাদা পেজে রিডাইরেক্ট লজিক
+          setTimeout(() => {
+            if (userRole === 'super_admin') {
+              window.location.href = "../admin/dashboard.html";
+            } else if (userRole === 'general_member') {
+              window.location.href = "../member/dashboard.html";
+            } else {
+              window.location.href = "../member/dashboard.html"; // ডিফল্ট বা মেম্বার ড্যাশবোর্ড
+            }
+          }, 1000);
+
+        } else {
+          showToast("লগইন সফল কিন্তু ডাটাবেসে প্রোফাইল পাওয়া যায়নি!", "warning");
+        }
+
       } catch (error) {
-        console.error(error);
+        console.error("Login Error: ", error);
         showToast("ভুল ইমেইল/আইডি অথবা পাসওয়ার্ড দিয়েছেন!", "error");
       } finally {
         loginBtn.disabled = false;
@@ -280,7 +328,7 @@
       }
     });
 
-    // 🔄 ২. ইনস্ট্যান্ট পাসওয়ার্ড রিসেট লজিক
+    // 🔄 ২. পাসওয়ার্ড রিসেট লজিক
     submitResetBtn.addEventListener('click', async () => {
       const searchKey = resetIdentifierInput.value.trim();
 
@@ -293,11 +341,9 @@
         submitResetBtn.disabled = true;
         submitResetBtn.innerText = "ডাটাবেস খোঁজা হচ্ছে...";
 
-        // মেম্বার আইডি দিয়ে সার্চ
         let userQuery = query(collection(db, "users"), where("memberId", "==", searchKey));
         let querySnapshot = await getDocs(userQuery);
 
-        // মেম্বার আইডি না মিললে মোবাইল নম্বর দিয়ে সার্চ
         if (querySnapshot.empty) {
           userQuery = query(collection(db, "users"), where("mobileNumber", "==", searchKey));
           querySnapshot = await getDocs(userQuery);
@@ -318,8 +364,6 @@
         }
 
         submitResetBtn.innerText = "লিঙ্ক পাঠানো হচ্ছে...";
-        
-        // ফায়ারবেস রিসেট ইমেইল মেথড ট্রিগার করা হচ্ছে
         await sendPasswordResetEmail(auth, userEmail);
 
         showToast(`🔒 প্রিয় ${userName}, আপনার রেজিস্টার্ড ইমেইলে (${userEmail}) পাসওয়ার্ড রিসেট লিঙ্কটি পাঠানো হয়েছে!`, "success");
