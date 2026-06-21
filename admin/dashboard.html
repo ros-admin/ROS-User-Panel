@@ -150,12 +150,7 @@
   <script type="module">
     import { db, auth } from '../firebase-config.js';
     import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    
-    // ফায়ারবেস অথেন্টিকেশনের সব রিকোয়ার্ড মেথড একসাথে ইম্পোর্ট করা হলো (কোনো ডুপ্লিকেট থাকবে না)
     import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    // মডিউল বেসড পাসওয়ার্ড রিসেট ফাইল ইম্পোর্ট
-    import { loadAdminPasswordManagementModule } from '../admin/passwordResetRequest.js';
 
     const erpModules = [
       { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
@@ -174,7 +169,6 @@
       { id: 'qrVerify', name: '🔍 QR কোড ভেরিфикации' },
       { id: 'reports', name: '📈 এন্টারপ্রাইজ রিপোর্টস' },
       { id: 'logs', name: '🔐 সিস্টেম অ্যাক্টিভিটি লগ' },
-      { id: 'resetUserPassword', name: 'Password Reset Request' },
       { id: 'adminRequests', name: '<i class="fas fa-tasks"></i> তথ্য পরিবর্তনের আবেদন' }
     ];
 
@@ -315,13 +309,6 @@
       else if (id === 'logs') {
         loadLogsModule(contentRoot, db, collection, onSnapshot, doc, addDoc, deleteDoc);
       }
-      else if (id === 'resetUserPassword') {
-        if (typeof loadAdminPasswordManagementModule === "function") {
-          loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collection, query, where, getDocs, updateDoc, onSnapshot);
-        } else {
-          contentRoot.innerHTML = `<p style="color:var(--neon-red); padding:20px;">Password Module function reference error!</p>`;
-        }
-      }
       else if (id === 'adminRequests') {
         loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, collection, query, where, serverTimestamp);
       }
@@ -329,7 +316,7 @@
         contentRoot.innerHTML = `
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
             <i class="fas fa-microchip" style="font-size:40px; color:var(--neon-blue); margin-bottom:15px;"></i>
-            <h3>${erpModules.find(m => m.id === id).name}</h3>
+            <h3>${erpModules.find(m => m.id === id)?.name || 'Unknown Module'}</h3>
             <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">মডিউল ফাইলটি এক্সটার্নাল স্ক্রিপ্ট হিসেবে যুক্ত করার জন্য স্ট্যান্ডবাই মোডে আছে。</p>
           </div>
         `;
@@ -342,7 +329,6 @@
     document.getElementById('openPassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'flex');
     document.getElementById('closePassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'none');
     
-// রি-অথেন্টিকেশন সহ সিকিউর পাসওয়ার্ড আপডেট লজিক
     document.getElementById('passwordUpdateForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const newPass = document.getElementById('newPassword').value;
@@ -366,14 +352,12 @@
           return;
         }
 
-        // সিকিউরিটি টোকেন রিফ্রেশ নিশ্চিত করতে বর্তমান পাসওয়ার্ড প্রম্পট করা হচ্ছে
         const currentPassword = prompt("নিরাপত্তার স্বার্থে আপনার বর্তমান (আগের) পাসওয়ার্ডটি আবার লিখুন:");
         if (!currentPassword) {
           alert("পাসওয়ার্ড পরিবর্তন বাতিল করা হয়েছে।");
           return;
         }
 
-        // ক্রিয়েটিং ক্রেডেন্সিয়াল এবং রিয়েল-টাইম রি-অথেন্টিকেশন
         const credential = EmailAuthProvider.credential(user.email, currentPassword);
         
         await reauthenticateWithCredential(user, credential);
@@ -383,7 +367,6 @@
         passwordChangeModal.style.display = 'none'; 
         document.getElementById('passwordUpdateForm').reset();
         
-        // পাসওয়ার্ড চেঞ্জ শেষে সেশন ডিলিট করে লগইন রিডাইরেক্ট (নিরাপদ অভ্যাস)
         await signOut(auth);
         window.location.href = "../login.html";
 
