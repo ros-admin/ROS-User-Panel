@@ -86,6 +86,7 @@ function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collectio
       <div id="emptyQueueMessage" style="display:none; text-align:center; padding:40px 10px; color:var(--adm-muted); font-size:14px;"><i class="fas fa-check-circle" style="color:var(--adm-success); font-size:24px; margin-bottom:10px;"></i><br>বর্তমানে কোনো পাসওয়ার্ড রিসেট অনুরোধ পেন্ডিং নেই।</div>
     </div>
 
+    <!-- মডাল হাব -->
     <div class="adm-modal" id="adminRequestDetailModal">
       <div class="adm-modal-content">
         <div class="modal-header">
@@ -138,7 +139,7 @@ function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collectio
     } catch (e) { console.warn("Cloudinary delete error:", e); }
   }
 
-  // ফায়ারবেস রিয়েল-টাইম ডাটা লিসেনার
+  // ফায়ারবেস রিয়েল-টাইম ডাটা লিসেনার (ক্রস-কালেকশন ম্যাপিং সহ)
   const q = query(collection(db, "password_resets"), where("status", "==", "pending"));
   onSnapshot(q, (snapshot) => {
     if(loadingStatus) loadingStatus.style.display = 'none';
@@ -153,71 +154,115 @@ function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collectio
     if(emptyQueueMessage) emptyQueueMessage.style.display = 'none';
     if(tableContainer) tableContainer.style.display = 'block';
 
-    snapshot.forEach((docSnap) => {
+    snapshot.forEach(async (docSnap) => {
       const data = docSnap.data();
       const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString('bn-BD') : 'অজানা';
       
+      // ইউনিক আইডি দিয়ে একটি টেবিল রো (Row) তৈরি করা হচ্ছে যা পরে ডাইনামিকালি আপডেট হবে
+      const rowId = `req-row-${docSnap.id}`;
       const tr = document.createElement('tr');
+      tr.id = rowId;
       tr.innerHTML = `
         <td>${dateStr}</td>
-        <td><img src="${data.proofUrl}" class="screenshot-thumb" onclick="window.open('${data.proofUrl}', '_blank')"></td>
-        <td>${data.fullName || 'লোড হচ্ছে...'}</td>
-        <td><span style="font-size:12px; color:var(--adm-muted);">${data.role || 'user'}</span></td>
+        <td><img src="${data.proofUrl || data.liveImageUrl || '../placeholder.png'}" class="screenshot-thumb" onclick="window.open('${data.proofUrl || data.liveImageUrl}', '_blank')"></td>
+        <td class="user-name-cell" style="color: var(--adm-yellow);">খোঁজা হচ্ছে...</td>
+        <td class="user-role-cell"><span style="font-size:12px; color:var(--adm-muted);">user</span></td>
         <td><span class="status-badge status-pending">পেন্ডিং</span></td>
-        <td><button class="action-btn view-req-trigger" data-req-id="${docSnap.id}" data-uid="${data.uid}" data-pubid="${data.publicId}">যাচাই করুন</button></td>
+        <td><button class="action-btn view-req-trigger" data-req-id="${docSnap.id}" data-uid="${data.uid || ''}" data-identifier="${data.identifier || ''}" data-pubid="${data.publicId || data.cloudinaryPublicId || ''}">যაცাই করুন</button></td>
       `;
       tbody.appendChild(tr);
-    });
 
-    // ক্লিক ইভেন্ট সংযুক্তি
-    document.querySelectorAll('.view-req-trigger').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const reqId = btn.getAttribute('data-req-id');
-        const uid = btn.getAttribute('data-uid');
-        const pubId = btn.getAttribute('data-pubid');
-
-        activeRequestData = { reqId, uid, pubId };
-
-        try {
-          const userQuery = query(collection(db, "users"), where("uid", "==", uid));
-          const userSnap = await getDocs(userQuery);
-          
+      // 🎯 ক্রস কালেকশন লজিক: password_resets এর 'uid' বা 'identifier' দিয়ে 'users' কালেকশন থেকে রিয়েল ডাটা আনা হচ্ছে
+      try {
+        let userSnap;
+        if (data.uid) {
+          userSnap = await getDocs(query(collection(db, "users"), where("uid", "==", data.uid)));
+        } else if (data.identifier) {
+          userSnap = await getDocs(query(collection(db, "users"), where("memberId", "==", data.identifier)));
           if (userSnap.empty) {
-            showPopup("এই ব্যবহারকারীর প্রোফাইল পাওয়া যায়নি!", "error");
-            return;
+            userSnap = await getDocs(query(collection(db, "users"), where("mobileNumber", "==", data.identifier)));
           }
-
-          const uDoc = userSnap.docs[0];
-          activeUserDocId = uDoc.id;
-          const uData = uDoc.data();
-
-          detailModalBody.innerHTML = `
-            <div style="text-align:center; margin-bottom:15px;">
-              <img src="${uData.profileImageUrl || uData.photoUrl || '../placeholder.png'}" style="width:75px; height:75px; border-radius:50%; border:2px solid var(--adm-cyan); object-fit:cover;">
-              <h4 style="margin:8px 0 2px; font-size:15px; color:#fff;">${uData.banglaName || uData.fullName || 'নাম পাওয়া যায়নি'}</h4>
-              <p style="margin:0; font-size:12px; color:var(--adm-muted);">${uData.role ? uData.role.toUpperCase() : 'USER'}</p>
-            </div>
-            <div class="detail-row"><span class="detail-label">ইমেল অ্যাড্রেস</span><span class="detail-value" id="targetUserEmailHub">${uData.email || 'নাই'}</span></div>
-            <div class="detail-row"><span class="detail-label">ফোন নম্বর</span><span class="detail-value">${uData.phone || 'নাই'}</span></div>
-            <div class="detail-row"><span class="detail-label">রেজিস্ট্রেশন আইডি</span><span class="detail-value">${uData.registrationId || 'নাই'}</span></div>
-            
-            <div style="background: rgba(251, 191, 36, 0.05); border: 1px dashed var(--adm-yellow); border-radius: 6px; padding: 10px; font-size: 12px; color: var(--adm-yellow); margin-top: 15px; line-height: 1.5;">
-              <i class="fas fa-exclamation-triangle"></i> <strong>সতর্কতা:</strong> বোতামে ক্লিক করলে ফায়ারবেস থেকে স্বয়ংক্রিয়ভাবে ব্যবহারকারীর ইমেইলে একটি <strong>পাসওয়ার্ড রিসেট লিংক</strong> চলে যাবে। ব্যবহারকারী ওই লিংকে ক্লিক করে তার নিজের নতুন পাসওয়ার্ড সেট করতে পারবেন।
-            </div>
-          `;
-
-          detailModal.style.display = 'flex';
-        } catch (err) { 
-          console.error(err);
-          showPopup("ইউজার ডাটা লোড ব্যর্থ হয়েছে!", "error"); 
         }
-      });
+
+        if (userSnap && !userSnap.empty) {
+          const userData = userSnap.docs[0].data();
+          const targetRow = document.getElementById(rowId);
+          if (targetRow) {
+            targetRow.querySelector('.user-name-cell').innerText = userData.banglaName || userData.englishName || userData.fullName || "নামহীন ইউজার";
+            targetRow.querySelector('.user-role-cell').innerHTML = `<span style="font-size:12px; color:var(--adm-cyan); font-weight:bold;">${(userData.role || 'user').toUpperCase()}</span>`;
+          }
+        } else {
+          const targetRow = document.getElementById(rowId);
+          if (targetRow) targetRow.querySelector('.user-name-cell').innerText = data.identifier || "অনিবন্ধিত মেম্বার";
+        }
+      } catch (err) {
+        console.error("User cross-load failed:", err);
+      }
     });
+
+    // ক্লিক ইভেন্ট ডেলিগেশন প্যানেল লিসেনার
+    setTimeout(() => {
+      document.querySelectorAll('.view-req-trigger').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true)); // ডুপ্লিকেট ইভেন্ট লিসেনার এড়াতে ক্লিনআপ
+      });
+
+      document.querySelectorAll('.view-req-trigger').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const reqId = btn.getAttribute('data-req-id');
+          const uid = btn.getAttribute('data-uid');
+          const identifier = btn.getAttribute('data-identifier');
+          const pubId = btn.getAttribute('data-pubid');
+
+          activeRequestData = { reqId, uid, identifier, pubId };
+
+          try {
+            let userSnap;
+            if (uid) {
+              userSnap = await getDocs(query(collection(db, "users"), where("uid", "==", uid)));
+            } else if (identifier) {
+              userSnap = await getDocs(query(collection(db, "users"), where("memberId", "==", identifier)));
+              if (userSnap.empty) {
+                userSnap = await getDocs(query(collection(db, "users"), where("mobileNumber", "==", identifier)));
+              }
+            }
+
+            if (!userSnap || userSnap.empty) {
+              showPopup("এই ব্যবহারকারীর কোনো নিবন্ধিত ডাটাবেস প্রোফাইল পাওয়া যায়নি!", "error");
+              return;
+            }
+
+            const uDoc = userSnap.docs[0];
+            activeUserDocId = uDoc.id;
+            const uData = uDoc.data();
+
+            detailModalBody.innerHTML = `
+              <div style="text-align:center; margin-bottom:15px;">
+                <img src="${uData.profileImageUrl || uData.photoUrl || '../placeholder.png'}" style="width:75px; height:75px; border-radius:50%; border:2px solid var(--adm-cyan); object-fit:cover;">
+                <h4 style="margin:8px 0 2px; font-size:15px; color:#fff;">${uData.banglaName || uData.englishName || uData.fullName || 'নাম পাওয়া যায়নি'}</h4>
+                <p style="margin:0; font-size:12px; color:var(--adm-muted);">${(uData.role || 'USER').toUpperCase()}</p>
+              </div>
+              <div class="detail-row"><span class="detail-label">ইমেল অ্যাড্রেস</span><span class="detail-value" id="targetUserEmailHub">${uData.email || 'নাই'}</span></div>
+              <div class="detail-row"><span class="detail-label">ফোন নম্বর</span><span class="detail-value">${uData.mobileNumber || uData.phone || 'নাই'}</span></div>
+              <div class="detail-row"><span class="detail-label">রেজিস্ট্রেশন আইডি</span><span class="detail-value">${uData.memberId || uData.registrationId || 'নাই'}</span></div>
+              
+              <div style="background: rgba(251, 191, 36, 0.05); border: 1px dashed var(--adm-yellow); border-radius: 6px; padding: 10px; font-size: 12px; color: var(--adm-yellow); margin-top: 15px; line-height: 1.5;">
+                <i class="fas fa-exclamation-triangle"></i> <strong>সতর্কতা:</strong> বোতামে ক্লিক করলে ফায়ারবেস থেকে স্বয়ংক্রিয়ভাবে ব্যবহারকারীর ইমেইলে একটি <strong>পাসওয়ার্ড রিসেট লিংক</strong> চলে যাবে। ব্যবহারকারী ওই লিংকে ক্লিক করে তার নিজের নতুন পাসওয়ার্ড সেট করতে পারবেন।
+              </div>
+            `;
+
+            detailModal.style.display = 'flex';
+          } catch (err) { 
+            console.error(err);
+            showPopup("ইউজার ডাটা মডাল লোড ব্যর্থ হয়েছে!", "error"); 
+          }
+        });
+      });
+    }, 800);
   });
 
   if(closeDetailModalBtn) closeDetailModalBtn.addEventListener('click', () => detailModal.style.display = 'none');
 
-  // ইমেইলে অফিশিয়াল রিসেট লিংক পাঠানোর মেথড (পদ্ধতি ২)
+  // ইমেইলে অফিশিয়াল রিসেট লিংক পাঠানোর মেথড
   if(submitNewPassBtn) {
     submitNewPassBtn.addEventListener('click', async () => {
       const userEmailEl = document.getElementById('targetUserEmailHub');
@@ -234,10 +279,9 @@ function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, collectio
         // মডিউলার ফায়ারবেস Auth থেকে sendPasswordResetEmail মেথড ডাইনামিকালি ইম্পোর্ট করা হচ্ছে
         const { sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
         
-        // ড্যাশবোর্ড থেকে পাস করা অথ ইনস্ট্যান্স ব্যবহার করে লিংক পাঠানো হচ্ছে
         await sendPasswordResetEmail(auth, userEmail);
         
-        // Firestore ডাটাবেস আপডেট ও রেকর্ড ট্র্যাকিং
+        // Firestore ডাটাবেস রেকর্ড আপডেট ট্র্যাকিং
         await updateDoc(doc(db, "users", activeUserDocId), { password: "Reset Link Sent To Email" });
         await updateDoc(doc(db, "password_resets", activeRequestData.reqId), { status: "resolved" });
         
