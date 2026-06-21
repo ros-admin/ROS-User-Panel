@@ -164,7 +164,7 @@
       <ul class="sidebar-menu">
         
         <li class="menu-item active" id="menuProfileLink" data-id="profile">
-          <a href="#"><i class="fas fa-columns"></i> ওভারভিউ প্রোфাইল</a>
+          <a href="#"><i class="fas fa-columns"></i> ওভারভিউ প্রোফাইল</a>
         </li>
         
         <li class="menu-item" id="parentDropdownMenu">
@@ -181,7 +181,12 @@
             </li>
           </ul>
         </li>
+<li class="menu-item" id="menuDownloadFormLink" data-id="downloadForm">
+  <a href="#"><i class="fas fa-file-pdf"></i> রেজিস্ট্রেশন ফরম ডাউনলোড</a>
+</li>
+        
 
+        
       </ul>
     </aside>
 
@@ -211,6 +216,7 @@
   <script src="../member/profile.js"></script>
   <script src="../member/updateProfile.js"></script>
   <script src="../member/myRequest.js"></script>
+  <script src="../member/registrationForm.js"></script>
 
   <script type="module">
     // ফায়ারবেস থেকে serverTimestamp ইমপোর্ট করা হলো (যা আগে মিসিং ছিল)
@@ -266,6 +272,10 @@
       } else if (moduleId === 'myRequests') {
         loadMyRequestsModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc);
       }
+     else if (moduleId === 'downloadForm') {
+  loadDownloadFormModule(contentRoot, currentMemberData);
+     }
+      
     }
 
     document.getElementById('menuProfileLink').addEventListener('click', function(e) {
