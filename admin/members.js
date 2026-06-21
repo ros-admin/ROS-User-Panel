@@ -22,11 +22,14 @@ function injectRequiredLibraries() {
 }
 
 function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc) {
-  // 🔐 পাসওয়ার্ড পরিবর্তনের নোটিশ/পপআপ যেকোনো উপায়ে সম্পূর্ণ নিষ্ক্রিয় করার প্রোটোকল
+  // 🔐 পাসওয়ার্ড পরিবর্তনের ফাংশন ও পপআপ/নোটিশ যেকোনো উপায়ে সম্পূর্ণরূপে নিষ্ক্রিয় করার প্রোটোকল
   if (typeof window !== "undefined") {
     localStorage.setItem("passwordChanged", "true");
     localStorage.setItem("forcePasswordChange", "false");
     window.userNeedsPasswordChange = false;
+    // পাসওয়ার্ড চেঞ্জ সংক্রান্ত উইন্ডো বা প্রম্পট ফাংশন সম্পূর্ণ বাইপাস
+    window.showPasswordChangeModal = function() { return false; };
+    window.checkPasswordSecurity = function() { return false; };
   }
   
   injectRequiredLibraries();
@@ -109,7 +112,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </button>
     </div>
     
-    <!-- সার্চ ও ফিল্টার হাব -->
     <div class="cyber-glass" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
       <input type="text" id="memberSearchInput" class="cyber-input" placeholder="নাম, নিবন্ধন নাম্বার, মোবাইল বা ইমেইল লিখে সদস্য খুঁজুন..." style="margin:0; flex:1; min-width:250px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:6px;">
       
@@ -127,7 +129,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </div>
     </div>
 
-    <!-- ডাটা টেবিল কন্টেইনার -->
     <div class="cyber-glass" style="overflow-x:auto; padding:5px; border-radius:8px;">
       <table id="mainMembersDataTable" style="width:100%; border-collapse:collapse; font-size:13.5px; text-align:left; color:#e5e7eb;">
         <thead style="background:rgba(0, 180, 216, 0.15); color:#00b4d8; border-bottom:2px solid rgba(0, 180, 216, 0.3);">
@@ -144,7 +145,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </table>
     </div>
 
-    <!-- সদস্য প্রোফাইলের সম্পূর্ণ বিবরণ পপআপ মডাল -->
     <div class="nexus-modal" id="memberDetailsModal" style="display:none;">
       <div class="modal-body cyber-glass">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,180,216,0.3); padding-bottom:12px; margin-bottom:20px;">
@@ -163,7 +163,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </div>
     </div>
 
-    <!-- নতুন সদস্য যুক্ত করার প্রিমিয়াম মডাল ফর্ম পপআপ -->
     <div class="nexus-modal" id="createMemberModal" style="display:none;">
       <div class="modal-body cyber-glass" style="max-width: 700px;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(251,191,36,0.3); padding-bottom:12px; margin-bottom:15px;">
@@ -192,7 +191,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
             <div class="form-group"><label>শিক্ষাগত যোগ্যতা</label><input type="text" id="fmEducation" class="cyber-input"></div>
             <div class="form-group"><label>শিক্ষাবর্ষ (Academic Year)</label><input type="text" id="fmAcademicYear" class="cyber-input" placeholder="2023-24"></div>
             <div class="form-group">
-              <label>সিস্টем পদবি (Role)</label>
+              <label>সিস্টেম পদবি (Role)</label>
               <select id="fmRole" class="cyber-input" style="background:#0b0f19; color:#fff;"></select>
             </div>
           </div>
@@ -207,7 +206,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </div>
     </div>
 
-    <!-- ব্যাকগ্রাউন্ড হিডেন কন্টেইনার (পিডিএফ রেন্ডারিং এরিয়া) -->
     <div id="hiddenPdfRenderArea" style="position: absolute; left: -9999px; top: -9999px; width: 210mm; overflow: hidden;"></div>
   `;
 
@@ -330,7 +328,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       tbody.appendChild(tr);
     });
 
-    // ৫. বিস্তারিত বোতাম অ্যাকশন পপআপ রেন্ডার
+     // ৫. বিস্তারিত বোতাম অ্যাকশন পপআপ রেন্ডার
     document.querySelectorAll('.btn-view').forEach(b => b.addEventListener('click', (e) => {
       const id = e.currentTarget.getAttribute('data-id');
       const member = localMembersArray.find(m => m.id === id);
@@ -362,7 +360,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
             <div class="info-badge-item"><small>সদস্য হওয়ার তারিখ ও সময়</small><p style="color:#1f804b; font-size:12.5px;">${joiningDateTime}</p></div>
             <div class="info-badge-item"><small>জন্ম তারিখ</small><p>${member.dob || 'N/A'}</p></div>
             <div class="info-badge-item"><small>পিতার নাম</small><p>${member.fatherName || 'N/A'}</p></div>
-            <div class="info-badge-item"><small>مাতার নাম</small><p>${member.motherName || 'N/A'}</p></div>
+            <div class="info-badge-item"><small>মাতার নাম</small><p>${member.motherName || 'N/A'}</p></div>
             <div class="info-badge-item"><small>NID / জন্ম নিবন্ধন</small><p>${member.nidOrBrn || 'N/A'}</p></div>
             <div class="info-badge-item"><small>পেশা</small><p>${member.profession || 'N/A'}</p></div>
             <div class="info-badge-item" style="grid-template-columns: span 2;"><small>শিক্ষা প্রতিষ্ঠান / কর্মস্থল</small><p>${member.institution || 'N/A'}</p></div>
@@ -545,7 +543,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     });
   });
 
-  // 💎 ৮. একক মেম্বার ফর্ম পিডিএফ ডাউনলোড (অরিজিনাল সাইবার লেআউট, সাদা ব্যাকগ্রাউন্ড ও এক পেজে কমপ্যাক্ট)
+  // 💎 ৮. একক মেম্বার ফর্ম পিডিএফ ডাউনলোড (অরিজিনাল সাইবার লেআউট, সাদা ব্যাকগ্রাউন্ড ও মাঝখানে বড় ওয়াটারমার্ক সহ ১ পেজে কমপ্যাক্ট)
   document.getElementById('downloadFormPdfBtn').addEventListener('click', () => {
     if (!selectedMemberForForm || !window.html2pdf || !window.QRCode) return;
     
@@ -555,18 +553,15 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
 
     renderTarget.innerHTML = `
       <div id="pdfAbsoluteContainer" style="width: 210mm; height: 295mm; background: #ffffff; color: #0f172a; position: relative; box-sizing: border-box; overflow: hidden; padding: 0; margin: 0;">
-        <!-- থিম ওরিয়েন্টেড গ্ল্যামারাস বর্ডার লাইন -->
         <div style="position: absolute; top: 8mm; left: 8mm; right: 8mm; bottom: 8mm; border: 2px solid #00b4d8; border-radius: 10px; pointer-events: none;"></div>
         <div style="position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 1px dashed #b45309; border-radius: 8px; pointer-events: none;"></div>
         
-        <!-- ওয়াটারমার্ক লোগো ল্যাটেন্ট প্রিন্ট -->
-        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 1; opacity: 0.04;">
-          <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 65%;">
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 1; opacity: 0.05;">
+          <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 75%; max-width: 500px; height: auto;">
         </div>
 
         <div style="position: relative; z-index: 2; padding: 14mm 15mm; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
           <div>
-            <!-- হেডার এনভায়রনমেন্ট -->
             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #00b4d8; padding-bottom: 12px; margin-bottom: 12px;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="height: 55px; object-fit: contain;">
@@ -578,7 +573,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
               <img src="${m.photoUrl || 'https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png'}" style="width: 85px; height: 105px; object-fit: cover; border: 2px solid #00b4d8; border-radius: 5px; background: #f8fafc;">
             </div>
 
-            <!-- সুবিন্যস্ত ডাটা টেবিল বক্স কন্টেইনার (১ পেজে ফিট করার জন্য অপ্টিমাইজড) -->
             <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
               <div style="background: rgba(0, 180, 216, 0.08); padding: 6px 12px; font-weight: bold; color: #0077b6; font-size: 12px; border-bottom: 1px solid #cbd5e1; letter-spacing: 0.5px;">SECURE PROFILE CREDENTIALS DATA-NODE</div>
               
@@ -654,7 +648,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
               </table>
             </div>
 
-            <!-- নিয়মাবলী ও অঙ্গীকারনামা ব্লক -->
             <div style="margin-top: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 8px 12px; border-radius: 6px;">
               <h4 style="margin: 0 0 4px 0; font-size: 10.5px; color: #0f172a; font-weight: bold;"><i class="fas fa-gavel"></i> সাধারণ শর্তাবলী ও সদস্য অঙ্গীকারনামা:</h4>
               <ol style="margin: 0; padding-left: 14px; font-size: 9.5px; color: #475569; line-height: 1.35; text-align: justify;">
@@ -666,7 +659,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
             </div>
           </div>
 
-          <!-- বটম কিউআর এবং সাইন জোন -->
           <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
               <div>
@@ -706,7 +698,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     });
   });
 
-  // ৯. ম্যানুয়াল এন্ট্রি মдাল পপআপ কন্ট্রোল লজিক
+  // ৯. ম্যানুয়াল এন্ট্রি মডাল পপআপ কন্ট্রোল লজিক
   document.getElementById('openCreateMemberModalBtn').addEventListener('click', () => {
     document.getElementById('newMemberForm').reset();
     createModal.style.display = 'flex';
@@ -760,3 +752,4 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
   searchInput.addEventListener('input', renderFilteredMembers);
   statusFilter.addEventListener('change', renderFilteredMembers);
 }
+       
