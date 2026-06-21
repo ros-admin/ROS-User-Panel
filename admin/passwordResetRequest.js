@@ -13,234 +13,281 @@ export function loadAdminPasswordManagementModule(contentRoot, db, auth, doc, co
       }
 
       .adm-pass-container { 
-        max-width: 1050px; width: 100%; margin: 0 auto; padding: 25px 15px; border-radius: 16px; 
-        position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.95); 
+        max-width: 1050px; width: 100%; margin: 0 auto; padding: 25px 15px; border-radius: 16px; \n        position: relative; overflow: hidden; background: rgba(17, 24, 39, 0.95); 
         backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
         border: 1px solid rgba(0, 180, 216, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
         box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; color: #fff; 
       }
-      .adm-pass-container::before { 
-        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; 
-        background: linear-gradient(90deg, transparent, var(--adm-danger), var(--adm-cyan), transparent); 
-      }
+      .adm-pass-container * { box-sizing: border-box; }
       
-      .adm-module-title { font-size: 22px; color: #fff; margin-bottom: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 15px; display: flex; align-items: center; gap: 12px; }
-      .adm-module-title i { color: var(--adm-cyan); text-shadow: 0 0 10px rgba(0, 180, 216, 0.4); }
-
-      .queue-grid { display: flex; flex-direction: column; gap: 14px; }
-      .queue-card { padding: 16px 20px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; gap: 15px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-      .queue-card:hover { border-color: var(--adm-yellow); background: rgba(0, 0, 0, 0.5); transform: translateX(4px); box-shadow: 0 4px 15px rgba(251, 191, 36, 0.1); }
+      .adm-header-title { font-size: 20px; font-weight: bold; color: var(--adm-cyan); margin-bottom: 20px; text-transform: uppercase; border-bottom: 2px solid rgba(0, 180, 216, 0.2); padding-bottom: 10px; }
       
-      .queue-left { display: flex; align-items: center; gap: 15px; flex: 1; min-width: 0; }
-      .queue-icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 77, 109, 0.1); border: 1px solid rgba(255, 77, 109, 0.3); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--adm-danger); flex-shrink: 0; }
-      .queue-info { flex: 1; min-width: 0; }
-      .queue-info h4 { font-size: 14px; font-weight: 600; color: #fff; margin: 0 0 4px 0; }
-      .queue-info p { font-size: 11px; color: var(--adm-muted); margin: 0; }
+      .req-table-wrapper { overflow-x: auto; margin-top: 15px; }
+      .req-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+      .req-table th { background: rgba(0, 180, 216, 0.1); color: var(--adm-cyan); padding: 12px; font-weight: 600; border-bottom: 2px solid rgba(0, 180, 216, 0.2); }
+      .req-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e5e7eb; vertical-align: middle; }
+      .req-table tr:hover { background: rgba(255,255,255,0.02); }
       
-      .queue-action-btn { padding: 8px 16px; background: linear-gradient(135deg, #0077b6, var(--adm-cyan)); border: none; border-radius: 4px; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 6px; }
-      .queue-action-btn:hover { box-shadow: 0 0 12px var(--adm-cyan); }
-
-      .adm-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px; box-sizing: border-box; }
-      .adm-modal-content { background: var(--card-bg); border: 1px solid rgba(0, 180, 216, 0.3); max-width: 520px; width: 100%; border-radius: 12px; padding: 25px; box-shadow: 0 0 30px rgba(0, 180, 216, 0.2); position: relative; animation: modalSlideUp 0.4s ease; color: #fff; }
+      .screenshot-thumb { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
+      .screenshot-thumb:hover { transform: scale(1.08); border-color: var(--adm-cyan); }
       
-      .verification-images-container { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; }
-      .image-block { text-align: center; flex: 1; }
-      .image-block span { display: block; font-size: 11px; color: var(--adm-muted); margin-bottom: 6px; text-transform: uppercase; }
-      .verify-img { width: 110px; height: 110px; border-radius: 8px; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); }
-      .verify-img.live { border-color: var(--adm-danger); box-shadow: 0 0 10px rgba(255, 77, 109, 0.3); }
-      .verify-img.id-pic { border-color: var(--adm-cyan); box-shadow: 0 0 10px rgba(0, 180, 216, 0.3); }
-      .avatar-placeholder { width: 110px; height: 110px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--adm-muted); margin: 0 auto; border: 2px dashed rgba(255,255,255,0.1); }
-
-      .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+      .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; text-transform: uppercase; }
+      .status-pending { background: rgba(251, 191, 36, 0.15); color: var(--adm-yellow); border: 1px solid rgba(251, 191, 36, 0.3); }
+      
+      .action-btn { background: linear-gradient(135deg, var(--adm-cyan), #0077b6); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+      .action-btn:hover { opacity: 0.9; box-shadow: 0 0 10px rgba(0, 180, 216, 0.4); }
+      
+      /* মডাল ডিজাইন */
+      .adm-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(8px); }
+      .adm-modal-content { background: #0f172a; border: 1px solid rgba(0,180,216,0.3); width: 100%; max-width: 550px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); animation: modalFade 0.3s ease; }
+      
+      @keyframes modalFade { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+      
+      .modal-header { background: rgba(0, 180, 216, 0.08); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,180,216,0.2); }
+      .modal-header h3 { margin: 0; font-size: 16px; color: var(--adm-cyan); }
+      .close-modal-btn { background: none; border: none; color: var(--adm-muted); font-size: 20px; cursor: pointer; }
+      .close-modal-btn:hover { color: var(--adm-danger); }
+      
+      .modal-body { padding: 20px; max-height: 75vh; overflow-y: auto; }
+      
+      .detail-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13.5px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 8px; }
       .detail-label { color: var(--adm-muted); }
-      .detail-value { color: #fff; font-weight: 500; }
+      .detail-value { color: #f3f4f6; font-weight: 500; text-align: right; }
+      
+      .modal-footer { padding: 15px 20px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 10px; justify-content: flex-end; }
+      .btn-secondary { background: rgba(255,255,255,0.05); color: var(--adm-muted); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+      .btn-secondary:hover { background: rgba(255,255,255,0.1); color: #fff; }
+      .btn-danger { background: var(--adm-danger); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
+      .btn-danger:hover { opacity: 0.9; }
+      .btn-success { background: var(--adm-success); color: #fff; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
+      .btn-success:hover { opacity: 0.9; }
 
-      .pass-control-box { margin-top: 15px; }
-      .pass-control-box h4 { font-size: 12px; color: var(--adm-yellow); margin: 0 0 8px 0; text-transform: uppercase; }
-      .adm-input { width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; color: #fff; font-size: 13px; box-sizing: border-box; margin-bottom: 15px; }
-      .adm-input:focus { outline: none; border-color: var(--adm-cyan); box-shadow: 0 0 8px rgba(0, 180, 216, 0.3); }
-
-      .modal-actions { display: flex; flex-direction: column; gap: 10px; }
-      .action-row-buttons { display: flex; gap: 10px; }
-      .btn-cancel-request { background: linear-gradient(135deg, var(--adm-danger), #c9184a); border: none; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; flex: 1; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; }
-      .btn-update-pass { background: linear-gradient(135deg, var(--adm-success), #1b9e91); border: none; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; flex: 1.5; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
-      .btn-dismiss-top { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px; border-radius: 6px; font-size: 12px; cursor: pointer; text-align: center; }
-      .empty-queue { text-align: center; padding: 40px; color: var(--adm-muted); font-size: 13px; border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px; }
-
-      @keyframes modalSlideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      /* গ্লোবাল পপআপ টোস্ট নোটিফিকেশন */
+      .cyber-popup { position: fixed; bottom: 25px; right: 25px; padding: 12px 25px; border-radius: 8px; font-size: 13px; font-weight: bold; z-index: 100000; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; animation: slideIn 0.3s ease; }
+      @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 
     <div class="adm-pass-container">
-      <h3 class="adm-module-title"><i class="fas fa-user-shield"></i> পাসওয়ার্ড রিসেট ও ইউজার ভেরিফিকেশন প্যানেল</h3>
-      <div class="queue-grid" id="resetQueueRoot">
-        <div class="empty-queue">রিকোয়েস্ট ডাটা লোড হচ্ছে...</div>
+      <div class="adm-header-title"><i class="fas fa-shield-alt"></i> Password Reset Verification Queue</div>
+      <div id="loadingStatus" style="text-align: center; color: var(--adm-muted); font-size: 13px; padding: 20px 0;">অনুরোধের তালিকা লোড হচ্ছে...</div>
+      
+      <div class="req-table-wrapper" id="tableContainer" style="display:none;">
+        <table class="req-table">
+          <thead>
+            <tr>
+              <th>তারিখ</th>
+              <th>প্রমাণক স্ক্রিনশট</th>
+              <th>ব্যবহারকারী নাম</th>
+              <th>রোল</th>
+              <th>স্ট্যাটাস</th>
+              <th>অ্যাকশন</th>
+            </tr>
+          </thead>
+          <tbody id="requestQueueTableBody"></tbody>
+        </table>
       </div>
+      <div id="emptyQueueMessage" style="display:none; text-align:center; padding:40px 10px; color:var(--adm-muted); font-size:14px;"><i class="fas fa-check-circle" style="color:var(--adm-success); font-size:24px; margin-bottom:10px;"></i><br>বর্তমানে কোনো পাসওয়ার্ড রিসেট অনুরোধ পেন্ডিং নেই।</div>
     </div>
 
-    <div id="admDetailModal" class="adm-modal-overlay">
+    <div class="adm-modal" id="adminRequestDetailModal">
       <div class="adm-modal-content">
-        <div class="verification-images-container" id="modalVerifyImages"></div>
-        <div id="modalUserSpecs" style="margin-bottom: 15px;"></div>
-
-        <div class="pass-control-box">
-          <h4><i class="fas fa-key"></i> নতুন পাসওয়ার্ড লিখুন</h4>
-          <input type="text" id="targetNewPassword" class="adm-input" placeholder="পাসওয়ার্ড টাইপ করুন...">
-          
-          <div class="modal-actions">
-            <div class="action-row-buttons">
-              <button type="button" class="btn-cancel-request" id="admCancelRequest"><i class="fas fa-user-times"></i> আবেদন বাতিল করুন</button>
-              <button type="button" class="btn-update-pass" id="admSubmitNewPass"><i class="fas fa-save"></i> পাসওয়ার্ড পরিবর্তন করুন</button>
-            </div>
-            <button type="button" class="btn-dismiss-top" id="admCloseModal">শুধুমাত্র উইন্ডোটি বন্ধ করুন</button>
-          </div>
+        <div class="modal-header">
+          <h3><i class="fas fa-user-shield"></i> ব্যবহারকারী তথ্য ও রিসেট লিঙ্ক যাচাইকরণ</h3>
+          <button class="close-modal-btn" id="closeDetailModalBtn">&times;</button>
+        </div>
+        <div class="modal-body" id="detailModalBodyContent"></div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="cancelRequestBtn">অনুরোধ বাতিল</button>
+          <button class="btn-success" id="submitNewPassBtn"><i class="fas fa-paper-plane"></i> রিসেট লিঙ্ক পাঠান</button>
         </div>
       </div>
     </div>
+
+    <div id="cyberToastPopup" class="cyber-popup"></div>
   `;
 
-  const queueRoot = document.getElementById('resetQueueRoot');
-  const detailModal = document.getElementById('admDetailModal');
-  const closeModalBtn = document.getElementById('admCloseModal');
-  const submitNewPassBtn = document.getElementById('admSubmitNewPass');
-  const cancelRequestBtn = document.getElementById('admCancelRequest');
-  const targetNewPasswordInput = document.getElementById('targetNewPassword');
+  // এলিমেন্ট রেফারেন্স রিট্রিভাল
+  const tableContainer = document.getElementById('tableContainer');
+  const tbody = document.getElementById('requestQueueTableBody');
+  const loadingStatus = document.getElementById('loadingStatus');
+  const emptyQueueMessage = document.getElementById('emptyQueueMessage');
+  
+  const detailModal = document.getElementById('adminRequestDetailModal');
+  const detailModalBody = document.getElementById('detailModalBodyContent');
+  const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
+  const cancelRequestBtn = document.getElementById('cancelRequestBtn');
+  const submitNewPassBtn = document.getElementById('submitNewPassBtn');
 
-  let activeRequestData = null; 
-  let activeUserDocId = null;  
+  let activeRequestData = null;
+  let activeUserDocId = null;
 
-  function showPopup(message, type = 'success') {
-    let container = document.getElementById('notification-container') || document.createElement('div');
-    if (!container.id) { container.id = 'notification-container'; container.style.cssText = "position:fixed; top:20px; right:20px; z-index:99999; display:flex; flex-direction:column; gap:10px;"; document.body.appendChild(container); }
-    const toast = document.createElement('div');
-    toast.className = `toast-popup toast-${type}`;
-    toast.innerHTML = `<span>${message}</span>`;
-    container.appendChild(toast);
-    setTimeout(() => { toast.remove(); }, 3000);
+  function showPopup(msg, type) {
+    const toast = document.getElementById('cyberToastPopup');
+    toast.innerText = msg;
+    toast.style.background = type === 'success' ? 'var(--adm-success)' : type === 'warning' ? 'var(--adm-yellow)' : 'var(--adm-danger)';
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 4000);
   }
 
-  // Cloudinary থেকে লাইভ ইমেজ চিরতরে মুছে ফেলার ইঞ্জিন
+  // ক্লাউডিনারি থেকে স্ক্রিনশট ডিলিট করার মেকানিজম (যদি এপিআই সচল থাকে)
   async function deleteCloudinaryImage(publicId) {
     if (!publicId) return;
     try {
-      const tokenUrl = `https://api.cloudinary.com/v1_1/dcmu3hius/delete_by_token`;
-      const formData = new FormData();
-      formData.append("public_id", publicId);
-      formData.append("upload_preset", "ros_uploads");
-      await fetch(tokenUrl, { method: "POST", body: formData });
-    } catch (e) {
-      console.warn("Cloudinary cleanup trace skipped:", e);
-    }
+      await fetch('https://ros-admin.github.io/Rajshahi-Olimpiad-Society/delete-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ public_id: publicId })
+      });
+    } catch (e) { console.warn("Cloudinary delete error:", e); }
   }
 
-  closeModalBtn.addEventListener('click', () => { detailModal.style.display = 'none'; });
+  // রিয়েল-টাইম ডাটা ফেচিং (Firebase Firestore Listener)
+  const q = query(collection(db, "password_resets"), where("status", "==", "pending"));
+  onSnapshot(q, (snapshot) => {
+    loadingStatus.style.display = 'none';
+    tbody.innerHTML = "";
 
-  const qResets = query(collection(db, "password_resets"), where("status", "==", "pending"));
-  onSnapshot(qResets, (snapshot) => {
     if (snapshot.empty) {
-      queueRoot.innerHTML = `<div class="empty-queue"><i class="fas fa-folder-open"></i> বর্তমানে কোনো পাসওয়ার্ড রিসেট রিকোয়েস্ট পেন্ডিং নেই।</div>`;
+      tableContainer.style.display = 'none';
+      emptyQueueMessage.style.display = 'block';
       return;
     }
 
-    let queueHtml = "";
-    snapshot.forEach((reqDoc) => {
-      const rData = reqDoc.data();
-      queueHtml += `
-        <div class="queue-card">
-          <div class="queue-left">
-            <div class="queue-icon"><i class="fas fa-unlock-alt"></i></div>
-            <div class="queue-info">
-              <h4>আইডেন্টিফায়ার: ${rData.identifier}</h4>
-            </div>
-          </div>
-          <button class="queue-action-btn inspect-btn" data-req-id="${reqDoc.id}" data-identifier="${rData.identifier}" data-live-img="${rData.liveImageUrl || ''}" data-pub-id="${rData.cloudinaryPublicId || ''}">
-            <i class="fas fa-user-search"></i> তথ্য ভেরিফাই করুন
-          </button>
-        </div>
+    emptyQueueMessage.style.display = 'none';
+    tableContainer.style.display = 'block';
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString('bn-BD') : 'অজানা';
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${dateStr}</td>
+        <td><img src="${data.proofUrl}" class="screenshot-thumb" onclick="window.open('${data.proofUrl}', '_blank')"></td>
+        <td>${data.fullName || 'লোড হচ্ছে...'}</td>
+        <td><span style="font-size:12px; color:var(--adm-muted);">${data.role || 'user'}</span></td>
+        <td><span class="status-badge status-pending">পেন্ডিং</span></td>
+        <td><button class="action-btn view-req-trigger" data-req-id="${docSnap.id}" data-uid="${data.uid}" data-pubid="${data.publicId}">যাচাই করুন</button></td>
       `;
+      tbody.appendChild(tr);
     });
-    queueRoot.innerHTML = queueHtml;
-  });
 
-  contentRoot.addEventListener('click', async (e) => {
-    const targetBtn = e.target.closest('.inspect-btn');
-    if (!targetBtn) return;
+    // ক্লিক ইভেন্ট লিসেনার সংযুক্তি
+    document.querySelectorAll('.view-req-trigger').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const reqId = btn.getAttribute('data-req-id');
+        const uid = btn.getAttribute('data-uid');
+        const pubId = btn.getAttribute('data-pubid');
 
-    const reqId = targetBtn.getAttribute('data-req-id');
-    const identifier = targetBtn.getAttribute('data-identifier');
-    const liveImgUrl = targetBtn.getAttribute('data-live-img');
-    const pubId = targetBtn.getAttribute('data-pub-id');
+        activeRequestData = { reqId, uid, pubId };
 
-    try {
-      let userDocSnapshot = null;
-      let uData = null;
+        try {
+          // ইউজারের Firestore ডাটাবেস চেক করা হচ্ছে মডালের বিস্তারিত প্রদর্শনের জন্য
+          const userQuery = query(collection(db, "users"), where("uid", "==", uid));
+          const userSnap = await getDocs(userQuery);
+          
+          if (userSnap.empty) {
+            showPopup("এই ব্যবহারকারীর কোনো ডাটাবেস প্রোফাইল পাওয়া যায়নি!", "error");
+            return;
+          }
 
-      let userQuery = query(collection(db, "users"), where("memberId", "==", identifier));
-      let userSnap = await getDocs(userQuery);
+          const uDoc = userSnap.docs[0];
+          activeUserDocId = uDoc.id;
+          const uData = uDoc.data();
 
-      if (!userSnap.empty) {
-        userDocSnapshot = userSnap.docs[0];
-        uData = userDocSnapshot.data();
-      } else {
-        let phoneQuery = query(collection(db, "users"), where("mobileNumber", "==", identifier));
-        let phoneSnap = await getDocs(phoneQuery);
-        if (!phoneSnap.empty) {
-          userDocSnapshot = phoneSnap.docs[0];
-          uData = userDocSnapshot.data();
+          // মডাল কন্টেন্ট জেনারেশন
+          detailModalBody.innerHTML = `
+            <div style="text-align:center; margin-bottom:15px;">
+              <img src="${uData.profileImageUrl || uData.photoUrl || '../placeholder.png'}" style="width:75px; height:75px; border-radius:50%; border:2px solid var(--adm-cyan); object-fit:cover;">
+              <h4 style="margin:8px 0 2px; font-size:15px; color:#fff;">${uData.banglaName || uData.fullName || 'নাম পাওয়া যায়নি'}</h4>
+              <p style="margin:0; font-size:12px; color:var(--adm-muted);">${uData.role ? uData.role.toUpperCase() : 'USER'}</p>
+            </div>
+            <div class="detail-row"><span class="detail-label">ইমেল অ্যাড্রেস</span><span class="detail-value" id="targetUserEmailHub">${uData.email || 'নাই'}</span></div>
+            <div class="detail-row"><span class="detail-label">ফোন নম্বর</span><span class="detail-value">${uData.phone || 'নাই'}</span></div>
+            <div class="detail-row"><span class="detail-label">রেজিস্ট্রেশন আইডি</span><span class="detail-value">${uData.registrationId || 'নাই'}</span></div>
+            
+            <div style="background: rgba(251, 191, 36, 0.05); border: 1px dashed var(--adm-yellow); border-radius: 6px; padding: 10px; font-size: 12px; color: var(--adm-yellow); margin-top: 15px; line-height: 1.5;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>সতর্কতা:</strong> নিচের বাটনে ক্লিক করলে ফায়ারবেস অথেন্টিকেশন সার্ভার থেকে স্বয়ংক্রিয়ভাবে ব্যবহারকারীর অফিশিয়াল ইমেইলে একটি সিকিউর <strong>পাসওয়ার্ড রিসেট লিংক</strong> চলে যাবে। ব্যবহারকারী ওই লিংকে ক্লিক করে তার নিজের নতুন পাসওয়ার্ড সেট করে নিতে পারবেন।
+            </div>
+          `;
+
+          detailModal.style.display = 'flex';
+        } catch (err) { 
+          console.error(err);
+          showPopup("ইউজার ডাটা লোড ব্যর্থ হয়েছে!", "error"); 
         }
-      }
-
-      if (!userDocSnapshot) return showPopup("কোনো নিবন্ধিত মেম্বার প্রোফাইল খুঁজে পাওয়া যায়নি!", "error");
-
-      activeUserDocId = userDocSnapshot.id;
-      activeRequestData = { reqId: reqId, identifier: identifier, pubId: pubId };
-
-      let liveImageHtml = liveImgUrl ? `<img src="${liveImgUrl}" class="verify-img live">` : `<div class="avatar-placeholder"><i class="fas fa-camera"></i></div>`;
-      const idImgSrc = uData.photoUrl || uData.tempBase64Image;
-      let idImageHtml = idImgSrc ? `<img src="${idImgSrc}" class="verify-img id-pic">` : `<div class="avatar-placeholder"><i class="fas fa-user-shield"></i></div>`;
-
-      document.getElementById('modalVerifyImages').innerHTML = `
-        <div class="image-block"><span>লাইভ সেলফি</span>${liveImageHtml}</div>
-        <div class="image-block"><span>আইডির ছবি</span>${idImageHtml}</div>
-      `;
-
-      document.getElementById('modalUserSpecs').innerHTML = `
-        <div class="detail-row"><span class="detail-label">নাম</span><span class="detail-value">${uData.englishName || 'নাই'}</span></div>
-        <div class="detail-row"><span class="detail-label">রেজিস্ট্রেশন নাম্বার</span><span class="detail-value">${uData.memberId || 'নাই'}</span></div>
-        <div class="detail-row"><span class="detail-label">মোবাইল নাম্বার</span><span class="detail-value">${uData.mobileNumber || 'নাই'}</span></div>
-        <div class="detail-row"><span class="detail-label">ইমেইল এড্রেস</span><span class="detail-value">${uData.email || 'নাই'}</span></div>
-      `;
-
-      targetNewPasswordInput.value = "ROS@2026";
-      detailModal.style.display = 'flex';
-    } catch (err) { showPopup("লোড ব্যর্থ", "error"); }
+      });
+    });
   });
 
+  // মডাল ক্লোজ লজিক
+  closeDetailModalBtn.addEventListener('click', () => detailModal.style.display = 'none');
+
+  // রিসেট ইমেইল লিঙ্ক পাঠানো এবং সাকসেস ট্রিগার (পদ্ধতি ২ এর মূল রূপায়ন)
   submitNewPassBtn.addEventListener('click', async () => {
-    const newPassValue = targetNewPasswordInput.value.trim();
-    if (newPassValue.length < 6) return showPopup("পাসওয়ার্ড সর্বনিম্ন ৬ অক্ষরের হতে হবে!", "warning");
+    const userEmailEl = document.getElementById('targetUserEmailHub');
+    const userEmail = userEmailEl ? userEmailEl.innerText.trim() : '';
+
+    if (!userEmail || userEmail === 'নাই' || !userEmail.includes('@')) {
+      return showPopup("ব্যবহারকারীর কোনো বৈধ ইমেইল অ্যাড্রেস পাওয়া যায়নি! লিঙ্ক পাঠানো অসম্ভব।", "error");
+    }
 
     try {
-      await updateDoc(doc(db, "users", activeUserDocId), { password: newPassValue });
+      submitNewPassBtn.disabled = true;
+      submitNewPassBtn.innerText = "পাঠানো হচ্ছে...";
+
+      // ১. ফায়ারবেস ক্লায়েন্ট-সাইড মেথডের মাধ্যমে ইউজারের ইমেইলে রিসেট লিঙ্ক পাঠানো
+      // ROS Nexus আর্কিটেকচার অনুযায়ী window.firebaseAuth বা auth গ্লোবাল ভ্যারিয়েবল ব্যবহারের আধুনিক নিয়ম
+      const firebaseAuthInstance = auth.app ? auth : (window.auth || auth);
+      
+      // ফায়ারবেস v10 মডিউলার সিনট্যাক্স অনুযায়ী sendPasswordResetEmail ইম্পোর্ট ছাড়া সরাসরি ফায়ারবেস কোর উইন্ডো মেথড কল করা হচ্ছে
+      // যদি আপনার প্রোজেক্টে পূর্বে sendPasswordResetEmail ইম্পোর্ট না থাকে তবে এটি গ্লোবাল ফায়ারবেস রিলেশন ব্যবহার করবে
+      if (window.firebase && typeof window.firebase.auth === 'function') {
+        await window.firebase.auth().sendPasswordResetEmail(userEmail);
+      } else {
+        // মডিউলার ফায়ারবেস মেথড সাপোর্ট (উইন্ডো লেভেল অবজেক্ট ব্যাকআপ)
+        const { sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+        await sendPasswordResetEmail(firebaseAuthInstance, userEmail);
+      }
+      
+      // ২. ডাটাবেসে পাসওয়ার্ড ফিল্ডে একটি ট্র্যাক রেকর্ড রাখা (ইউজারকে বোঝার সুবিধার্থে)
+      await updateDoc(doc(db, "users", activeUserDocId), { password: "Reset Link Sent To Email" });
+      
+      // ৩. পাসওয়ার্ড রিসেট রিকোয়েস্টের স্ট্যাটাস পরিবর্তন করে 'resolved' করা
       await updateDoc(doc(db, "password_resets", activeRequestData.reqId), { status: "resolved" });
       
-      // ক্লাউডিনারি ইমেজ রিমুভাল ট্রিগার
+      // ৪. ক্লাউডিনারি থেকে প্রুফ স্ক্রিনশট ইমেজ মুছে ফেলা
       await deleteCloudinaryImage(activeRequestData.pubId);
 
-      showPopup("পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!", "success");
+      showPopup("🔒 সফলভাবে ব্যবহারকারীর অফিশিয়াল ইমেইলে পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে!", "success");
       detailModal.style.display = 'none';
-    } catch (e) { showPopup("ব্যর্থ হয়েছে", "error"); }
+    } catch (e) { 
+      console.error("Firebase Reset Email Error:", e);
+      showPopup("লিঙ্ক পাঠাতে ব্যর্থ হয়েছে: " + (e.message || "সার্ভার এরর"), "error"); 
+    } finally {
+      submitNewPassBtn.disabled = false;
+      submitNewPassBtn.innerHTML = `<i class="fas fa-paper-plane"></i> রিসেট লিঙ্ক পাঠান`;
+    }
   });
 
+  // অনুরোধ প্রত্যাখ্যান করা
   cancelRequestBtn.addEventListener('click', async () => {
-    if (!confirm("আপনি কি আবেদনটি বাতিল করতে চান?")) return;
+    if (!confirm("আপনি কি নিশ্চিত যে এই পাসওয়ার্ড রিসেট আবেদনটি বাতিল করতে চান?")) return;
     try {
+      cancelRequestBtn.disabled = true;
+      
+      // রিকোয়েস্ট স্ট্যাটাস পরিবর্তন করা হচ্ছে
       await updateDoc(doc(db, "password_resets", activeRequestData.reqId), { status: "rejected" });
       
       // ক্লাউডিনারি ইমেজ রিমুভাল ট্রিগার
       await deleteCloudinaryImage(activeRequestData.pubId);
 
-      showPopup("আবেদনটি বাতিল করা হয়েছে।", "warning");
+      showPopup("❌ আবেদনটি সফলভাবে বাতিল ও ডিলিট করা হয়েছে।", "warning");
       detailModal.style.display = 'none';
-    } catch (e) { showPopup("ব্যর্থ হয়েছে", "error"); }
+    } catch (e) { 
+      showPopup("বাতিল করতে ব্যর্থ হয়েছে", "error"); 
+    } finally {
+      cancelRequestBtn.disabled = false;
+    }
   });
 }
