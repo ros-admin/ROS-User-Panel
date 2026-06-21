@@ -568,7 +568,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         <div style="position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 1px dashed #b45309; border-radius: 8px; pointer-events: none; z-index: 5;"></div>
         
         <!-- 🎯 ওয়াটারমার্ক লোগো (html2canvas কমপ্লায়েন্ট ইন্টিগ্রেটেড লেয়ার) -->
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 0; opacity: 0.08;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-20%, -20%); width: 500px; height: 500px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 0; opacity: 0.08;">
           <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 100%; height: auto; display: block;">
         </div>
 
@@ -682,12 +682,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
                 <div style="font-size: 8.5px; color: #64748b; margin-top: 2px;" id="pdfTimestampArea"></div>
               </div>
               
-              <!-- ✍️ কিউআর ও কর্তৃপক্ষের স্বাক্ষরের মাঝখানে সদস্যের স্বাক্ষর -->
-              <div style="text-align: center; width: 150px; margin-right: auto; margin-left: 40px;">
-                <div style="border-top: 1.5px solid #475569; width: 100%;"></div>
-                <div style="font-size: 10px; color: #0f172a; font-weight: bold; margin-top: 3px;">Member's Signature</div>
-                <div style="font-size: 8px; color: #64748b;">Applicant Signee</div>
-              </div>
 
               <!-- ✍️ কর্তৃপক্ষের স্বাক্ষর (ডানপাশে) -->
               <div style="text-align: center; width: 150px;">
