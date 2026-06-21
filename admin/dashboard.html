@@ -34,15 +34,6 @@
     .dropdown-info { padding: 10px 20px; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
     .profile-dropdown a { padding: 10px 20px; color: var(--text-muted); text-decoration: none; font-size: 13px; transition: 0.2s; }
     .profile-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    
-    .nexus-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
-    .modal-body { width: 90%; max-width: 450px; padding: 30px; border-radius: 12px; border: 1px solid rgba(0, 180, 216, 0.4); box-shadow: 0 0 30px rgba(0, 180, 216, 0.2); }
-    .input-group-cyber { position: relative; margin-bottom: 20px; display: flex; align-items: center; }
-    .input-group-cyber i.prefix-icon { position: absolute; left: 15px; color: var(--neon-blue); font-size: 14px; }
-    .cyber-input-premium { width: 100%; padding: 12px 40px 12px 45px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; outline: none; transition: all 0.3s ease; font-size: 14px; letter-spacing: 1.5px; }
-    .cyber-input-premium:focus { border-color: var(--neon-blue); box-shadow: 0 0 12px rgba(0, 180, 216, 0.4); background: rgba(0, 0, 0, 0.8); }
-    .toggle-password-btn { position: absolute; right: 15px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
-    .toggle-password-btn:hover { color: var(--neon-blue); }
 
     @media (max-width: 992px) { 
       .mobile-menu-btn { display: block; } 
@@ -69,7 +60,6 @@
       <img src="../placeholder.png" id="topAdminAvatar" class="admin-avatar">
       <div class="profile-dropdown cyber-glass" id="profileDropdown">
         <div class="dropdown-info"><h4 id="dropAdminName">লোড হচ্ছে...</h4><small id="dropAdminEmail">admin@ros.org</small></div>
-        <a href="#" id="openPassModalBtn"><i class="fas fa-key"></i> পাসওয়ার্ড পরিবর্তন</a>
         <a href="#" id="adminSignOutBtn" style="color: var(--neon-red);"><i class="fas fa-sign-out-alt"></i> লগআউট</a>
       </div>
     </div>
@@ -82,50 +72,6 @@
     </aside>
     <main class="main-content-node" id="spaContentRoot"></main>
   </div>
-
-  <div class="nexus-modal" id="passwordChangeModal">
-    <div class="modal-body cyber-glass">
-      <div style="text-align: center; margin-bottom: 25px;">
-        <div style="width: 50px; height: 50px; background: rgba(0, 180, 216, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 1px solid var(--neon-blue);">
-          <i class="fas fa-shield-alt" style="color: var(--neon-blue); font-size: 20px;"></i>
-        </div>
-        <h3 style="color: #fff; font-size: 18px; font-weight: 600;">সিকিউর ক্রেডেন্সিয়াল আপডেট</h3>
-        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">আপনার অ্যাকাউন্টের নিরাপত্তা নিশ্চিত করতে নতুন পাসওয়ার্ড ইনপুট দিন</p>
-      </div>
-
-      <form id="passwordUpdateForm">
-        <div class="input-group-cyber">
-          <i class="fas fa-lock prefix-icon"></i>
-          <input type="password" id="newPassword" class="cyber-input-premium" placeholder="নতুন পাসওয়ার্ড" required>
-          <i class="fas fa-eye toggle-password-btn" onclick="togglePassVisibility('newPassword', this)"></i>
-        </div>
-        
-        <div class="input-group-cyber">
-          <i class="fas fa-check-double prefix-icon"></i>
-          <input type="password" id="confirmNewPassword" class="cyber-input-premium" placeholder="পাসওয়ার্ড নিশ্চিত করুন" required>
-          <i class="fas fa-eye toggle-password-btn" onclick="togglePassVisibility('confirmNewPassword', this)"></i>
-        </div>
-
-        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px;">
-          <button type="button" id="closePassModalBtn" style="padding: 10px 20px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 6px; cursor: pointer; transition: 0.2s;">বাতিল</button>
-          <button type="submit" style="padding: 10px 25px; background: linear-gradient(135deg, var(--neon-blue), #0077b6); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);">আপডেট স্টেশন</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    function togglePassVisibility(inputId, iconEl) {
-      const input = document.getElementById(inputId);
-      if (input.type === "password") {
-        input.type = "text";
-        iconEl.classList.replace("fa-eye", "fa-eye-slash");
-      } else {
-        input.type = "password";
-        iconEl.classList.replace("fa-eye-slash", "fa-eye");
-      }
-    }
-  </script>
 
   <script src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/navigation.js"></script>
 
@@ -150,7 +96,7 @@
   <script type="module">
     import { db, auth } from '../firebase-config.js';
     import { collection, onSnapshot, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const erpModules = [
       { id: 'dashboard', name: '📊 ড্যাশবোর্ড হোম' },
@@ -176,9 +122,9 @@
     const contentRoot = document.getElementById('spaContentRoot');
     const sidebarNode = document.getElementById('sidebarNode');
     const profileDropdown = document.getElementById('profileDropdown');
-    const passwordChangeModal = document.getElementById('passwordChangeModal');
     let currentAdminData = null;
 
+    // ⏱️ নিষ্ক্রিয়তা ট্র্যাকার কনফিগারেশন (৩ মিনিট)
     let inactivityTimeout;
     const INACTIVITY_TIME = 3 * 60 * 1000; 
 
@@ -210,6 +156,7 @@
       clearTimeout(inactivityTimeout);
     }
 
+    // অথেনটিকেশন স্টেট প্রসেসর
     onAuthStateChanged(auth, async (user) => {
       if (!user) { 
         stopTrackingInactivity();
@@ -224,7 +171,7 @@
           initSidebarMenu();
           switchModuleView('dashboard'); 
           document.getElementById('nexusCoreBody').style.display = 'flex';
-          startTrackingInactivity();
+          startTrackingInactivity(); // নিষ্ক্রিয়তা ট্র্যাকিং চালু
         } else {
           alert("অনাধিকার প্রবেশ নিষিদ্ধ!"); window.location.href = "../login.html";
         }
@@ -323,63 +270,12 @@
       }
     }
 
+    // UI ড্রপডাউন ও সাইডবার ইভেন্ট লিসেনার
     profileTrigger.addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.style.display = profileDropdown.style.display === 'flex' ? 'none' : 'flex'; });
     document.addEventListener('click', () => { profileDropdown.style.display = 'none'; });
     mobileMenuToggle.addEventListener('click', () => { sidebarNode.classList.toggle('active'); });
-    document.getElementById('openPassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'flex');
-    document.getElementById('closePassModalBtn').addEventListener('click', () => passwordChangeModal.style.display = 'none');
-    
-    document.getElementById('passwordUpdateForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const newPass = document.getElementById('newPassword').value;
-      const confirmPass = document.getElementById('confirmNewPassword').value;
 
-      if (newPass !== confirmPass) { 
-        alert("নতুন পাসওয়ার্ড দুটি মিলছে না!"); 
-        return; 
-      }
-
-      if (newPass.length < 6) {
-        alert("নিরাপত্তার স্বার্থে পাসওয়ার্ড কমপক্ষে ৬ ক্যারেক্টারের হতে হবে!");
-        return;
-      }
-
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          alert("ইউজার সেশন পাওয়া যায়নি। দয়া করে আবার লগইন করুন।");
-          window.location.href = "../login.html";
-          return;
-        }
-
-        const currentPassword = prompt("নিরাপত্তার স্বার্থে আপনার বর্তমান (আগের) পাসওয়ার্ডটি আবার লিখুন:");
-        if (!currentPassword) {
-          alert("পাসওয়ার্ড পরিবর্তন বাতিল করা হয়েছে।");
-          return;
-        }
-
-        const credential = EmailAuthProvider.credential(user.email, currentPassword);
-        
-        await reauthenticateWithCredential(user, credential);
-        await updatePassword(user, newPass); 
-        
-        alert("🔒 পাসওয়ার্ড সফলভাবে আপডেট হয়েছে! নতুন পাসওয়ার্ড দিয়ে আবার লগইন করুন।"); 
-        passwordChangeModal.style.display = 'none'; 
-        document.getElementById('passwordUpdateForm').reset();
-        
-        await signOut(auth);
-        window.location.href = "../login.html";
-
-      } catch (err) { 
-        console.error("Password Update Error:", err);
-        if (err.code === "auth/wrong-password") {
-          alert("ভুল বর্তমান পাসওয়ার্ড দিয়েছেন! আবার চেষ্টা করুন।");
-        } else {
-          alert("পাসওয়ার্ড পরিবর্তন করা যায়নি: " + err.message); 
-        }
-      }
-    });
-
+    // লগআউট প্রোটোকল
     document.getElementById('adminSignOutBtn').addEventListener('click', () => { if (confirm("লগআউট করবেন?")) signOut(auth).then(() => { window.location.href = "../login.html"; }); });
   </script>
 </body>
