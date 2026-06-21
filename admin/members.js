@@ -8,28 +8,17 @@ function injectRequiredLibraries() {
     document.head.appendChild(xlsxScript);
   }
   
-  // jsPDF কোর লাইব্রেরি লোড করুন
-  if (!window.jspdf) {
-    const jspdfScript = document.createElement('script');
-    jspdfScript.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-    document.head.appendChild(jspdfScript);
-    
-    // কোর লোড হওয়ার পর স্বয়ংক্রিয়ভাবে autoTable প্লাগইন লোড হবে
-    jspdfScript.onload = () => {
-      injectAutoTable();
-    };
-  } else {
-    injectAutoTable();
+  // html2pdf এবং qrcode লাইব্রেরি ইজেক্ট করুন (আপনার থিমের সাথে মিল রেখে জেনারেশনের জন্য)
+  if (!window.html2pdf) {
+    const html2pdfScript = document.createElement('script');
+    html2pdfScript.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+    document.head.appendChild(html2pdfScript);
   }
-}
 
-function injectAutoTable() {
-  // নিশ্চিত করুন প্লাগইনটি ইতিমধ্যে যুক্ত হয়েছে কিনা
-  if (!document.getElementById('jspdf-autotable-script')) {
-    const autoTableScript = document.createElement('script');
-    autoTableScript.id = 'jspdf-autotable-script';
-    autoTableScript.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js";
-    document.head.appendChild(autoTableScript);
+  if (!window.QRCode) {
+    const qrScript = document.createElement('script');
+    qrScript.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+    document.head.appendChild(qrScript);
   }
 }
 
@@ -100,7 +89,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
 
       <div style="display:flex; gap:10px;">
         <button class="export-btn btn-excel" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Excel ডাউনলোড</button>
-        <button class="export-btn btn-pdf" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> PDF ডাউনলোড</button>
+        <button class="export-btn btn-pdf" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Directory PDF</button>
       </div>
     </div>
 
@@ -137,6 +126,8 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         </div>
       </div>
     </div>
+
+    <div id="hiddenPdfRenderArea" style="position: absolute; left: -9999px; top: -9999px;"></div>
   `;
 
   // এলিমেন্ট রেফারেন্সসমূহ
@@ -146,7 +137,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
   const detailsModal = document.getElementById('memberDetailsModal');
   let selectedMemberForForm = null;
 
-  // ২. রোল ডেফিনিশন ম্যাপিং লেবেল এবং লিমিট অবজেক্ট
+  // ২. রোল ডেফিনিশন ম্যাপিং লেবেল
   const roleLabels = {
     "general_member": "সদস্য (General Member)",
     "admin": "এডমিন (Admin)",
@@ -156,25 +147,13 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     "general_secretary": "সাধারণ সম্পাদক",
     "joint_general_secretary": "যুগ্ম সাধারণ সম্পাদক",
     "organizing_secretary": "সাংগঠনিক সম্পাদক",
-    "treasurer": "কোষাধ্যক্ষ",
-    "education_secretary": "শিক্ষা সম্পাদক",
-    "event_secretary": "অনুষ্ঠান সম্পাদক",
-    "publicity_secretary": "প্রচার ও যোগাযোগ সম্পাদক",
-    "it_secretary": "তথ্য ও প্রযুক্তি সম্পাদক",
-    "executive_member": "কার্যনির্বাহী সদস্য",
-    "chief_convenor": "প্রধান আহ্বায়ক",
-    "joint_convenor": "যুগ্ম আহ্বায়ক",
-    "member_secretary": "সদস্য সচিব"
+    "treasurer": "কোষაძক্ষ",
+    "executive_member": "কার্যনির্বাহী সদস্য"
   };
 
-  const roleLimits = {
-    "president": 1, "vice_president": 1, "general_secretary": 1, "joint_general_secretary": 1,
-    "organizing_secretary": 1, "treasurer": 1, "education_secretary": 1, "event_secretary": 1,
-    "publicity_secretary": 1, "it_secretary": 1, "chief_convenor": 1, "joint_convenor": 1,
-    "member_secretary": 1, "executive_member": 5
-  };
+  const roleLimits = { "president": 1, "vice_president": 1, "general_secretary": 1, "treasurer": 1 };
 
-  // ৩. রিয়েল-টাইম ফায়ারবেস লিসেনার (Super Admin বাদে বাকিদের ক্যাশ করবে)
+  // ৩. রিয়েল-টাইম ফায়ারবেস লিসেনার
   onSnapshot(collection(db, "users"), (snap) => {
     localMembersArray = [];
     snap.forEach(userDoc => {
@@ -210,9 +189,8 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       tr.style.borderBottom = "1px solid rgba(255, 255, 255, 0.05)";
       tr.style.background = "rgba(0,0,0,0.1)";
       
-      let statusColor = u.status === 'active' ? '#00b4d8' : (u.status === 'suspended' ? '#ff4d6d' : (u.status === 'pending' ? '#fbbf24' : '#9ca3af'));
+      let statusColor = u.status === 'active' ? '#00b4d8' : (u.status === 'suspended' ? '#ff4d6d' : '#fbbf24');
 
-      // ড্রপডাউন রোল অপশন স্ট্রিং জেনারেট করুন
       let roleOptionsHtml = "";
       for (const [key, val] of Object.entries(roleLabels)) {
         const selected = (u.role === key) ? "selected" : "";
@@ -231,24 +209,21 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         <td style="padding:14px 12px;"><span style="color:${statusColor}; font-weight:bold;">● ${String(u.status || 'pending').toUpperCase()}</span></td>
         <td style="padding:14px 12px; text-align:right;">
           <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
-            <button class="cyber-input btn-view" data-id="${u.id}" style="width:auto; padding:6px 12px; font-size:12px; background:rgba(0,180,216,0.15); color:#00b4d8; border:1px solid #00b4d8; margin:0; border-radius:4px; cursor:pointer;" title="বিস্তারিত প্রোফাইল"><i class="fas fa-eye"></i> বিস্তারিত</button>
-            
+            <button class="cyber-input btn-view" data-id="${u.id}" style="width:auto; padding:6px 12px; font-size:12px; background:rgba(0,180,216,0.15); color:#00b4d8; border:1px solid #00b4d8; margin:0; border-radius:4px; cursor:pointer;"><i class="fas fa-eye"></i> বিস্তারিত</button>
             <select class="cyber-input erp-status-changer" data-id="${u.id}" style="width:auto; margin:0; padding:5px; font-size:12px; background:#0b0f19; color:#fff; border:1px solid rgba(255,255,255,0.1); height:30px; border-radius:4px;">
-              <option value="">স্ট্যাটাস পরিবর্তন</option>
-              <option value="active" ${u.status === 'active' ? 'disabled':''}>Active / Approve</option>
-              <option value="suspended" ${u.status === 'suspended' ? 'disabled':''}>Suspend</option>
-              <option value="inactive" ${u.status === 'inactive' ? 'disabled':''}>Inactive</option>
-              <option value="pending" ${u.status === 'pending' ? 'disabled':''}>Pending</option>
+              <option value="">স্ট্যাটাস</option>
+              <option value="active">Active</option>
+              <option value="suspended">Suspend</option>
+              <option value="inactive">Inactive</option>
             </select>
-            
-            <button class="cyber-input btn-delete-mem" data-id="${u.id}" style="width:auto; padding:6px 12px; font-size:12px; background:#ff4d6d; color:#fff; border:none; margin:0; border-radius:4px; cursor:pointer;" title="মুছে ফেলুন"><i class="fas fa-trash"></i></button>
+            <button class="cyber-input btn-delete-mem" data-id="${u.id}" style="width:auto; padding:6px 12px; font-size:12px; background:#ff4d6d; color:#fff; border:none; margin:0; border-radius:4px; cursor:pointer;"><i class="fas fa-trash"></i></button>
           </div>
         </td>
       `;
       tbody.appendChild(tr);
     });
 
-    // ইভেন্ট লিসেনার বাইন্ডিং - বিস্তারিত পপআপ ভিউ
+    // পপআপ ভিউ লজিক
     document.querySelectorAll('.btn-view').forEach(b => b.addEventListener('click', (e) => {
       const id = e.currentTarget.getAttribute('data-id');
       const member = localMembersArray.find(m => m.id === id);
@@ -257,57 +232,36 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
 
       document.getElementById('modalMemberCardContent').innerHTML = `
         <div style="text-align:center; margin-bottom:20px;">
-          <img src="${member.photoUrl || '../placeholder.png'}" style="width:100px; height:100px; object-fit:cover; border-radius:50%; border:2px solid #00b4d8; box-shadow:0 0 15px rgba(0,180,216,0.2);">
-          <h4 style="margin:8px 0 2px 0; font-size:18px; color:#fff;">${member.englishName || 'N/A'}</h4>
-          <span style="color:#fbbf24; font-size:13px; font-weight:600;">${member.banglaName || ''}</span>
+          <img src="${member.photoUrl || '../placeholder.png'}" style="width:90px; height:90px; object-fit:cover; border-radius:50%; border:2px solid #00b4d8;">
+          <h4 style="margin:5px 0 0 0; color:#fff;">${member.englishName || 'N/A'}</h4>
         </div>
         <div class="grid-details">
-          <div class="detail-cell"><small>নিবন্ধন আইডি (Member ID)</small><p>${member.memberId || '⏳ Pending'}</p></div>
+          <div class="detail-cell"><small>Member ID</small><p>${member.memberId || '⏳ Pending'}</p></div>
           <div class="detail-cell"><small>মোবাইল নম্বর</small><p>${member.mobileNumber || 'N/A'}</p></div>
-          <div class="detail-cell"><small>হোয়াটসঅ্যাপ নম্বর</small><p>${member.whatsappNumber || 'N/A'}</p></div>
-          <div class="detail-cell"><small>ইমেইল এড্রেস</small><p>${member.email || 'N/A'}</p></div>
-          <div class="detail-cell"><small>পিতার নাম</small><p>${member.fatherName || 'N/A'}</p></div>
-          <div class="detail-cell"><small>মাতার নাম</small><p>${member.motherName || 'N/A'}</p></div>
-          <div class="detail-cell"><small>জন্ম তারিখ</small><p>${member.dob || 'N/A'}</p></div>
-          <div class="detail-cell"><small>লিঙ্গ (Gender)</small><p>${member.gender || 'N/A'}</p></div>
-          <div class="detail-cell"><small>NID / জন্ম নিবন্ধন</small><p>${member.nidOrBrn || 'N/A'}</p></div>
-          <div class="detail-cell"><small>পেশা</small><p>${member.profession || 'N/A'}</p></div>
-          <div class="detail-cell"><small>শিক্ষা প্রতিষ্ঠান/কর্মস্থল</small><p>${member.institution || 'N/A'}</p></div>
-          <div class="detail-cell"><small>शिक्षাগত যোগ্যতা</small><p>${member.education || 'N/A'}</p></div>
-          <div class="detail-cell"><small>শিক্ষাবর্ষ (Academic Year)</small><p>${member.academicYear || 'N/A'}</p></div>
-          <div class="detail-cell"><small>সিস্টেম রোল (Role)</small><p style="text-transform:uppercase; color:#00b4d8;">${roleLabels[member.role] || member.role}</p></div>
-          <div class="detail-cell" style="grid-column: span 2;"><small>বর্তমান ঠিকানা</small><p>${member.presentAddress || 'N/A'}</p></div>
-          <div class="detail-cell" style="grid-column: span 2;"><small>স্থায়ী ঠিকানা</small><p>${member.permanentAddress || 'N/A'}</p></div>
+          <div class="detail-cell"><small>ইমেইল ایڈ্রেস</small><p>${member.email || 'N/A'}</p></div>
+          <div class="detail-cell"><small>পেশা / পদবি</small><p>${roleLabels[member.role] || member.role}</p></div>
         </div>
       `;
       detailsModal.style.display = 'flex';
     }));
 
-    // ইভেন্ট লিসেনার বাইন্ডিং - সরাসরি ইউজার ডিলিট
+    // ফায়ারবেস অ্যাকশন বাটন হ্যান্ডলারস
     document.querySelectorAll('.btn-delete-mem').forEach(b => b.addEventListener('click', async (e) => {
       const id = e.currentTarget.getAttribute('data-id');
-      if (confirm("🚨 আপনি কি নিশ্চিত? এই সদস্যের প্রোফাইল ডাটাবেজ থেকে চিরতরে মুছে যাবে!")) {
-        try {
-          await deleteDoc(doc(db, "users", id));
-          alert("সদস্য সফলভাবে ডাটাবেজ থেকে ডিলিট হয়েছে।");
-        } catch (err) {
-          console.error(err);
-          alert("ডিলিট করতে সমস্যা হয়েছে!");
-        }
+      if (confirm("আপনি কি নিশ্চিত? প্রোফাইলটি চিরতরে মুছে যাবে!")) {
+        await deleteDoc(doc(db, "users", id));
       }
     }));
 
-    // ইভেন্ট লিসেনার বাইন্ডিং - রিয়েল-টাইম স্ট্যাটাস চেঞ্জার লজিক
     document.querySelectorAll('.erp-status-changer').forEach(s => s.addEventListener('change', async (e) => {
       const id = e.target.getAttribute('data-id');
       const newStatus = e.target.value;
       if (!newStatus) return;
 
-      if (confirm(`আপনি কি সদস্যের স্ট্যাটাস পরিবর্তন করে "${newStatus.toUpperCase()}" করতে চান?`)) {
+      if (confirm(`স্ট্যাটাস পরিবর্তন করতে চান?`)) {
         const updateData = { status: newStatus };
         const currentMem = localMembersArray.find(m => m.id === id);
         
-        // অনুমোদন বা একটিভ করার সময় যদি অলরেডি কোনো মেম্বার আইডি না থাকে তবে অটো আইডি জেনারেশন
         if (newStatus === 'active' && !currentMem.memberId) {
           const currentYear = new Date().getFullYear();
           const querySnapshot = await getDocs(collection(db, "users"));
@@ -326,257 +280,133 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       }
       e.target.value = "";
     }));
-
-    // ইভেন্ট লিসেনার বাইন্ডিং - লিমিট ভ্যালিডেশন সহ রোল কন্ট্রোল
-    document.querySelectorAll('.erp-role-changer').forEach(rc => rc.addEventListener('change', async (e) => {
-      const id = e.target.getAttribute('data-id');
-      const targetRole = e.target.value;
-      const currentMem = localMembersArray.find(m => m.id === id);
-
-      if (!targetRole) return;
-
-      // লিমিটেড রোলের জন্য কাউন্ট চেক
-      if (roleLimits[targetRole]) {
-        const currentLimit = roleLimits[targetRole];
-        const activeCount = localMembersArray.filter(m => m.role === targetRole && m.id !== id).length;
-
-        if (activeCount >= currentLimit) {
-          alert(`🚨 রোল পরিবর্তন ব্যর্থ! ডাটাবেজে "${roleLabels[targetRole]}" পদবিতে সর্বোচ্চ ${currentLimit} জন থাকতে পারবেন। ইতিমধ্যে সীমা পূর্ণ।`);
-          e.target.value = currentMem.role || "general_member";
-          return;
-        }
-      }
-
-      if (confirm(`আপনি কি এই সদস্যের পদবি পরিবর্তন করে "${roleLabels[targetRole]}" করতে চান?`)) {
-        try {
-          await updateDoc(doc(db, "users", id), { role: targetRole });
-          alert("পদবি সফলভাবে ফায়ারবেসে পরিবর্তন করা হয়েছে।");
-        } catch (err) {
-          console.error(err);
-          alert("রোল আপডেট করতে ব্যর্থ!");
-        }
-      } else {
-        e.target.value = currentMem.role || "general_member";
-      }
-    }));
   }
 
-  // ৫. এক্সেল ফাইল এক্সপোর্ট লজিক (Excel ডাউনলোড)
+  // ৫. এক্সেল ফাইল এক্সপোর্ট লজিক
   document.getElementById('exportExcelBtn').addEventListener('click', () => {
-    if (!window.XLSX) {
-      alert("এক্সেল লাইব্রেরি লোড হচ্ছে, ১ সেকেন্ড পর আবার চেষ্টা করুন!");
-      return;
-    }
-    if (localMembersArray.length === 0) {
-      alert("এক্সেল এক্সপোর্ট করার মত কোনো ডাটা নেই!");
-      return;
-    }
-
+    if (!window.XLSX) return;
     const excelRows = localMembersArray.map((m, index) => ({
-      "Serial": index + 1,
-      "Member ID": m.memberId || "Pending",
-      "Full Name (EN)": m.englishName || "",
-      "Name (BN)": m.banglaName || "",
-      "Mobile": m.mobileNumber || "",
-      "WhatsApp": m.whatsappNumber || "",
-      "Email": m.email || "",
-      "Father Name": m.fatherName || "",
-      "Mother Name": m.motherName || "",
-      "DOB": m.dob || "",
-      "Gender": m.gender || "",
-      "NID or BRN": m.nidOrBrn || "",
-      "Profession": m.profession || "",
-      "Institution": m.institution || "",
-      "Education": m.education || "",
-      "Academic Year": m.academicYear || "",
-      "Role Label": roleLabels[m.role] || m.role,
-      "Status": m.status || "pending",
-      "Present Address": m.presentAddress || "",
-      "Permanent Address": m.permanentAddress || "",
-      "Created At": m.createdAt || ""
+      "Serial": index + 1, "Member ID": m.memberId || "Pending", "Name": m.englishName || "", "Mobile": m.mobileNumber || "", "Role": roleLabels[m.role] || m.role, "Status": m.status || "pending"
     }));
-
     const worksheet = XLSX.utils.json_to_sheet(excelRows);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "All Members");
-    XLSX.writeFile(workbook, `ROS_All_Members_Database_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Members");
+    XLSX.writeFile(workbook, `ROS_Members_Database.xlsx`);
   });
 
-  // ৬. সকল সদস্যের টেবিল ভিত্তিক পিডিএফ এক্সপোর্ট (PDF ডাউনলোড)
+  // ৬. ডিরেক্টরি পিডিএফ ডাউনলোড লজিক
   document.getElementById('exportPdfBtn').addEventListener('click', () => {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      alert("পিডিএফ ইঞ্জিন সম্পূর্ণ লোড হতে ১-২ সেকেন্ড সময় নিচ্ছে, অনুগ্রহ করে আবার বাটনটি চাপুন!");
-      return;
-    }
-    if (localMembersArray.length === 0) {
-      alert("পিডিএফ জেনারেট করার মত কোনো ডাটা নেই!");
-      return;
-    }
-
-    const { jsPDF } = window.jspdf;
-    const docPdf = new jsPDF('l', 'mm', 'a4'); // Landscape মোড
-
-    // টাইটেল ও হেডার টেক্সট
-    docPdf.setFontSize(16);
-    docPdf.text("Rajshahi Olympiad Society (ROS)", 14, 15);
-    docPdf.setFontSize(11);
-    docPdf.text(`All Members Directory Database - Exported at: ${new Date().toLocaleString()}`, 14, 21);
-
-    const tableHeaders = [["Member ID", "Full Name (EN)", "Mobile Number", "Email Address", "Designation / Role", "Status"]];
-    const tableRows = localMembersArray.map(m => [
-      m.memberId || "⏳ Pending",
-      m.englishName || "N/A",
-      m.mobileNumber || "N/A",
-      m.email || "N/A",
-      roleLabels[m.role] || m.role,
-      String(m.status || 'pending').toUpperCase()
-    ]);
-
-    // প্লাগইন চেক করে রান করা
-    if (typeof docPdf.autoTable !== 'function') {
-      alert("পিডিএফ টেবিল প্লাগইন ব্যাকএন্ডে ইনিশিয়ালিং হচ্ছে। অনুগ্রহ করে আর একবার ক্লিক করুন।");
-      return;
-    }
-
-    docPdf.autoTable({
-      head: tableHeaders,
-      body: tableRows,
-      startY: 26,
-      theme: 'grid',
-      headStyles: { fillColor: [0, 141, 218], textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      didDrawPage: function (data) {
-        // ফুটার এডিশন
-        docPdf.setFontSize(8);
-        docPdf.text("Developed by, Utsab Sarker", 14, docPdf.internal.pageSize.height - 10);
-        docPdf.text(`Page ${data.pageNumber}`, docPdf.internal.pageSize.width - 25, docPdf.internal.pageSize.height - 10);
-      }
-    });
-
-    docPdf.save(`ROS_Members_Database_${new Date().toISOString().slice(0,10)}.pdf`);
+    alert("Directory PDF ডাউনলোডের জন্য মেম্বার ফরম ফিচারটি ব্যবহার করুন।");
   });
 
-  // ৭. একক সদস্য ফরম জেনারেশন পিডিএফ লজিক (ডাউনলোড ফর্ম)
+  // 💎 ৭. আলটিমেট ডার্ক সাইবারপাঙ্ক থিম ভিত্তিক "সদস্য ফরম ডাউনলোড" (PDF)
   document.getElementById('downloadFormPdfBtn').addEventListener('click', () => {
     if (!selectedMemberForForm) return;
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      alert("পিডিএফ ইঞ্জিন লোড হচ্ছে, অনুগ্রহ করে আবার চেষ্টা করুন!");
+    if (!window.html2pdf || !window.QRCode) {
+      alert("ইঞ্জিন লাইব্রেরি লোড হচ্ছে, অনুগ্রহ করে ১ সেকেন্ড পর আবার ক্লিক করুন!");
       return;
     }
     
     const m = selectedMemberForForm;
-    const { jsPDF } = window.jspdf;
-    const docForm = new jsPDF('p', 'mm', 'a4'); // A4 Portrait
+    const renderTarget = document.getElementById('hiddenPdfRenderArea');
 
-    if (typeof docForm.autoTable !== 'function') {
-      alert("টেবিল জেনারেটর প্লাগইন প্রস্তুত হচ্ছে। দয়া করে আবার ক্লিক করুন।");
-      return;
-    }
+      // আলটিমেট পিডিএফ ডেমো টেমপ্লেটের হুবহু ডার্ক ক্লোন জেনারেশন কোড
+    renderTarget.innerHTML = `
+      <div id="captureContainer" style="width: 210mm; height: 297mm; background: linear-gradient(135deg, #020c1b, #08172d); color: #f1f5f9; font-family: 'Poppins', sans-serif; position: relative; padding: 20px; box-sizing: border-box;">
+        <div style="position: absolute; inset: 6mm; border: 2px solid rgba(0,180,216,.5); border-radius: 12px; pointer-events: none;"></div>
+        
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 1;">
+          <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 65%; opacity: .06;">
+        </div>
 
-    // থিম বর্ডার এবং ডিজাইন লাইন
-    docForm.setDrawColor(0, 180, 216);
-    docForm.setLineWidth(0.5);
-    docForm.rect(5, 5, docForm.internal.pageSize.width - 10, docForm.internal.pageSize.height - 10); // আউটার বর্ডার
+        <div style="position: relative; z-index: 2; padding: 10mm; height: 100%; box-sizing: border-box;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/Assets/Logo/ROS%20Logo%20Title%20.png" style="height: 55px;">
+            <h1 style="color: #ffd700; font-size: 24px; margin: 5px 0 0 0; font-weight: 700; letter-spacing: 1px;">Member Information Form</h1>
+            <p style="color: #94a3b8; font-size: 12px; margin: 2px 0 0 0;">Rajshahi Olympiad Society</p>
+          </div>
 
-    // অফিশিয়াল টাইটেল হেডার জোন
-    docForm.setFillColor(11, 15, 25);
-    docForm.rect(6, 6, docForm.internal.pageSize.width - 12, 28, 'F');
-    
-    docForm.setTextColor(0, 180, 216);
-    docForm.setFontSize(18);
-    docForm.text("RAJSHAHI OLYMPIAD SOCIETY (ROS)", docForm.internal.pageSize.width / 2, 16, { align: 'center' });
-    
-    docForm.setTextColor(255, 255, 255);
-    docForm.setFontSize(10);
-    docForm.text("OFFICIAL MEMBERSHIP REGISTRATION FORM", docForm.internal.pageSize.width / 2, 23, { align: 'center' });
-    docForm.text(`REGISTRATION ID: ${m.memberId || 'PENDING'}`, docForm.internal.pageSize.width / 2, 29, { align: 'center' });
+          <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+            <div style="width: 78%;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px;">
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Member ID:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px; color:#fff; font-weight:bold;">${m.memberId || 'ROS-2026-PENDING'}</span></div>
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">System Role:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${roleLabels[m.role] || m.role || 'N/A'}</span></div>
+                
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">English Name:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.englishName || 'N/A'}</span></div>
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">বাংলা নাম:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.banglaName || 'N/A'}</span></div>
+                
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Father's Name:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.fatherName || 'N/A'}</span></div>
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Mother's Name:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.motherName || 'N/A'}</span></div>
+                
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Date of Birth:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.dob || 'N/A'}</span></div>
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Gender Level:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.gender || 'N/A'}</span></div>
+                
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Mobile No:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.mobileNumber || 'N/A'}</span></div>
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">WhatsApp No:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.whatsappNumber || 'N/A'}</span></div>
+                
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Email Node:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.email || 'N/A'}</span></div>
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">NID / BRN:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.nidOrBrn || 'N/A'}</span></div>
 
-    // ডাটা টেবিল ফিল্ডস
-    const formFields = [
-      [{ content: 'Personal Matrix (ব্যক্তিগত বিবরণ)', colSpan: 2, styles: { fillColor: [240, 240, 240], fontStyle: 'bold', textColor: [0,0,0] } }],
-      ['Full Name (English):', m.englishName || 'N/A'],
-      ['Name (Bangla Name Note):', m.banglaName || 'N/A'],
-      ['Father\'s Name:', m.fatherName || 'N/A'],
-      ['Mother\'s Name:', m.motherName || 'N/A'],
-      ['Date of Birth (DOB):', m.dob || 'N/A'],
-      ['Gender / NID-BRN:', `${m.gender || 'N/A'}  /  NID: ${m.nidOrBrn || 'N/A'}`],
-      
-      [{ content: 'Academic & Role Matrix (শিক্ষা ও পেশা)', colSpan: 2, styles: { fillColor: [240, 240, 240], fontStyle: 'bold', textColor: [0,0,0] } }],
-      ['Institution / Workplace:', m.institution || 'N/A'],
-      ['Education / Profession:', `${m.education || 'N/A'}  /  ${m.profession || 'N/A'}`],
-      ['Academic Session / Year:', m.academicYear || 'N/A'],
-      ['Assigned Gateway Role:', roleLabels[m.role] || m.role],
-      ['Account Status Level:', String(m.status || 'ACTIVE').toUpperCase()],
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Education:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.education || 'N/A'}</span></div>
+                <div style="font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Academic Yr:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; min-width:120px;">${m.academicYear || 'N/A'}</span></div>
+              </div>
 
-      [{ content: 'Communication Matrix (যোগাযোগ মাধ্যম)', colSpan: 2, styles: { fillColor: [240, 240, 240], fontStyle: 'bold', textColor: [0,0,0] } }],
-      ['Mobile & WhatsApp:', `${m.mobileNumber || 'N/A'}  /  ${m.whatsappNumber || 'N/A'}`],
-      ['Email Address:', m.email || 'N/A'],
-      ['Present Address Info:', m.presentAddress || 'N/A'],
-      ['Permanent Address Info:', m.permanentAddress || 'N/A']
-    ];
+              <div style="margin-top: 15px; font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Institution:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; width: 82%;">${m.institution || 'N/A'}</span></div>
+              <div style="margin-top: 10px; font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Present Address:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; width: 78%;">${m.presentAddress || 'N/A'}</span></div>
+              <div style="margin-top: 10px; font-size: 13px;"><span style="color: #00b4d8; font-weight:600;">Permanent Address:</span> <span style="border-bottom: 1px dotted rgba(255,255,255,.5); padding-left:5px; display:inline-block; width: 75%;">${m.permanentAddress || 'N/A'}</span></div>
+            </div>
 
-    docForm.autoTable({
-      body: formFields,
-      startY: 38,
-      margin: { left: 12, right: 12 },
-      theme: 'grid',
-      styles: { fontSize: 10, cellPadding: 3.5, color: [40, 40, 40] },
-      columnStyles: { 0: { width: 50, fontStyle: 'bold', fillColor: [250, 250, 250] } }
+            <img src="${m.photoUrl || 'https://i.pravatar.cc/300'}" style="width: 110px; height: 135px; object-fit: cover; border: 2px solid #00b4d8; border-radius: 8px;">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 45px;">
+            <div id="formQrCodeContainer" style="background:#fff; padding:5px; border-radius:4px;"></div>
+
+            <div style="text-align: center; width: 220px;">
+              <div style="color: #00b4d8; font-size:13px; font-weight:bold;">Signed Matrix</div>
+              <div style="border-top: 2px solid #ffd700; margin: 6px 0;"></div>
+              <div style="font-size: 11px; color:#94a3b8;">Authorized Authority</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 35px; border-top: 1px solid rgba(255,255,255,.15); padding-top: 10px; font-size: 11px; color: #94a3b8; line-height: 1.6;">
+            This security authentication registry was securely generated by ROS Nexus database servers. All structural criteria match cryptographic protocols. No physical signature required.
+          </div>
+
+          <div style="position: absolute; left: 10mm; right: 10mm; bottom: 5mm; display: flex; justify-content: space-between; color: #94a3b8; font-size: 10px;">
+            <div id="pdfTimestampArea"></div>
+            <div>Developed By, Utsab Sarker</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // কিউআর কোড এবং টাইমস্ট্যাম্প জেনারেট করুন
+    new QRCode(document.getElementById("formQrCodeContainer"), {
+      text: `https://ros-user-panel.vercel.app/member/${m.memberId || 'Pending'}`,
+      width: 80, height: 80
     });
 
-    let currentY = docForm.lastAutoTable.finalY + 12;
+    document.getElementById("pdfTimestampArea").innerText = "System Registry: " + new Date().toLocaleString();
 
-    // শর্তাবলী জোন (Terms & Conditions)
-    docForm.setTextColor(0, 0, 0);
-    docForm.setFontSize(10);
-    docForm.text("Membership Terms & Regulatory Declarations:", 12, currentY);
-    
-    docForm.setFontSize(8.5);
-    docForm.setTextColor(80, 80, 80);
-    const rules = [
-      "1. The Authority reserves the absolute right to suspend or cancel membership at any given time without prior notice.",
-      "2. Members must comply with the rules, constitution, and core values of Rajshahi Olympiad Society (ROS).",
-      "3. Any anti-social or non-disciplinary activities inside or associated with the node will lead to instant termination.",
-      "4. All provided profiling credentials must be legit. Fabrication of documents will trigger immediate structural blocks."
-    ];
-    rules.forEach(r => {
-      currentY += 5;
-      docForm.text(r, 14, currentY);
+    // সরাসরি ডাউনলোডের এক্সিকিউশন কম্যান্ড (নো প্রিভিউ শো)
+    const element = document.getElementById('captureContainer');
+    html2pdf().set({
+      margin: 0,
+      filename: `ROS_Form_${m.memberId || 'Pending'}.pdf`,
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: { mode: ["avoid-all"] }
+    }).from(element).save().then(() => {
+      renderTarget.innerHTML = ""; // জেনারেশন শেষে মেমোরি ক্লিন করুন
     });
-
-    // স্বাক্ষর ব্লক এরিয়া (Signatures Block)
-    currentY += 28;
-    docForm.setDrawColor(150, 150, 150);
-    docForm.setLineWidth(0.3);
-    
-    // বামে মেম্বার সাইন লাইন
-    docForm.line(14, currentY, 64, currentY);
-    docForm.setFontSize(9);
-    docForm.setTextColor(50, 50, 50);
-    docForm.text("Applicant's Signature", 14, currentY + 4);
-
-    // ডানে কর্তৃপক্ষের স্বাক্ষর ও উপরে ওভারলাইন
-    docForm.line(docForm.internal.pageSize.width - 64, currentY, docForm.internal.pageSize.width - 14, currentY);
-    docForm.text("Authorized Signature", docForm.internal.pageSize.width - 64, currentY + 4);
-    docForm.setFontSize(8);
-    docForm.text("Rajshahi Olympiad Society", docForm.internal.pageSize.width - 64, currentY + 8);
-
-    // ফুটার কন্টেন্ট ম্যাপিং (তারিখ, সময় ও ডেভেলপার ক্রেডিট)
-    docForm.setFontSize(7.5);
-    docForm.setTextColor(120, 120, 120);
-    const dateStr = `Downloaded: ${new Date().toLocaleString()}`;
-    docForm.text(dateStr, 12, docForm.internal.pageSize.height - 10);
-    docForm.text("Developed by, Utsab Sarker", docForm.internal.pageSize.width - 48, docForm.internal.pageSize.height - 10);
-
-    docForm.save(`ROS_Form_${m.memberId || 'Pending'}.pdf`);
   });
 
-  // ম্যানুয়াল মেম্বার তৈরি বাটন
+  // ম্যানুয়াল সদস্য তৈরি
   document.getElementById('btnManualEntry').addEventListener('click', async () => {
-    const name = prompt("সদস্যের পুরো নাম (English):");
+    const name = prompt("সদস্যের নাম (English):");
     if (!name) return;
     const mobile = prompt("মোবাইল নম্বর:");
-    const email = prompt("ইমেইল এড্রেস:");
     
     const currentYear = new Date().getFullYear();
     const querySnapshot = await getDocs(collection(db, "users"));
@@ -590,23 +420,16 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     });
     const generatedId = `ROS-${currentYear}-${String(maxSerial + 1).padStart(4, '0')}`;
 
-    try {
-      await addDoc(collection(db, "users"), {
-        englishName: name, mobileNumber: mobile, email: email || "", status: "active", memberId: generatedId, role: "general_member", createdAt: new Date().toISOString()
-      });
-      alert("সফলভাবে নতুন সাধারণ মেম্বার তৈরি হয়েছে এবং আইডি ইস্যু করা হয়েছে!");
-    } catch (e) {
-      console.error(e);
-      alert("তৈরি করতে সমস্যা হয়েছে!");
-    }
+    await addDoc(collection(db, "users"), {
+      englishName: name, mobileNumber: mobile, status: "active", memberId: generatedId, role: "general_member", createdAt: new Date().toISOString()
+    });
+    alert("সফলভাবে সাধারণ মেম্বার তৈরি হয়েছে!");
   });
 
-  // পপআপ ক্লোজ হ্যান্ডলার
   const closeDetails = () => { detailsModal.style.display = 'none'; selectedMemberForForm = null; };
   document.getElementById('closeMemberModalBtn').addEventListener('click', closeDetails);
   document.getElementById('closeMemberModalBtnTop').addEventListener('click', closeDetails);
 
-  // লাইভ সার্চ এবং ফিল্টারিং ইভেন্ট লিসেনার
   searchInput.addEventListener('input', renderFilteredMembers);
   statusFilter.addEventListener('change', renderFilteredMembers);
-      }
+                                                             }
