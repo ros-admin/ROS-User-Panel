@@ -1,26 +1,40 @@
 let localMembersArray = []; // লোকাল ক্যাশ ভ্যারিয়েবল
 
-// এক্সটার্নাল ডিপেন্ডেন্সি লাইব্রেরি স্বয়ংক্রিয়ভাবে লোড করার ফাংশন
+// এক্সটার্নাল ডিপেন্ডেন্সি লাইব্রেরি স্বয়ংক্রিয়ভাবে ও সঠিকভাবে লোড করার ফাংশন
 function injectRequiredLibraries() {
   if (!window.XLSX) {
     const xlsxScript = document.createElement('script');
     xlsxScript.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
     document.head.appendChild(xlsxScript);
   }
+  
+  // jsPDF কোর লাইব্রেরি লোড করুন
   if (!window.jspdf) {
     const jspdfScript = document.createElement('script');
     jspdfScript.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
     document.head.appendChild(jspdfScript);
+    
+    // কোর লোড হওয়ার পর স্বয়ংক্রিয়ভাবে autoTable প্লাগইন লোড হবে
+    jspdfScript.onload = () => {
+      injectAutoTable();
+    };
+  } else {
+    injectAutoTable();
   }
-  if (!window.jsPDFInvoiceTemplate) {
+}
+
+function injectAutoTable() {
+  // নিশ্চিত করুন প্লাগইনটি ইতিমধ্যে যুক্ত হয়েছে কিনা
+  if (!document.getElementById('jspdf-autotable-script')) {
     const autoTableScript = document.createElement('script');
+    autoTableScript.id = 'jspdf-autotable-script';
     autoTableScript.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js";
     document.head.appendChild(autoTableScript);
   }
 }
 
 function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs, addDoc, updateDoc, deleteDoc) {
-  // লাইব্রেরি ইঞ্জেক্ট করুন
+  // লাইব্রেরি সঠিকভাবে ইঞ্জেক্ট করুন
   injectRequiredLibraries();
 
   // ১. ড্যাশবোর্ড স্ট্রাকচার ও ইন্টারফেস রেন্ডারিং
@@ -74,7 +88,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     </div>
     
     <div class="cyber-glass" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-      <input type="text" id="memberSearchInput" class="cyber-input" placeholder="নাম, আইডি, মোবাইল বা ইমেইল লিখে সদস্য খুঁজুন..." style="margin:0; flex:1; min-width:250px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:6px;">
+      <input type="text" id="memberSearchInput" class="cyber-input" placeholder="নাম, নিবন্ধন নাম্বার, মোবাইল বা ইমেইল লিখে সদস্য খুঁজুন..." style="margin:0; flex:1; min-width:250px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:6px;">
       
       <select id="memberStatusFilter" class="cyber-input" style="margin:0; width:160px; background:#0b0f19; color:#fff; border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:6px;">
         <option value="all">সকল স্ট্যাটাস</option>
@@ -259,7 +273,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
           <div class="detail-cell"><small>NID / জন্ম নিবন্ধন</small><p>${member.nidOrBrn || 'N/A'}</p></div>
           <div class="detail-cell"><small>পেশা</small><p>${member.profession || 'N/A'}</p></div>
           <div class="detail-cell"><small>শিক্ষা প্রতিষ্ঠান/কর্মস্থল</small><p>${member.institution || 'N/A'}</p></div>
-          <div class="detail-cell"><small>শিক্ষাগত যোগ্যতা</small><p>${member.education || 'N/A'}</p></div>
+          <div class="detail-cell"><small>शिक्षাগত যোগ্যতা</small><p>${member.education || 'N/A'}</p></div>
           <div class="detail-cell"><small>শিক্ষাবর্ষ (Academic Year)</small><p>${member.academicYear || 'N/A'}</p></div>
           <div class="detail-cell"><small>সিস্টেম রোল (Role)</small><p style="text-transform:uppercase; color:#00b4d8;">${roleLabels[member.role] || member.role}</p></div>
           <div class="detail-cell" style="grid-column: span 2;"><small>বর্তমান ঠিকানা</small><p>${member.presentAddress || 'N/A'}</p></div>
@@ -390,8 +404,8 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
 
   // ৬. সকল সদস্যের টেবিল ভিত্তিক পিডিএফ এক্সপোর্ট (PDF ডাউনলোড)
   document.getElementById('exportPdfBtn').addEventListener('click', () => {
-    if (!window.jspdf) {
-      alert("পিডিএফ ইঞ্জিন লোড হচ্ছে, আবার চেষ্টা করুন!");
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert("পিডিএফ ইঞ্জিন সম্পূর্ণ লোড হতে ১-২ সেকেন্ড সময় নিচ্ছে, অনুগ্রহ করে আবার বাটনটি চাপুন!");
       return;
     }
     if (localMembersArray.length === 0) {
@@ -406,7 +420,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     docPdf.setFontSize(16);
     docPdf.text("Rajshahi Olympiad Society (ROS)", 14, 15);
     docPdf.setFontSize(11);
-    docPdf.text(`All Members Directory Database - Exported at: ${new Date().toLocaleString('bn-BD')}`, 14, 21);
+    docPdf.text(`All Members Directory Database - Exported at: ${new Date().toLocaleString()}`, 14, 21);
 
     const tableHeaders = [["Member ID", "Full Name (EN)", "Mobile Number", "Email Address", "Designation / Role", "Status"]];
     const tableRows = localMembersArray.map(m => [
@@ -417,6 +431,12 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       roleLabels[m.role] || m.role,
       String(m.status || 'pending').toUpperCase()
     ]);
+
+    // প্লাগইন চেক করে রান করা
+    if (typeof docPdf.autoTable !== 'function') {
+      alert("পিডিএফ টেবিল প্লাগইন ব্যাকএন্ডে ইনিশিয়ালিং হচ্ছে। অনুগ্রহ করে আর একবার ক্লিক করুন।");
+      return;
+    }
 
     docPdf.autoTable({
       head: tableHeaders,
@@ -433,16 +453,25 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       }
     });
 
-    docPdf.save(`ROS_Members_Directory_${new Date().toISOString().slice(0,10)}.pdf`);
+    docPdf.save(`ROS_Members_Database_${new Date().toISOString().slice(0,10)}.pdf`);
   });
 
   // ৭. একক সদস্য ফরম জেনারেশন পিডিএফ লজিক (ডাউনলোড ফর্ম)
   document.getElementById('downloadFormPdfBtn').addEventListener('click', () => {
     if (!selectedMemberForForm) return;
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert("পিডিএফ ইঞ্জিন লোড হচ্ছে, অনুগ্রহ করে আবার চেষ্টা করুন!");
+      return;
+    }
+    
     const m = selectedMemberForForm;
-
     const { jsPDF } = window.jspdf;
     const docForm = new jsPDF('p', 'mm', 'a4'); // A4 Portrait
+
+    if (typeof docForm.autoTable !== 'function') {
+      alert("টেবিল জেনারেটর প্লাগইন প্রস্তুত হচ্ছে। দয়া করে আবার ক্লিক করুন।");
+      return;
+    }
 
     // থিম বর্ডার এবং ডিজাইন লাইন
     docForm.setDrawColor(0, 180, 216);
@@ -462,7 +491,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     docForm.text("OFFICIAL MEMBERSHIP REGISTRATION FORM", docForm.internal.pageSize.width / 2, 23, { align: 'center' });
     docForm.text(`REGISTRATION ID: ${m.memberId || 'PENDING'}`, docForm.internal.pageSize.width / 2, 29, { align: 'center' });
 
-    // ডাটা টেবিল বা ফরম ফিল্ড ফরম্যাট জেনারেশন (ইংরেজি ডাটা প্রিন্ট সেফটি)
+    // ডাটা টেবিল ফিল্ডস
     const formFields = [
       [{ content: 'Personal Matrix (ব্যক্তিগত বিবরণ)', colSpan: 2, styles: { fillColor: [240, 240, 240], fontStyle: 'bold', textColor: [0,0,0] } }],
       ['Full Name (English):', m.englishName || 'N/A'],
@@ -535,15 +564,14 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     // ফুটার কন্টেন্ট ম্যাপিং (তারিখ, সময় ও ডেভেলপার ক্রেডিট)
     docForm.setFontSize(7.5);
     docForm.setTextColor(120, 120, 120);
-    const dateStr = `Downloaded: ${new Date().toLocaleString('bn-BD')}`;
+    const dateStr = `Downloaded: ${new Date().toLocaleString()}`;
     docForm.text(dateStr, 12, docForm.internal.pageSize.height - 10);
     docForm.text("Developed by, Utsab Sarker", docForm.internal.pageSize.width - 48, docForm.internal.pageSize.height - 10);
 
-    // ফাইলটি মেম্বার আইডি নামে অটো সেভ হবে
     docForm.save(`ROS_Form_${m.memberId || 'Pending'}.pdf`);
   });
 
-  // ম্যানুয়াল মেম্বার তৈরি বাটন ট্রিক
+  // ম্যানুয়াল মেম্বার তৈরি বাটন
   document.getElementById('btnManualEntry').addEventListener('click', async () => {
     const name = prompt("সদস্যের পুরো নাম (English):");
     if (!name) return;
@@ -581,4 +609,4 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
   // লাইভ সার্চ এবং ফিল্টারিং ইভেন্ট লিসেনার
   searchInput.addEventListener('input', renderFilteredMembers);
   statusFilter.addEventListener('change', renderFilteredMembers);
-}
+      }
