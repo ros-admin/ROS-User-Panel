@@ -309,8 +309,8 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       }
       
       let registrationDateStr = "N/A";
-    if (m.createdAt) {
-      registrationDateStr = new Date(m.createdAt).toLocaleDateString('bn-BD');
+    if (u.createdAt) {
+      registrationDateStr = new Date(u.createdAt).toLocaleDateString('bn-BD');
     }
 
       tr.innerHTML = `
