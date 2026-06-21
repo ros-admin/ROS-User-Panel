@@ -2,7 +2,7 @@
 function loadDashboardModule(contentRoot, currentAdminData, db, collection, onSnapshot, doc, updateDoc, deleteDoc) {
   contentRoot.innerHTML = `
     <div class="cyber-glass" style="padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid var(--neon-blue);">
-      <h2 style="font-size: 20px;">স্বাগতম, <span style="color: var(--neon-blue); text-shadow: 0 0 10px rgba(0,180,216,0.3);">${currentAdminData.englishName || 'অ্যাডমিন'}</span></h2>
+      <h2 style="font-size: 20px;">স্বাগতম, <span style="color: var(--neon-blue); text-shadow: 0 0 10px rgba(0,180,216,0.3);">${currentAdminData.englishName || currentAdminData.fullName || 'অ্যাডমিন'}</span></h2>
       <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">সার্ভার স্ট্যাটাস: <span style="color: var(--neon-green);">অনলাইন</span> | তারিখ: <span>${new Date().toLocaleDateString('bn-BD')}</span></p>
     </div>
 
@@ -28,9 +28,9 @@ function loadDashboardModule(contentRoot, currentAdminData, db, collection, onSn
         <div style="font-size: 11px; color: var(--neon-blue);"><i class="fas fa-arrow-right"></i> মেম্বার ডাটাবেজে যান</div>
       </div>
 
-      <div class="cyber-glass dashboard-click-redirect-trigger" data-target-mod="profile_requests" style="padding: 20px; border-radius: 6px; cursor: pointer; position: relative; transition: all 0.3s ease;">
+      <div class="cyber-glass dashboard-click-redirect-trigger" data-target-mod="adminRequests" style="padding: 20px; border-radius: 6px; cursor: pointer; position: relative; transition: all 0.3s ease;">
         <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">প্রোফাইল আপডেট রিকোয়েস্ট</div>
-        <div style="font-size: 32px; font-weight: bold; margin: 10px 0; color: var(--neon-cyan);" id="cntDashboardInfoReqs">⏳</div>
+        <div style="font-size: 32px; font-weight: bold; margin: 10px 0; color: #00b4d8;" id="cntDashboardInfoReqs">⏳</div>
         <div style="font-size: 11px; color: var(--neon-blue);"><i class="fas fa-arrow-right"></i> রিকোয়েস্ট হাব ওপেন করুন</div>
       </div>
 
@@ -39,19 +39,33 @@ function loadDashboardModule(contentRoot, currentAdminData, db, collection, onSn
     <div class="cyber-glass" style="padding: 20px; border-radius: 8px;">
       <h3 style="font-size: 16px; margin-bottom: 12px; color: #fff;"><i class="fas fa-shield-alt"></i> সিস্টেম সিকিউরিটি লগ ও প্রোটোকল নোটিশ</h3>
       <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: var(--text-muted); line-height: 1.5;">
-        <li><span style="color: var(--neon-green);">● SECURITY:</span> প্রতিটি সেশন SSL/TLS এন্ড-টু-এন্ড এনক্রিপশনের মাধ্যমে সুরক্ষিত। কর্তৃপক্ষের অনুমতি ব্যতিরেকে কোনো তথ্য ডিরেক্টরি থেকে কপি বা এক্সপোর্ট করা দণ্ডনীয় অপরাধ।</li>
+        <li><span style="color: var(--neon-green);">● SECURITY:</span> প্রতিটি সেশন SSL/TLS এন্ড-টু-এন্ড এনক্রিপশনের মাধ্যমে সুরক্ষিত। Authorities অনুমতি ব্যতিরেকে কোনো তথ্য ডিরেক্টরি থেকে কপি বা এক্সপোর্ট করা দণ্ডনীয় অপরাধ।</li>
         <li><span style="color: var(--neon-blue);">● DISCONNECT PROTOCOL:</span> প্যানেল ব্যবহার শেষে ব্রাউজার বন্ধ করার পূর্বে অবশ্যই ড্যাশবোর্ড থেকে সুরক্ষিতভাবে লগআউট সম্পন্ন করুন।</li>
       </ul>
     </div>
   `;
 
-  // ---- 📊 ড্যাশবোর্ড কন্টেন্ট ইন্টারনাল কাউন্টার সিঙ্ক লজিক ----
+  // ---- 🖱️ কার্ড ক্লিক এবং ডাইনামিক সাইডবার রাউটিং হ্যান্ডলার ----
+  document.querySelectorAll('.dashboard-click-redirect-trigger').forEach(card => {
+    card.addEventListener('click', (e) => {
+      const targetModuleId = e.currentTarget.getAttribute('data-target-mod');
+      const sidebarMenuLink = document.querySelector(`.menu-item a[data-mod-id="${targetModuleId}"]`);
+      
+      if (sidebarMenuLink) {
+        sidebarMenuLink.click();
+      } else {
+        alert("নির্দিষ্ট মডিউলটি সিস্টেমে খুঁজে পাওয়া যায়নি।");
+      }
+    });
+  });
+
+  // ---- 📊 ফায়ারবেস রিয়েল-টাইম লাইভ কাউন্টার লজিক ----
+  
+  // ১. সদস্য সংখ্যা গণনা (মোট, একটিভ, পেন্ডিং)
   onSnapshot(collection(db, "users"), (snap) => {
-    // মোট ব্যবহারকারী (যাদের রোল 'member')
+    // শুধুমাত্র যাদের রোল 'member' তাদের ফিল্টার করা হচ্ছে
     const totalMembers = snap.docs.filter(d => d.data().role === "member").length;
-    // একটিভ সদস্য (status === "active")
     const activeCount = snap.docs.filter(d => d.data().role === "member" && d.data().status === "active").length;
-    // পেন্ডিং সদস্য (status === "pending")
     const pendingCount = snap.docs.filter(d => d.data().role === "member" && d.data().status === "pending").length;
 
     const elTotal = document.getElementById('cntTotalMembers');
@@ -61,12 +75,14 @@ function loadDashboardModule(contentRoot, currentAdminData, db, collection, onSn
     if (elTotal) elTotal.innerText = totalMembers;
     if (elActive) elActive.innerText = activeCount;
     if (elPending) elPending.innerText = pendingCount;
-  }, (err) => console.log("Dashboard internal users loader error:", err));
+  }, (err) => console.log("Dashboard Internal Users Counter Error:", err));
 
+  // ২. প্রোফাইল ইনফো আপডেট রিকোয়েস্ট কাউন্টার
   onSnapshot(collection(db, "profile_update_requests"), (snap) => {
     const el = document.getElementById('cntDashboardInfoReqs');
     if (el) el.innerText = snap.size;
-  }, (err) => console.log("Dashboard internal requests loader error:", err));
+  }, (err) => console.log("Dashboard Internal Profile Requests Counter Error:", err));
 }
 
-export { loadDashboardModule };
+// গ্লোবাল স্কোপে ব্যবহারের জন্য ফাংশন এক্সপোর্ট
+window.loadDashboardModule = loadDashboardModule;
