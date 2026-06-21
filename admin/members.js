@@ -307,13 +307,18 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         const selected = (u.role === key) ? "selected" : "";
         roleChangerHtml += `<option value="${key}" ${selected}>${val}</option>`;
       }
+      
+      let registrationDateStr = "N/A";
+    if (m.createdAt) {
+      registrationDateStr = new Date(m.createdAt).toLocaleDateString('bn-BD');
+    }
 
       tr.innerHTML = `
       <td style="padding:14px 12px;">${idx + 1}</td>
         <td style="padding:14px 12px; color:#00b4d8; font-weight:bold;">${u.memberId || '⏳ Pending'}</td>
         <td style="padding:14px 12px; font-weight:600;">${u.englishName || 'N/A'}</td>
         <td style="padding:14px 12px;">${u.mobileNumber || 'N/A'}</td>
-        <td style="padding:14px 12px;">${u.createdAt || 'N/A'}</td>
+        <td style="padding:14px 12px;">${joiningDateTime || 'N/A'}</td>
         <td style="padding:14px 12px;">
           <select class="cyber-input erp-role-changer" data-id="${u.id}" style="width:100%; max-width:180px; margin:0; padding:4px; background:#0b0f19; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:4px; font-size:12px;">
             ${roleChangerHtml}
