@@ -47,7 +47,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         box-shadow: 0 0 30px rgba(0, 180, 216, 0.2);
       }
       
-      /* আল্ট্রা-প্রিমিয়াম প্রোফাইল কার্ড ডিজাইন */
+      /* প্রোফাইল কার্ড ডিজাইন */
       .profile-card-container {
         display: flex; gap: 24px; background: rgba(255, 255, 255, 0.02);
         padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);
@@ -78,7 +78,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       .info-badge-item small { display: block; color: #8892b0; font-size: 10.5px; text-transform: uppercase; margin-bottom: 2px; font-weight: 600;}
       .info-badge-item p { margin: 0; font-size: 13.5px; font-weight: 600; color: #f1f5f9; word-break: break-all;}
       
-      /* ফর্ম ইনপুট গ্রিড স্টাইল */
       .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
       @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
       .form-group { display: flex; flex-direction: column; }
@@ -103,7 +102,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </button>
     </div>
     
-    <!-- সার্চ ও ফিল্টার হাব -->
     <div class="cyber-glass" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
       <input type="text" id="memberSearchInput" class="cyber-input" placeholder="নাম, নিবন্ধন নাম্বার, মোবাইল বা ইমেইল লিখে সদস্য খুঁজুন..." style="margin:0; flex:1; min-width:250px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:6px;">
       
@@ -121,7 +119,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </div>
     </div>
 
-    <!-- ডাটা টেবিল কন্টেইনার -->
     <div class="cyber-glass" style="overflow-x:auto; padding:5px; border-radius:8px;">
       <table id="mainMembersDataTable" style="width:100%; border-collapse:collapse; font-size:13.5px; text-align:left; color:#e5e7eb;">
         <thead style="background:rgba(0, 180, 216, 0.15); color:#00b4d8; border-bottom:2px solid rgba(0, 180, 216, 0.3);">
@@ -138,7 +135,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </table>
     </div>
 
-    <!-- সদস্য প্রোফাইলের সম্পূর্ণ বিবরণ পপআপ মডাল -->
     <div class="nexus-modal" id="memberDetailsModal" style="display:none;">
       <div class="modal-body cyber-glass">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,180,216,0.3); padding-bottom:12px; margin-bottom:20px;">
@@ -157,7 +153,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </div>
     </div>
 
-    <!-- নতুন সদস্য যুক্ত করার প্রিমিয়াম মডাল ফর্ম পপআপ -->
     <div class="nexus-modal" id="createMemberModal" style="display:none;">
       <div class="modal-body cyber-glass" style="max-width: 700px;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(251,191,36,0.3); padding-bottom:12px; margin-bottom:15px;">
@@ -183,7 +178,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
             <div class="form-group"><label>NID / জন্ম নিবন্ধন নম্বর</label><input type="text" id="fmNid" class="cyber-input"></div>
             <div class="form-group"><label>পেশা</label><input type="text" id="fmProfession" class="cyber-input" placeholder="Student / Employee"></div>
             <div class="form-group"><label>শিক্ষা প্রতিষ্ঠান / কর্মস্থল</label><input type="text" id="fmInstitution" class="cyber-input"></div>
-            <div class="form-group"><label>शिक्षাগত যোগ্যতা</label><input type="text" id="fmEducation" class="cyber-input"></div>
+            <div class="form-group"><label>শিক্ষাগত যোগ্যতা</label><input type="text" id="fmEducation" class="cyber-input"></div>
             <div class="form-group"><label>শিক্ষাবর্ষ (Academic Year)</label><input type="text" id="fmAcademicYear" class="cyber-input" placeholder="2023-24"></div>
             <div class="form-group">
               <label>সিস্টем পদবি (Role)</label>
@@ -201,8 +196,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       </div>
     </div>
 
-    <!-- ব্যাকগ্রাউন্ড হিডেন কন্টেইনার (এখানে সিঙ্গেল মেম্বার পিডিএফ রেন্ডার হবে) -->
-    <div id="hiddenPdfRenderArea" style="position: absolute; left: -9999px; top: -9999px; width: 210mm; height: 297mm; overflow: hidden;"></div>
+    <div id="hiddenPdfRenderArea" style="position: absolute; left: -9999px; top: -9999px; width: 210mm; overflow: hidden;"></div>
   `;
 
   // এলিমেন্ট রেফারেন্সসমূহ
@@ -214,7 +208,6 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
   const fmRoleSelect = document.getElementById('fmRole');
   let selectedMemberForForm = null;
 
-  // ২. রোল ডেফিনিশন ম্যাপিং লেবেল
   const roleLabels = {
     "general_member": "সদস্য (General Member)",
     "admin": "এডমিন (Admin)",
@@ -242,14 +235,13 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     "member_secretary": 1, "executive_member": 5
   };
 
-  // রোল ড্রপডাউন জেনারেট
   let roleOptionsHtml = "";
   for (const [key, val] of Object.entries(roleLabels)) {
     roleOptionsHtml += `<option value="${key}">${val}</option>`;
   }
   fmRoleSelect.innerHTML = roleOptionsHtml;
 
-  // ৩. রিয়েল-টাইম ফায়ারবেস লিসেনার (সিরিয়াল অনুসারে অ্যালফানিউমেরিক সর্টিং)
+  // ৩. রিয়াল-টাইম ফায়ারবেস লিসেনার
   onSnapshot(collection(db, "users"), (snap) => {
     localMembersArray = [];
     snap.forEach(userDoc => {
@@ -267,7 +259,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     renderFilteredMembers();
   });
 
-  // ৪. রেন্ডারিং ফিল্টারড মেম্বারস তালিকা
+  // ৪. ড্যাশবোর্ড ডাটা টেবিল রেন্ডার
   function renderFilteredMembers() {
     tbody.innerHTML = "";
     const searchTerm = searchInput.value.toLowerCase().trim();
@@ -326,14 +318,13 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       tbody.appendChild(tr);
     });
 
-    // 🌟 ইউনিক এবং আপডেটেড প্রিমিয়াম প্রোফাইল মডাল রেন্ডারিং (বিস্তারিত বাটন)
+      // ৫. বিস্তারিত বোতাম অ্যাকশন পপআপ রেন্ডার
     document.querySelectorAll('.btn-view').forEach(b => b.addEventListener('click', (e) => {
       const id = e.currentTarget.getAttribute('data-id');
       const member = localMembersArray.find(m => m.id === id);
       if (!member) return;
       selectedMemberForForm = member;
 
-      // মেম্বারশিপ জয়েনিং টাইমস্ট্যাম্প ফরম্যাট
       let joiningDateTime = "N/A";
       if (member.createdAt) {
         joiningDateTime = new Date(member.createdAt).toLocaleString('bn-BD');
@@ -341,16 +332,14 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
 
       document.getElementById('modalMemberCardContent').innerHTML = `
         <div class="profile-card-container">
-           <!-- বাম পাশে ইউজারের ছবি, নিচে মেম্বার আইডি এবং ইংরেজি নাম -->
           <div class="profile-avatar-zone">
             <img src="${member.photoUrl || 'https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png'}">
             <div class="profile-avatar-meta">
-              <div style="font-size: 13px; color: #fbbf24; font-weight: bold; font-family: monospace; letter-spacing:0.5px;">${member.memberId || '⏳ PENDING'}</div>
+              <div style="font-size: 13px; color: #fbbf24; font-weight: bold; font-family: monospace;">${member.memberId || '⏳ PENDING'}</div>
               <div style="font-size: 12px; color: #fff; font-weight: 600; margin-top: 3px; word-break: break-all;">${member.englishName || 'N/A'}</div>
             </div>
           </div>
           
-          <!-- ডান পাশে টেবিল ও ডাটা গ্রিড (নতুন ফিল্ডসমূহ সহ) -->
           <div class="profile-info-grid">
             <div class="info-badge-item"><small>সদস্যের নাম (বাংলা)</small><p>${member.banglaName || 'N/A'}</p></div>
             <div class="info-badge-item"><small>মোবাইল নম্বর</small><p>${member.mobileNumber || 'N/A'}</p></div>
@@ -385,7 +374,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       }
     }));
 
-    // স্ট্যাটাস চেঞ্জার হ্যান্ডলার (সর্বশেষ আইডি ট্র্যাক করে পরবর্তী আইডি অটো-জেনারেশন)
+    // স্ট্যাটাস চেঞ্জার হ্যান্ডলার
     document.querySelectorAll('.erp-status-changer').forEach(s => s.addEventListener('change', async (e) => {
       const id = e.target.getAttribute('data-id');
       const newStatus = e.target.value;
@@ -429,7 +418,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     }));
   }
 
-  // 🆔 ফায়ারবেসের সর্বশেষ সর্বোচ্চ রেজিস্ট্রেশন আইডির পরের নম্বরটি অটোমেটিক তৈরি করার কোর ফাংশন
+  // ফায়ারবেসের সর্বশেষ মেম্বার আইডি ট্র্যাক করে তার পরের আইডি জেনারেট করার ফাংশন
   async function generateNextMemberId(getDocs, collection, db) {
     const currentYear = new Date().getFullYear();
     const querySnapshot = await getDocs(collection(db, "users"));
@@ -450,7 +439,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     return `ROS-${currentYear}-${String(maxSerial + 1).padStart(4, '0')}`;
   }
 
-  // 📊 ৫. এক্সেল ফাইল এক্সপোর্ট লজিক (ইউজারের সকল তথ্য সহ)
+  // 📊 ৬. এক্সেল ফাইল এক্সপোর্ট লজিক
   document.getElementById('exportExcelBtn').addEventListener('click', () => {
     if (!window.XLSX || localMembersArray.length === 0) return;
     const excelRows = localMembersArray.map((m, idx) => ({
@@ -483,22 +472,69 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     XLSX.writeFile(workbook, `ROS_Complete_Database.xlsx`);
   });
 
-  // 📄 ৬. টেবিলের ডাটা দিয়ে তাৎক্ষণিক PDF তালিকা ডাউনলোড করার বাটন অ্যাকশন (All Data)
+  // 📄 ৭. এক্সেল বাটনের ডানপাশের পিডিএফ বাটন হ্যান্ডলার (নির্দিষ্ট কলাম ফরম্যাটে টেবিল এক্সপোর্ট)
   document.getElementById('exportAllPdfBtn').addEventListener('click', () => {
     if (!window.html2pdf || localMembersArray.length === 0) return;
     
-    const element = document.getElementById('mainMembersDataTable');
+    const renderTarget = document.getElementById('hiddenPdfRenderArea');
+    
+    let tableRowsHtml = "";
+    localMembersArray.forEach((m) => {
+      const accountTime = m.createdAt ? new Date(m.createdAt).toLocaleString('bn-BD', {hour12: true}) : "N/A";
+      tableRowsHtml += `
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 8px; text-align: center;"><input type="checkbox" style="transform: scale(1.1);"></td>
+          <td style="padding: 8px; font-weight: bold; color: #0077b6;">${m.memberId || '⏳ Pending'}</td>
+          <td style="padding: 8px; font-weight: 500;">${m.englishName || 'N/A'}</td>
+          <td style="padding: 8px;">${m.mobileNumber || 'N/A'}</td>
+          <td style="padding: 8px; font-size: 11px; max-width: 150px; word-break: break-all;">${m.email || 'N/A'}</td>
+          <td style="padding: 8px; font-size: 11px; color: #555;">${accountTime}</td>
+        </tr>
+      `;
+    });
+
+    renderTarget.innerHTML = `
+      <div id="tablePdfPrintWrapper" style="padding: 15px; font-family: 'Segoe UI', Roboto, sans-serif; color: #333; background: #fff;">
+        <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #00b4d8; padding-bottom: 10px;">
+          <h2 style="margin: 0; color: #0077b6; font-size: 20px;">Rajshahi Olympiad Society (ROS)</h2>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #666; font-weight: 600;">সদস্য ডাটাবেজ অফিশিয়াল রেকর্ড রিপোর্ট</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+          <thead>
+            <tr style="background: #f2f2f2; border-bottom: 2px solid #aaa;">
+              <th style="padding: 10px 8px; text-align: center; width: 8%;">চেক বক্স</th>
+              <th style="padding: 10px 8px; width: 18%;">নিবন্ধন নাম্বার</th>
+              <th style="padding: 10px 8px; width: 22%;">ইংরেজি নাম</th>
+              <th style="padding: 10px 8px; width: 16%;">মোবাইল নম্বর</th>
+              <th style="padding: 10px 8px; width: 20%;">ইমেইল এড্রেস</th>
+              <th style="padding: 10px 8px; width: 16%;">অ্যাকাউন্ট খোলার সময়</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml}
+          </tbody>
+        </table>
+        <div style="margin-top: 25px; display: flex; justify-content: space-between; font-size: 10px; color: #777; border-top: 1px dashed #ccc; padding-top: 8px;">
+          <div>রিপোর্ট তৈরির সময়: ${new Date().toLocaleString('bn-BD')}</div>
+          <div>Developed By, Utsab Sarker</div>
+        </div>
+      </div>
+    `;
+
     const opt = {
-      margin: 10,
-      filename: `ROS_Table_Members_Report.pdf`,
+      margin: 8,
+      filename: `ROS_Members_Custom_Report.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } // ল্যান্ডস্কেপ মোড টেবিলের জন্য পারফেক্ট
+      html2canvas: { scale: 2.5, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
-    html2pdf().from(element).set(opt).save();
+
+    html2pdf().from(document.getElementById('tablePdfPrintWrapper')).set(opt).save().then(() => {
+      renderTarget.innerHTML = "";
+    });
   });
 
-  // 💎 ৭. একক মেম্বার ফর্ম পিডিএফ ডাউনলোড (১০০% নিখুঁত স্পেসিফাইড লেআউট)
+  // 💎 ৮. একক মেম্বার ফর্ম পিডিএফ ডাউনলোড (সকল তথ্য ও শর্তাবলী সহ)
   document.getElementById('downloadFormPdfBtn').addEventListener('click', () => {
     if (!selectedMemberForForm || !window.html2pdf || !window.QRCode) return;
     
@@ -507,103 +543,96 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     const renderTarget = document.getElementById('hiddenPdfRenderArea');
 
     renderTarget.innerHTML = `
-      <div id="pdfAbsoluteContainer" style="width: 210mm; height: 297mm; background: linear-gradient(135deg, #020c1b, #07162b); color: #f1f5f9; position: relative; box-sizing: border-box; overflow: hidden; padding: 0; margin: 0;">
-        <div style="position: absolute; top: 8mm; left: 8mm; right: 8mm; bottom: 8mm; border: 2px solid rgba(0, 180, 216, 0.6); border-radius: 10px; pointer-events: none; box-shadow: inset 0 0 15px rgba(0,180,216,0.15);"></div>
-        <div style="position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 1px dashed rgba(255, 215, 0, 0.25); border-radius: 8px; pointer-events: none;"></div>
+      <div id="pdfAbsoluteContainer" style="width: 210mm; background: #ffffff; color: #1e293b; font-family: 'Segoe UI', Arial, sans-serif; box-sizing: border-box; padding: 15mm 15mm; position: relative;">
         
-        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 1;">
-          <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 60%; opacity: .045; filter: grayscale(100%);">
+        <div style="position: absolute; top: 35%; left: 15%; right: 15%; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 1; opacity: 0.05;">
+          <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 80%;">
         </div>
 
-        <div style="position: relative; z-index: 2; padding: 16mm; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-          <div>
-            <!-- হেডার ব্লক: বামে লোগো এবং ডানে ছবি বর্ডার ঘেঁষে -->
-            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(0, 180, 216, 0.4); padding-bottom: 15px; margin-bottom: 20px;">
-              <div style="display: flex; align-items: center; gap: 15px;">
-                <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="height: 65px; object-fit: contain;">
-                <div style="text-align: left;">
-                  <h1 style="color: #ffd700; font-size: 21px; margin: 0; font-weight: 700; letter-spacing: 0.5px; font-family: 'Poppins', sans-serif;">MEMBER REGISTRATION REGISTRY</h1>
-                  <p style="color: #00b4d8; font-size: 11.5px; margin: 2px 0 0 0; font-weight: 600; letter-spacing: 1px;">RAJSHAHI OLYMPIAD SOCIETY (ROS)</p>
-                </div>
+        <div style="position: relative; z-index: 2;">
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #00b4d8; padding-bottom: 12px; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="height: 60px;">
+              <div style="text-align: left;">
+                <h1 style="color: #0077b6; font-size: 20px; margin: 0; font-weight: 700; letter-spacing: 0.5px;">RAJSHAHI OLYMPIAD SOCIETY (ROS)</h1>
+                <p style="color: #00b4d8; font-size: 11px; margin: 3px 0 0 0; font-weight: 600; letter-spacing: 0.5px;">Official Member Registration Registry Profile</p>
               </div>
-              <img src="${m.photoUrl || 'https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png'}" style="width: 95px; height: 115px; object-fit: cover; border: 2px solid #00b4d8; border-radius: 6px; background: rgba(0,0,0,0.4);">
             </div>
-
-            <!-- স্পেসিফাইড ফিল্ড টেবিল: সিরিয়াল, রেজিস্ট্রেশন নাম্বার, নাম, মোবাইল, হোয়াটসঅ্যাপ, ইমেইল, ঠিকানা -->
-            <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(0, 180, 216, 0.2); border-radius: 6px; overflow: hidden;">
-              <div style="background: rgba(0, 180, 216, 0.15); padding: 8px 12px; font-weight: bold; color: #ffd700; font-size: 13px; border-bottom: 1px solid rgba(0, 180, 216, 0.2);">SECURE PROFILE CREDENTIALS DATA-NODE</div>
-              
-              <table style="width: 100%; border-collapse: collapse; font-size: 12px; color: #f1f5f9;">
-                <tr>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); width: 30%; color: #00b4d8; font-weight: 600;">Serial Number (SL):</td>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); font-weight: bold; color: #fff;"># ${serialIndex}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); color: #00b4d8; font-weight: 600;">Registration ID:</td>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); font-weight: bold; color: #fbbf24;">${m.memberId || 'ROS-PENDING'}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); color: #00b4d8; font-weight: 600;">Full Name:</td>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); font-weight: 600;">${m.englishName || 'N/A'} ${m.banglaName ? ' (' + m.banglaName + ')' : ''}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); color: #00b4d8; font-weight: 600;">Mobile Number:</td>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06);">${m.mobileNumber || 'N/A'}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); color: #00b4d8; font-weight: 600;">WhatsApp Number:</td>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06);">${m.whatsappNumber || m.mobileNumber || 'N/A'}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); color: #00b4d8; font-weight: 600;">Email Address:</td>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); color: #ffd700;">${m.email || 'N/A'}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); color: #00b4d8; font-weight: 600;">Present Address:</td>
-                  <td style="padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); line-height: 1.4;">${m.presentAddress || 'N/A'}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 11px 14px; border-right: 1px solid rgba(255,255,255,0.06); color: #00b4d8; font-weight: 600;">Permanent Address:</td>
-                  <td style="padding: 11px 14px; line-height: 1.4;">${m.permanentAddress || 'N/A'}</td>
-                </tr>
-              </table>
-            </div>
+            <img src="${m.photoUrl || 'https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png'}" style="width: 90px; height: 110px; object-fit: cover; border: 2px solid #00b4d8; border-radius: 4px; background: #f8fafc;">
           </div>
 
-          <!-- কিউআর জোন এবং অথরাইজড সিগনেচার এরিয়া -->
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
-              <div>
-                <div id="formQrCodeContainer" style="background: #fff; padding: 5px; border-radius: 4px; display: inline-block;"></div>
-                <div style="font-size: 9px; color: #94a3b8; margin-top: 4px;" id="pdfTimestampArea"></div>
-              </div>
-              <div style="text-align: center; width: 200px;">
-                <div style="height: 45px;"></div> 
-                <div style="border-top: 1.5px solid #00b4d8; width: 100%;"></div>
-                <div style="font-size: 11px; color: #ffd700; font-weight: bold; margin-top: 5px;">Authorized Signature</div>
-              </div>
+          <h3 style="font-size: 13px; color: #0077b6; border-bottom: 1px solid #e2e8f0; margin: 10px 0 5px 0; padding-bottom: 3px; text-transform: uppercase;">১. মূল প্রোফাইল আইডেন্টিটি</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 12px;">
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; width: 30%; font-weight: 600; color: #475569;">সিরিয়াল নম্বর (SL Number):</td><td style="padding: 6px; font-weight: bold;"># ${serialIndex}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">নিবন্ধন আইডি (Member ID):</td><td style="padding: 6px; font-weight: bold; color: #0077b6;">${m.memberId || 'ROS-PENDING'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">পূর্ণ নাম (ইংরেজি):</td><td style="padding: 6px; font-weight: 600;">${m.englishName || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">পূর্ণ নাম (বাংলা):</td><td style="padding: 6px;">${m.banglaName || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">মোবাইল নম্বর:</td><td style="padding: 6px;">${m.mobileNumber || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">হোয়াটসঅ্যাপ নম্বর:</td><td style="padding: 6px;">${m.whatsappNumber || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">ইমেইল এড্রেস:</td><td style="padding: 6px; color: #0077b6;">${m.email || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">ফেসবুক আইডি লিংক:</td><td style="padding: 6px; color: #b45309; font-size:10.5px; word-break:break-all;">${m.facebookUrl || 'N/A'}</td></tr>
+          </table>
+
+          <h3 style="font-size: 13px; color: #0077b6; border-bottom: 1px solid #e2e8f0; margin: 10px 0 5px 0; padding-bottom: 3px; text-transform: uppercase;">২. ব্যক্তিগত ও পারিবারিক বিবরণ</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 12px;">
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; width: 30%; font-weight: 600; color: #475569;">পিতার নাম (Father's Name):</td><td style="padding: 6px;">${m.fatherName || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">মাতার নাম (Mother's Name):</td><td style="padding: 6px;">${m.motherName || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">জন্ম তারিখ (Date of Birth):</td><td style="padding: 6px;">${m.dob || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">লিঙ্গ (Gender):</td><td style="padding: 6px;">${m.gender || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">NID / জন্ম নিবন্ধন কার্ড নম্বর:</td><td style="padding: 6px;">${m.nidOrBrn || 'N/A'}</td></tr>
+          </table>
+
+          <h3 style="font-size: 13px; color: #0077b6; border-bottom: 1px solid #e2e8f0; margin: 10px 0 5px 0; padding-bottom: 3px; text-transform: uppercase;">৩. প্রাতিষ্ঠানিক ও ঠিকানা রেকর্ডস</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 12px;">
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; width: 30%; font-weight: 600; color: #475569;">পেশা (Profession):</td><td style="padding: 6px;">${m.profession || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">শিক্ষা প্রতিষ্ঠান / কর্মস্থল:</td><td style="padding: 6px;">${m.institution || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">সর্বশেষ শিক্ষাগত যোগ্যতা:</td><td style="padding: 6px;">${m.education || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">শিক্ষাবর্ষ (Academic Year):</td><td style="padding: 6px;">${m.academicYear || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">সংগঠন পদবি ও স্ট্যাটাস:</td><td style="padding: 6px; font-weight: bold; color: #b45309;">${roleLabels[m.role] || m.role} (${String(m.status || 'Pending').toUpperCase()})</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">বর্তমান ঠিকানা:</td><td style="padding: 6px; line-height: 1.3;">${m.presentAddress || 'N/A'}</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px; font-weight: 600; color: #475569;">স্থায়ী ঠিকানা:</td><td style="padding: 6px; line-height: 1.3;">${m.permanentAddress || 'N/A'}</td></tr>
+          </table>
+
+            <div style="margin-top: 15px; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 6px;">
+            <h4 style="margin: 0 0 5px 0; font-size: 11px; color: #0f172a; font-weight: bold;"><i class="fas fa-gavel"></i> সাধারণ শর্তাবলী ও সদস্য অঙ্গীকারনামা:</h4>
+            <ol style="margin: 0; padding-left: 15px; font-size: 10px; color: #475569; line-height: 1.4; text-align: justify;">
+              <li>আমি সাক্ষ্য দিচ্ছি যে এই ফরমে প্রদত্ত সকল তথ্য সম্পূর্ণ সত্য এবং নির্ভুল। কোনো তথ্য অসত্য প্রমাণিত হলে সংগঠন আমার মেম্বারশিপ বাতিল করার অধিকার রাখে।</li>
+              <li>রাজশাহী অলিম্পিয়াড সোসাইটি (ROS)-এর সকল গঠনতান্ত্রিক নিয়ম, শৃঙ্খলা, আদর্শ এবং পরিচালনা পর্ষদের সিদ্ধান্তসমূহ সর্বদা মেনে চলতে আমি বাধ্য থাকব।</li>
+              <li>সংগঠনের কোনো গোপন নথিপত্র, ডাটাবেজ কিংবা অভ্যন্তরীণ সিদ্ধান্ত কর্তৃপক্ষের অনুমতি ছাড়া বাহিরে প্রকাশ বা শেয়ার করা সম্পূর্ণ নিষিদ্ধ।</li>
+              <li>সংগঠনের সুনাম ক্ষুণ্ন হয় এমন কোনো রাষ্ট্রবিরোধী, অসামাজিক বা শৃঙ্খলা পরিপন্থী কর্মকাণ্ডে লিপ্ত হলে তাৎক্ষণিকভাবে সদস্যপদ স্থগিত করা হবে।</li>
+            </ol>
+          </div>
+
+          <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+              <div id="formQrCodeContainer" style="background: #fff; padding: 3px; border: 1px solid #cbd5e1; display: inline-block;"></div>
+              <div style="font-size: 8.5px; color: #64748b; margin-top: 3px;" id="pdfTimestampArea"></div>
             </div>
-            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #94a3b8;">
-              <div>CRITICAL PRIVACY NODE // GENERATED VIA ROS NEXUS BACKEND</div>
-              <div style="font-weight: 600; color: #00b4d8;">Developed By, Utsab Sarker</div>
+            <div style="text-align: center; width: 160px;">
+              <div style="border-top: 1.5px solid #475569; width: 100%;"></div>
+              <div style="font-size: 11px; color: #1e293b; font-weight: bold; margin-top: 4px;">Authorized Authority</div>
+              <div style="font-size: 9px; color: #64748b;">Rajshahi Olympiad Society</div>
             </div>
+          </div>
+          
+          <div style="border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 15px; text-align: center; font-size: 8.5px; color: #94a3b8; font-weight: 500;">
+            SYSTEM-GENERATED RECOGNITION NODE // SECURE REGISTRY REPORT // DEVELOPED BY UTSAB SARKER
           </div>
         </div>
       </div>
     `;
 
-    // কিউআর কোড জেনারেশন
     new QRCode(document.getElementById("formQrCodeContainer"), {
       text: `https://ros-user-panel.vercel.app/member/${m.memberId || 'Pending'}`,
-      width: 75, height: 75
+      width: 65, height: 65
     });
 
-    document.getElementById("pdfTimestampArea").innerText = "Registry Log: " + new Date().toLocaleString();
+    document.getElementById("pdfTimestampArea").innerText = "রেজিস্ট্রি লগ: " + new Date().toLocaleString('bn-BD');
 
     const element = document.getElementById('pdfAbsoluteContainer');
     html2pdf().set({
       margin: 0,
-      filename: `ROS_Form_${m.memberId || 'Pending'}.pdf`,
+      filename: `ROS_Official_Form_${m.memberId || 'Pending'}.pdf`,
       html2canvas: { scale: 2.5, useCORS: true, logging: false },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
     }).from(element).save().then(() => {
@@ -611,7 +640,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
     });
   });
 
-  // ৮. ম্যানুয়াল এন্ট্রি মডাল পপআপ কন্ট্রোল লজিক
+  // ৯. ম্যানুয়াল এন্ট্রি মডাল পপআপ কন্ট্রোল লজিক
   document.getElementById('openCreateMemberModalBtn').addEventListener('click', () => {
     document.getElementById('newMemberForm').reset();
     createModal.style.display = 'flex';
@@ -621,10 +650,8 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
   document.getElementById('closeCreateModalBtn').addEventListener('click', closeCreateModal);
   document.getElementById('closeCreateModalBtnTop').addEventListener('click', closeCreateModal);
 
-  // ম্যানুয়াল মেম্বার তৈরি ফর্ম সাবমিশন (এখানেও অটো-আইডি প্রোটোকল সেট করা আছে)
   document.getElementById('newMemberForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const generatedId = await generateNextMemberId(getDocs, collection, db);
 
     try {
@@ -633,7 +660,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         mobileNumber: document.getElementById('fmMobile').value.trim(),
         email: document.getElementById('fmEmail').value.trim() || "",
         banglaName: document.getElementById('fmNameBn').value.trim() || "",
-        whatsappNumber: document.getElementById('fmWorkspace') ? "" : document.getElementById('fmWhatsapp').value.trim() || "",
+        whatsappNumber: document.getElementById('fmWhatsapp').value.trim() || "",
         facebookUrl: document.getElementById('fmFacebook').value.trim() || "",
         fatherName: document.getElementById('fmFather').value.trim() || "",
         motherName: document.getElementById('fmMother').value.trim() || "",
@@ -652,11 +679,11 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         createdAt: new Date().toISOString()
       });
       
-      alert(`🎉 সফলভাবে নতুন সদস্য ডাটাবেজে যুক্ত হয়েছে!\nঅটো-জেনারেটেড মেম্বার আইডি: ${generatedId}`);
+      alert(`🎉 সফলভাবে নতুন সদস্য যুক্ত হয়েছে!\nমেম্বার আইডি: ${generatedId}`);
       closeCreateModal();
     } catch (err) {
       console.error(err);
-      alert("সদস্য ডাটাবেজে সংরক্ষণ করতে সমস্যা হয়েছে!");
+      alert("ডাটা সংরক্ষণ করতে সমস্যা হয়েছে!");
     }
   });
 
