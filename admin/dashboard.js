@@ -39,7 +39,7 @@ function loadDashboardModule(contentRoot, currentAdminData, db, collection, onSn
     <div class="cyber-glass" style="padding: 20px; border-radius: 8px;">
       <h3 style="font-size: 16px; margin-bottom: 12px; color: #fff;"><i class="fas fa-shield-alt"></i> সিস্টেম সিকিউরিটি লগ ও প্রোটোকল নোটিশ</h3>
       <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: var(--text-muted); line-height: 1.5;">
-        <li><span style="color: var(--neon-green);">● SECURITY:</span> প্রতিটি সেশন SSL/TLS এন্ড-টু-এন্ড এনক্রিপশনের মাধ্যমে সুরক্ষিত। Authorities অনুমতি ব্যতিরেকে কোনো তথ্য ডিরেক্টরি থেকে কপি বা এক্সপোর্ট করা দণ্ডনীয় অপরাধ।</li>
+        <li><span style="color: var(--neon-green);">● SECURITY:</span> প্রতিটি সেশন SSL/TLS এন্ড-টু-এন্ড এনক্রিপশনের মাধ্যমে সুরক্ষিত। কর্তৃপক্ষের অনুমতি ব্যতিরেকে কোনো তথ্য ডিরেক্টরি থেকে কপি বা এক্সপোর্ট করা দণ্ডনীয় অপরাধ।</li>
         <li><span style="color: var(--neon-blue);">● DISCONNECT PROTOCOL:</span> প্যানেল ব্যবহার শেষে ব্রাউজার বন্ধ করার পূর্বে অবশ্যই ড্যাশবোর্ড থেকে সুরক্ষিতভাবে লগআউট সম্পন্ন করুন।</li>
       </ul>
     </div>
@@ -61,12 +61,11 @@ function loadDashboardModule(contentRoot, currentAdminData, db, collection, onSn
 
   // ---- 📊 ফায়ারবেস রিয়েল-টাইম লাইভ কাউন্টার লজিক ----
   
-  // ১. সদস্য সংখ্যা গণনা (মোট, একটিভ, পেন্ডিং)
+  // ১. সদস্য সংখ্যা গণনা (রোল: general_member অনুযায়ী ফিল্টার)
   onSnapshot(collection(db, "users"), (snap) => {
-    // শুধুমাত্র যাদের রোল 'member' তাদের ফিল্টার করা হচ্ছে
-    const totalMembers = snap.docs.filter(d => d.data().role === "member").length;
-    const activeCount = snap.docs.filter(d => d.data().role === "member" && d.data().status === "active").length;
-    const pendingCount = snap.docs.filter(d => d.data().role === "member" && d.data().status === "pending").length;
+    const totalMembers = snap.docs.filter(d => d.data().role === "general_member").length;
+    const activeCount = snap.docs.filter(d => d.data().role === "general_member" && d.data().status === "active").length;
+    const pendingCount = snap.docs.filter(d => d.data().role === "general_member" && d.data().status === "pending").length;
 
     const elTotal = document.getElementById('cntTotalMembers');
     const elActive = document.getElementById('cntActiveMembers');
