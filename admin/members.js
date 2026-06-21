@@ -134,9 +134,11 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       <table id="mainMembersDataTable" style="width:100%; border-collapse:collapse; font-size:13.5px; text-align:left; color:#e5e7eb;">
         <thead style="background:rgba(0, 180, 216, 0.15); color:#00b4d8; border-bottom:2px solid rgba(0, 180, 216, 0.3);">
           <tr>
+          <th style="padding:14px 12px;">সিরিয়াল নং</th>
             <th style="padding:14px 12px;">নিবন্ধন নাম্বার</th>
             <th style="padding:14px 12px;">সদস্যের নাম</th>
             <th style="padding:14px 12px;">মোবাইল নম্বর</th>
+            <th style="padding:14px 12px;">তারিখ</th>
             <th style="padding:14px 12px;">বর্তমান পদবি (Role)</th>
             <th style="padding:14px 12px;">স্ট্যাটাস</th>
             <th style="padding:14px 12px; text-align:right;">ব্যবস্থাপনা পদক্ষেপ</th>
@@ -223,8 +225,8 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
   let selectedMemberForForm = null;
 
   const roleLabels = {
-    "general_member": "সদস্য (General Member)",
-    "admin": "এডমিন (Admin)",
+    "general_member": "সদস্য",
+    "super_admin": "এডমিন (Admin)",
     "former_member": "সাবেক সদস্য",
     "president": "সভাপতি",
     "vice_president": "সহ সভাপতি",
@@ -307,9 +309,11 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
       }
 
       tr.innerHTML = `
+      <td style="padding:14px 12px;">${ idx + 1'}</td>
         <td style="padding:14px 12px; color:#00b4d8; font-weight:bold;">${u.memberId || '⏳ Pending'}</td>
         <td style="padding:14px 12px; font-weight:600;">${u.englishName || 'N/A'}</td>
         <td style="padding:14px 12px;">${u.mobileNumber || 'N/A'}</td>
+        <td style="padding:14px 12px;">${u.createdAt || 'N/A'}</td>
         <td style="padding:14px 12px;">
           <select class="cyber-input erp-role-changer" data-id="${u.id}" style="width:100%; max-width:180px; margin:0; padding:4px; background:#0b0f19; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:4px; font-size:12px;">
             ${roleChangerHtml}
@@ -568,7 +572,7 @@ function loadMembersModule(contentRoot, db, collection, onSnapshot, doc, getDocs
         <div style="position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 1px dashed #b45309; border-radius: 8px; pointer-events: none; z-index: 5;"></div>
         
         <!-- 🎯 ওয়াটারমার্ক লোগো (html2canvas কমপ্লায়েন্ট ইন্টিগ্রেটেড লেয়ার) -->
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-20%, -20%); width: 500px; height: 500px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 0; opacity: 0.08;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 0; opacity: 0.08;">
           <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 100%; height: auto; display: block;">
         </div>
 
