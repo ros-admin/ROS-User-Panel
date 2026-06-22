@@ -181,11 +181,11 @@
             </li>
           </ul>
         </li>
-<li class="menu-item" id="menuDownloadFormLink" data-id="downloadForm">
-  <a href="#"><i class="fas fa-file-pdf"></i> রেজিস্ট্রেশন ফরম ডাউনলোড</a>
-</li>
-        
 
+        <!-- ✅ ফিক্সড মডিউল বাটন আইডি -->
+        <li class="menu-item" id="menuDownloadFormLink" data-id="downloadForm">
+          <a href="#"><i class="fas fa-file-pdf"></i> রেজিস্ট্রেশন ফরম ডাউনলোড</a>
+        </li>
         
       </ul>
     </aside>
@@ -213,13 +213,13 @@
     </div>
   </div>
 
+  <!-- এক্সটার্নাল স্ক্রিপ্ট কালেকশন (ডাউনলোড ফাইলটির নাম নিশ্চিত করুন downloadForm.js) -->
   <script src="../member/profile.js"></script>
   <script src="../member/updateProfile.js"></script>
   <script src="../member/myRequest.js"></script>
   <script src="../member/registrationForm.js"></script>
 
   <script type="module">
-    // ফায়ারবেস থেকে serverTimestamp ইমপোর্ট করা হলো (যা আগে মিসিং ছিল)
     import { db, auth } from '../firebase-config.js';
     import { doc, onSnapshot, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -234,6 +234,9 @@
     const parentDropdownMenu = document.getElementById('parentDropdownMenu');
     const toggleDropdownBtn = document.getElementById('toggleDropdownBtn');
     const submenuList = document.getElementById('submenuList');
+    
+    // গ্লোবাল মেম্বার ডেটা ক্যাশ রাখার ভেরিয়েবল
+    let dynamicGlobalMemberData = null;
 
     toggleDropdownBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -247,6 +250,7 @@
       }
     });
 
+    // 🛠️ মডিউল রাউটার মেকানিজম (ফিক্সড সংস্করণ)
     function switchModuleView(moduleId, clickedElement) {
       document.querySelectorAll('.sidebar-menu .menu-item, .submenu-list .submenu-item').forEach(el => el.classList.remove('active'));
       
@@ -267,20 +271,25 @@
       if (moduleId === 'profile') {
         loadProfileModule(spaContentRoot, db, auth, doc, onSnapshot, signOut);
       } else if (moduleId === 'updateInfo') {
-        // ফিক্সড: contentRoot কে spaContentRoot করা হয়েছে এবং serverTimestamp সফলভাবে পাঠানো হচ্ছে
         loadUpdateInfoModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc, serverTimestamp);
       } else if (moduleId === 'myRequests') {
         loadMyRequestsModule(spaContentRoot, db, auth, doc, onSnapshot, updateDoc);
+      } else if (moduleId === 'downloadForm') {
+        // 🎯 ফিক্সড: ভেরিয়েবলের নামগুলো সিঙ্ক করা হয়েছে
+        loadDownloadFormModule(spaContentRoot, dynamicGlobalMemberData);
       }
-     else if (moduleId === 'downloadForm') {
-  loadDownloadFormModule(contentRoot, currentMemberData);
-     }
-      
     }
 
+    // 🖱️ ইভেন্ট লিসেনার বাইন্ডিং
     document.getElementById('menuProfileLink').addEventListener('click', function(e) {
       e.preventDefault();
       switchModuleView('profile', this);
+    });
+
+    // 🎯 ফিক্সড: ডাউনলোড বাটনের ক্লিক লিসেনার যুক্ত করা হলো
+    document.getElementById('menuDownloadFormLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      switchModuleView('downloadForm', this);
     });
 
     document.querySelectorAll('.submenu-list .submenu-item').forEach(item => {
@@ -321,10 +330,12 @@
       if (!user) { window.location.href = "../login.html"; return; }
       onSnapshot(doc(db, "users", user.uid), (snapshot) => {
         if (snapshot.exists()) {
-          const memberData = snapshot.data();
-          document.getElementById('topNavRole').innerText = (memberData.role || "MEMBER").toUpperCase();
-          document.getElementById('topNavAvatar').src = memberData.photoUrl || '../placeholder.png';
-          document.getElementById('dropMemberName').innerText = memberData.englishName || "সদস্য নাম";
+          // রিয়েলটাইম ডেটা গ্লোবাল ভেরিয়েবলে সংরক্ষণ
+          dynamicGlobalMemberData = snapshot.data();
+          
+          document.getElementById('topNavRole').innerText = (dynamicGlobalMemberData.role || "MEMBER").toUpperCase();
+          document.getElementById('topNavAvatar').src = dynamicGlobalMemberData.photoUrl || '../placeholder.png';
+          document.getElementById('dropMemberName').innerText = dynamicGlobalMemberData.englishName || "সদস্য নাম";
           document.getElementById('dropMemberEmail').innerText = user.email;
 
           if(!spaContentRoot.hasChildNodes() || spaContentRoot.innerHTML.trim() === ""){
