@@ -2,13 +2,13 @@
  * ROS Nexus - Ultra Premium Membership Certificate Module
  * File: ../admin/certificate.js
  * Theme: Premium Olympiad Cyan & Bright Yellow Elite Edition
- * Fonts: Poppins (Weights: 400, 500, 600) & Hind Siliguri (Specified CDN)
- * Fixes: Fixed all clipping issues, 40px inward custom premium borders, updated typography
+ * Fonts: Poppins (Weights: 400, 500, 600, 700, 800) & Hind Siliguri
+ * Layout: Based on 1000363821.jpg reference for Gradient Header Area
  */
 
 window.loadCertificatesModule = function(container, db, collection, onSnapshot, doc, getDocs, query, where, setDoc, addDoc, serverTimestamp) {
     
-    // 🔤 আপনার দেওয়া ফন্ট এবং আইকন সিডিএন লিংক (সর্বদা <head> এ যুক্ত হচ্ছে)
+    // ফন্ট এবং আইকন সিডিএন লিংক ডিপেন্ডেন্সি
     if (!document.getElementById('ros-fonts-dependency')) {
         const linkNode = document.createElement('div');
         linkNode.id = 'ros-fonts-dependency';
@@ -19,7 +19,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
         document.head.appendChild(linkNode);
     }
 
-    // html2pdf লাইব্রেরি ডিপেন্ডেন্সি চেকার
+    // html2pdf লাইব্রেরি ডিপেন্ডেন্সি চেকার ও ইনস্টলার
     if (!window.html2pdf) {
         const script = document.createElement('script');
         script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
@@ -30,10 +30,10 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
     container.innerHTML = `
         <div class="cyber-glass" style="padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #00B2E2; background: rgba(5, 17, 36, 0.85);">
             <h2 style="color: #fff; font-size: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-family: 'Poppins', sans-serif; font-weight: 600;">
-                <i class="fas fa-award" style="color: #00B2E2;"></i> ROS Certificate Generator v3.0
+                <i class="fas fa-award" style="color: #00B2E2;"></i> ROS Certificate Generator v3.2
             </h2>
             <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px; font-family: 'Poppins', sans-serif;">
-                Verified production layout using Poppins typography engine. Guaranteed zero bottom clipping.
+                Verified production layout with 1000363821.jpg custom gradient bars. Guaranteed zero bottom clipping.
             </p>
             
             <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 20px;">
@@ -157,25 +157,25 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                 if(!isNaN(regDateObj)) regDateText = regDateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
             }
 
-            // 🎨 প্রিমিয়াম গোল্ডেন-সায়ান থিম, ভেতরের বর্ডার এবং Poppins টাইপোগ্রাফি আর্কিটেকচার
+            // 🎨 প্রিমিয়াম জেনারেটেড আর্কিটেকচার বডি 
             certDynamicBody.innerHTML = `
                 <div style="width: 842px; height: 595px; box-sizing: border-box; padding: 50px; position: relative;
                             background: radial-gradient(circle at 50% 35%, #ffffff 0%, #f3fcfe 60%, #cdf2fa 100%); margin: 0; overflow: hidden; font-family: 'Poppins', sans-serif;">
                     
+                    <!-- ব্যাকগ্রাউন্ড ওলিম্পিয়াড ম্যাথ গ্রিড অবজেক্টস -->
                     <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.1; z-index: 0;">
                         <div style="position: absolute; top: 85px; left: 95px; font-size: 50px; font-weight: 700; color: #00B2E2;">π</div>
                         <div style="position: absolute; top: 230px; left: 80px; font-size: 52px; font-weight: 600; color: #00B2E2;">Σ</div>
                         <div style="position: absolute; top: 90px; right: 160px; font-size: 55px; color: #00B2E2;">∫</div>
                         <div style="position: absolute; bottom: 170px; left: 100px; font-size: 50px; color: #00B2E2;">√</div>
-                        
                         <div style="position: absolute; top: 210px; right: 90px; font-size: 46px; color: #00B2E2;"><i class="fas fa-atom"></i></div>
                         <div style="position: absolute; bottom: 95px; left: 270px; font-size: 40px; color: #00B2E2;"><i class="fas fa-book"></i></div>
                         <div style="position: absolute; bottom: 170px; right: 100px; font-size: 48px; color: #00B2E2;"><i class="fas fa-telescope"></i></div>
                         <div style="position: absolute; top: 75px; left: 380px; font-size: 38px; color: #00B2E2;"><i class="far fa-lightbulb"></i></div>
-
                         <div style="width: 100%; height: 100%; background-image: linear-gradient(rgba(0, 178, 226, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 178, 226, 0.1) 1px, transparent 1px); background-size: 34px 34px; mask-image: radial-gradient(circle, black 45%, transparent 85%); -webkit-mask-image: radial-gradient(circle, black 45%, transparent 85%);"></div>
                     </div>
 
+                    <!-- বর্ডার ফ্রেমওয়ার্ক -->
                     <div style="position: absolute; top: 40px; left: 40px; right: 40px; bottom: 40px; border: 2.5px solid #00B2E2; pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
                     <div style="position: absolute; top: 45px; left: 45px; right: 45px; bottom: 45px; border: 1.5px solid #FFD700; pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
                     <div style="position: absolute; top: 52px; left: 52px; right: 52px; bottom: 52px; border: 1px solid rgba(0, 178, 226, 0.2); pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
@@ -189,8 +189,9 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                         
                         <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start;">
                             <div style="font-size: 11px; color: #002b3d; text-align: left; line-height: 1.4; font-weight: 500;">
-                                <div><strong style="color: #00B2E2; font-weight: 600;">SERIAL NO:</strong> <span style="font-weight: 700; color: #00B2E2;">${currentCertNumber}</span></div>
-                                <div><strong style="color: #00B2E2; font-weight: 600;">DATE OF ISSUE:</strong> <span style="font-weight: 500;">${enDate}</span></div>
+                                <!-- সিরিয়াল নং থিমের হলুদ রং করা হলো -->
+                                <div><strong style="color: #00B2E2; font-weight: 600;">SERIAL NO:</strong> <span style="font-weight: 700; color: #FFD700;">${currentCertNumber}</span></div>
+                                <div><strong style="color: #00B2E2; font-weight: 600;">DATE OF ISSUE:</strong> <span style="font-weight: 500; color: #002b3d;">${enDate}</span></div>
                             </div>
                             <div style="background: linear-gradient(135deg, #00B2E2, #00C5FF); color: #001a24; font-size: 10px; font-weight: 600; padding: 4px 14px; border-radius: 4px; letter-spacing: 0.5px;">
                                 SYSTEM CONTROL RECORD
@@ -205,13 +206,18 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                             </p>
                         </div>
 
+                        <!-- 1000363821.jpg অনুকরণে গ্রেডিয়েন্ট হেডার স্ট্রিপ এরিয়া -->
                         <div style="text-align: center; width: 100%;">
-                            <h2 style="font-size: 24px; font-weight: 800; color: #002b3d; letter-spacing: 0.5px; margin: 0 0 2px 0; text-transform: uppercase;">
-                                Certificate <span style="color: #FFD700;">of</span> Membership
-                            </h2>
-                            <p style="font-size: 12px; font-style: italic; color: #475569; margin: 0 0 10px 0;">This is to officially certify that</p>
+                            <div style="width: 100%; max-width: 680px; margin: 0 auto 3px auto; background: linear-gradient(to right, #ffd700, #ff8c00, #e65100); padding: 6px 10px; box-sizing: border-box; display: flex; justify-content: center; align-items: center; border-radius: 2px;">
+                                <h2 style="font-size: 21px; font-weight: 800; color: #ffffff; letter-spacing: 1px; margin: 0; text-transform: uppercase; font-family: 'Poppins', sans-serif;">
+                                    CERTIFICATE OF MEMBERSHIP
+                                </h2>
+                            </div>
                             
-                            <div style="font-size: 23px; font-weight: 700; color: #00B2E2; border-bottom: 2px solid #FFD700; display: inline-block; padding-bottom: 2px; min-width: 440px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <p style="font-size: 11px; font-style: italic; color: #475569; margin: 0 0 12px 0;">This is to officially certify that</p>
+                            
+                            <!-- নাম সম্পূর্ণ কালো রঙে এবং নিচের টানটি থিমের নীল (Cyan) রঙে রূপান্তর -->
+                            <div style="font-size: 23px; font-weight: 800; color: #000000; border-bottom: 2.5px solid #00B2E2; display: inline-block; padding-bottom: 4px; min-width: 440px; text-transform: uppercase; letter-spacing: 0.5px;">
                                 ${selectedMember.englishName || selectedMember.fullName || "OFFICIAL MEMBER"}
                             </div>
                             
@@ -222,11 +228,11 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
                         <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
                             
-                            <!-- মেটাডেটা বক্সের ব্যাকগ্রাউন্ড পরিবর্তন করে সাদা (#ffffff) এবং বর্ডার অ্যাডজাস্ট করা হলো -->
+                            <!-- রেজিস্ট্রেশন ডাটা নোড (রেজিস্ট্রেশন নং থিমের হলুদ রং করা হলো) -->
                             <div style="background: #ffffff; border: 1.5px solid #00B2E2; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 4px; padding: 4px 18px; display: flex; gap: 20px; justify-content: center; align-items: center; font-size: 11px; color: #002b3d;">
-                                <div><span style="color: #64748b;">Registration No:</span> <strong style="color: #002b3d; font-size: 11px; margin-left: 2px; font-weight: 600;">${displayMemberId}</strong></div>
+                                <div><span style="color: #64748b;">Registration No:</span> <strong style="color: #FFD700; font-size: 11px; margin-left: 2px; font-weight: 700;">${displayMemberId}</strong></div>
                                 <div style="width: 1px; height: 10px; background: rgba(0,178,226,0.2);"></div>
-                                <div><span style="color: #64748b;">Registration Date:</span> <strong style="color: #00B2E2; margin-left: 2px; font-weight: 600;">${regDateText}</strong></div>
+                                <div><span style="color: #64748b;">Registration Date:</span> <strong style="color: #002b3d; margin-left: 2px; font-weight: 600;">${regDateText}</strong></div>
                             </div>
 
                             <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 15px; box-sizing: border-box; margin-top: 2px;">
@@ -266,5 +272,34 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
             generateBtn.innerHTML = `<i class="fas fa-magic"></i> Compile & Render`;
         }
     });
+
+    // 🚀 হাই-শার্পনেস ক্রিস্টাল পিডিএফ এক্সপোর্ট মেকানিজম (ফিক্সড রেন্ডার টার্গেট)
+    document.getElementById('downloadCertBtn').addEventListener('click', () => {
+        const targetElement = document.getElementById('certDynamicBody'); // সরাসরি ডাইনামিক নোড টার্গেট ফিক্স
+        
+        if (!window.html2pdf) {
+            alert("PDF engine assets are still loading. Please try again in a few moments.");
+            return;
+        }
+
+        const pdfOptions = {
+            margin:       0,
+            filename:     `Certificate-${currentCertNumber || 'ROS-MEMBER'}.pdf`,
+            image:        { type: 'jpeg', quality: 1.0 },
+            html2canvas:  { 
+                scale: 3.5, 
+                useCORS: true, 
+                logging: false, 
+                letterRendering: true,
+                scrollY: 0,
+                scrollX: 0
+            },
+            jsPDF:        { unit: 'px', format: [842, 595], orientation: 'landscape', hotfixes: ["px_scaling"] },
+            pagebreak:    { mode: 'avoid' }
+        };
+
+        html2pdf().set(pdfOptions).from(targetElement).save();
+    });
+
     document.getElementById('closeCertBtn').addEventListener('click', () => previewZone.style.display = 'none');
 };
