@@ -1,224 +1,279 @@
 /**
- * ROS Nexus - Premium Membership Certificate Module
+ * ROS Nexus - Ultra Premium Membership Certificate Module
  * File: ../admin/certificate.js
- * Design: Royal Landscape Theme (Inspired by User Sketch 1000363780.jpg)
+ * Features: Multi-lingual (BN/EN), Auto-suggest Search, Firestore Serial Generator
  */
 
-window.loadCertificatesModule = function(container, db, collection, onSnapshot, doc, getDocs, query, where) {
+window.loadCertificatesModule = function(container, db, collection, onSnapshot, doc, getDocs, query, where, setDoc, addDoc, serverTimestamp) {
     
-    // মডিউলের মূল ইউজার ইন্টারফেস (UI) জেনারেশন
+    // মডিউলের মূল ইউজার ইন্টারফেস (UI)
     container.innerHTML = `
-        <div class="cyber-glass" style="padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid var(--neon-yellow);">
-            <h2 style="color: var(--neon-yellow); font-size: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-award"></i> মেম্বারশিপ সার্টিফিকেট জেনারেটর প্যানেল
+        <div class="cyber-glass" style="padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #d4af37;">
+            <h2 style="color: #d4af37; font-size: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-crown"></i> প্রিমিয়াম মেম্বারশিপ সার্টিফিকেট প্যানেল
             </h2>
             <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
-                সদস্যদের নাম বা ফায়ারবেস আইডি লিখে খুঁজুন এবং একক ক্লিকে প্রিন্ট-রেডি রয়্যাল সার্টিফিকেট জেনারেট করুন।
+                সদস্যের নাম টাইপ করা শুরু করলে অটোমেটিক ফিল্টার হবে। ভাষা নির্বাচন করে ইউনিক সার্টিফিকেট নাম্বার সহ জেনারেট করুন।
             </p>
             
-            <div style="display: flex; gap: 10px; max-width: 500px; margin-bottom: 20px;">
-                <input type="text" id="certSearchInput" placeholder="সদস্যের নাম বা আইডি দিয়ে খুঁজুন..." 
-                       style="flex: 1; background: rgba(17, 24, 39, 0.9); border: 1px solid var(--glass-border); padding: 11px 15px; border-radius: 6px; color: #fff; font-size: 14px;">
-                <button id="certSearchBtn" class="cyber-glass" style="padding: 0 22px; color: var(--neon-blue); cursor: pointer; border-radius: 6px; font-weight: bold; background: rgba(0, 180, 216, 0.05); transition: 0.3s;">
-                    <i class="fas fa-search"></i> খুঁজুন
-                </button>
-            </div>
+            <!-- ফিল্টার ও কনফিগারেশন এরিয়া -->
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 20px;">
+                <!-- অটো-সাজেস্ট সার্চ বক্স -->
+                <div style="position: relative; flex: 1; min-width: 280px;">
+                    <input type="text" id="certSearchInput" placeholder="সদস্যের নাম বা আইডি লিখুন..." 
+                           style="width: 100%; background: rgba(17, 24, 39, 0.9); border: 1px solid var(--glass-border); padding: 11px 15px; border-radius: 6px; color: #fff; font-size: 14px;" autocomplete="off">
+                    <!-- লাইভ সাজেশন ড্রপডাউন -->
+                    <div id="certSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; max-height: 200px; overflow-y: auto; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.5);"></div>
+                </div>
 
-            <div id="certResultArea" style="display: none; margin-top: 15px; animation: modalSlideUp 0.3s ease;">
-                <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">সদস্য প্রোফাইল সিলেক্ট করুন:</label>
-                <select id="certMemberSelect" style="width: 100%; max-width: 500px; background: #0b0f19; border: 1px solid var(--glass-border); padding: 10px; border-radius: 6px; color: #fff; font-size: 14px; margin-bottom: 15px; cubic-bezier(0.4, 0, 0.2, 1);"></select>
-                <br>
-                <button id="generateCertBtn" style="background: var(--neon-yellow); color: #030712; padding: 10px 25px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: 0.3s;">
-                    <i class="fas fa-magic"></i> সার্টিফিকেট প্রিভিউ করুন
+                <!-- ভাষা সিলেকশন -->
+                <div style="min-width: 150px;">
+                    <select id="certLangSelect" style="width: 100%; background: rgba(17, 24, 39, 0.9); border: 1px solid var(--glass-border); padding: 11px; border-radius: 6px; color: #fff; font-size: 14px;">
+                        <option value="bn">🎯 বাংলা সংস্করণ</option>
+                        <option value="en">🇬🇧 English Version</option>
+                    </select>
+                </div>
+
+                <button id="generateCertBtn" style="background: linear-gradient(135deg, #d4af37, #aa7c11); color: #030712; padding: 11px 25px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: 0.3s;">
+                    <i class="fas fa-gem"></i> সার্টিফিকেট তৈরি করুন
                 </button>
             </div>
+            
+            <div id="selectedMemberBadge" style="display: none; color: #d4af37; font-size: 13px; background: rgba(212, 175, 55, 0.1); padding: 6px 12px; border-radius: 4px; display: inline-block;"></div>
         </div>
 
+        <!-- 🖼️ লাইভ প্রিভিউ এবং অ্যাকশন বোর্ড জোন -->
         <div id="certificatePreviewZone" style="display: none; flex-direction: column; align-items: center; gap: 25px; margin-top: 20px;">
             
             <div style="display: flex; gap: 15px; background: rgba(17, 24, 39, 0.4); padding: 10px 20px; border-radius: 30px; border: 1px solid var(--glass-border);">
-                <button id="printCertBtn" style="background: var(--neon-green); color: #030712; padding: 8px 22px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px;">
-                    <i class="fas fa-print"></i> প্রিন্ট / PDF সংরক্ষণ
+                <button id="printCertBtn" style="background: #059669; color: #fff; padding: 8px 22px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                    <i class="fas fa-print"></i> প্রিন্ট / PDF ডাউনলোড
                 </button>
                 <button id="closeCertBtn" style="background: rgba(230, 57, 70, 0.2); color: var(--neon-red); border: 1px solid var(--neon-red); padding: 8px 22px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px;">
-                    প্রিভিউ বন্ধ করুন
+                    বন্ধ করুন
                 </button>
             </div>
 
-            <div id="certificatePaperFrame" class="premium-cert-print-node" style="width: 842px; height: 595px; background: #ffffff; color: #000000; box-sizing: border-box; padding: 40px; position: relative; font-family: 'Hind Siliguri', sans-serif; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.6); border-radius: 4px;">
+            <!-- 📄 আল্ট্রা প্রিমিয়াম মেম্বারশিপ সার্টিফিকেট ফ্রেম (A4 ল্যান্ডস্কেপ) -->
+            <div id="certificatePaperFrame" class="premium-cert-print-node" style="width: 842px; height: 595px; background: #fffcf2; color: #1c1c1c; box-sizing: border-box; padding: 45px; position: relative; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.7); border-radius: 2px;">
                 
-                <div style="position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px; border: 3px solid #b392ac; box-sizing: border-box; pointer-events: none;"></div>
-                <div style="position: absolute; top: 26px; left: 26px; right: 26px; bottom: 26px; border: 1px solid #b392ac; box-sizing: border-box; pointer-events: none;"></div>
+                <!-- লাক্সারি ডাবল বর্ডার এবং কর্নার ডিজাইন -->
+                <div style="position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px; border: 4px double #cc9933; box-sizing: border-box; pointer-events: none;"></div>
+                <div style="position: absolute; top: 28px; left: 28px; right: 28px; bottom: 28px; border: 1px solid #dfb76c; box-sizing: border-box; pointer-events: none;"></div>
                 
-                <div style="position: absolute; top: 22px; left: 22px; width: 30px; height: 30px; border-top: 5px solid #d4af37; border-left: 5px solid #d4af37; pointer-events: none;"></div>
-                <div style="position: absolute; top: 22px; right: 22px; width: 30px; height: 30px; border-top: 5px solid #d4af37; border-right: 5px solid #d4af37; pointer-events: none;"></div>
-                <div style="position: absolute; bottom: 22px; left: 22px; width: 30px; height: 30px; border-bottom: 5px solid #d4af37; border-left: 5px solid #d4af37; pointer-events: none;"></div>
-                <div style="position: absolute; bottom: 22px; right: 22px; width: 30px; height: 30px; border-bottom: 5px solid #d4af37; border-right: 5px solid #d4af37; pointer-events: none;"></div>
+                <!-- কর্নার লাক্সারি অর্নামেন্টস সিমুলেশন -->
+                <div style="position: absolute; top: 22px; left: 22px; width: 25px; height: 25px; border-top: 4px solid #aa7c11; border-left: 4px solid #aa7c11;"></div>
+                <div style="position: absolute; top: 22px; right: 22px; width: 25px; height: 25px; border-top: 4px solid #aa7c11; border-right: 4px solid #aa7c11;"></div>
+                <div style="position: absolute; bottom: 22px; left: 22px; width: 25px; height: 25px; border-bottom: 4px solid #aa7c11; border-left: 4px solid #aa7c11;"></div>
+                <div style="position: absolute; bottom: 22px; right: 22px; width: 25px; height: 25px; border-bottom: 4px solid #aa7c11; border-right: 4px solid #aa7c11;"></div>
 
-                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.04; width: 300px; height: 300px; background: url('https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png') no-repeat center center; background-size: contain; pointer-events: none;"></div>
+                <!-- ওয়াটারমার্ক ব্যাকগ্রাউন্ড -->
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.035; width: 320px; height: 320px; background: url('https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png') no-repeat center center; background-size: contain; pointer-events: none;"></div>
 
-                <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; box-sizing: border-box; padding: 20px 15px;">
-                    
-                    <div style="margin-top: 10px;">
-                        <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 60px; height: 60px; margin-bottom: 5px;">
-                        <h1 style="font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: 1.5px;">RAJSHAHI OLYMPIAD SOCIETY</h1>
-                        <p style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #475569; margin-top: 2px; font-family: 'Arial';">Official Corporate Member Network</p>
-                    </div>
-
-                    <div style="margin-top: -10px;">
-                        <h2 style="font-family: 'Galada', cursive; font-size: 40px; color: #b38600; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin: 0;">মেম্বারশিপ সার্টিফিকেট</h2>
-                        <p style="font-size: 15px; color: #475569; font-style: italic; margin-top: 10px;">এই মর্মে অত্যন্ত আনন্দের সাথে প্রত্যয়ন করা যাচ্ছে যে,</p>
-                        
-                        <h3 id="certTargetName" style="font-size: 28px; font-weight: 700; color: #0284c7; margin: 15px 0; padding: 0 40px; border-bottom: 2px dashed #bae6fd; display: inline-block;">- - -</h3>
-                        
-                        <p style="font-size: 14.5px; color: #334155; max-width: 620px; line-height: 1.7; margin: 0 auto; text-align: center;">
-                            সফলভাবে সকল শর্তাবলী পূরণপূর্বক <span style="font-weight: 700; color: #0f172a;">রাজশাহী অলিম্পিয়াড সোসাইটি (ROS)</span> এর একজন অফিশিয়াল নিবন্ধিত মেম্বার হিসেবে অন্তর্ভুক্ত হয়েছেন। ডাটাবেজের নিয়মানুযায়ী সংগঠনে তার এই সদস্যপদটি সম্পূর্ণ বৈধ ও সক্রিয়।
-                        </p>
-                    </div>
-
-                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 35px; box-sizing: border-box; margin-bottom: 10px;">
-                        
-                        <div style="text-align: left; font-size: 12px; color: #475569; line-height: 1.7;">
-                            <p style="margin: 2px 0;"><strong>সদস্য আইডি:</strong> <span id="certTargetId" style="font-family: 'Arial'; font-weight: bold; color: #0f172a;">—</span></p>
-                            <p style="margin: 2px 0;"><strong>অফিশিয়াল পদবী:</strong> <span id="certTargetRole" style="color: #0284c7; font-weight: 600;">—</span></p>
-                            <p style="margin: 2px 0;"><strong>ইস্যু তারিখ:</strong> <span id="certIssueDate">—</span></p>
-                        </div>
-
-                        <div style="text-align: center; position: relative; width: 160px;">
-                            <div style="position: absolute; top: -35px; left: -25px; border: 2px dashed #059669; color: #059669; font-family: 'Arial'; font-size: 8px; font-weight: bold; text-transform: uppercase; padding: 3px 6px; transform: rotate(-12deg); border-radius: 4px; background: #fff; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(5,150,105,0.1); z-index: 5; pointer-events: none; user-select: none;">
-                                <i class="fas fa-check-circle"></i> SYSTEM VERIFIED
-                            </div>
-                            
-                            <div style="border-top: 1.5px solid #334155; padding-top: 5px; width: 100%;">
-                                <p style="font-weight: 700; color: #0f172a; font-size: 12px; margin: 0;">কর্তৃপক্ষ</p>
-                                <p style="font-size: 10px; color: #64748b; margin-top: 1px;">রাজশাহী অলিম্পিয়াড সোসাইটি</p>
-                            </div>
-                        </div>
-
-                    </div>
-
+                <!-- ইনার বডি ডায়নামিক কন্টেন্ট -->
+                <div id="certDynamicBody" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; box-sizing: border-box; padding: 15px 10px;">
+                    <!-- ল্যাঙ্গুয়েজ সুইচারের মাধ্যমে এই অংশটি জাভাস্ক্রিপ্ট দ্বারা নিয়ন্ত্রিত হবে -->
                 </div>
             </div>
         </div>
 
         <style>
+            .suggestion-item { padding: 10px 15px; color: #fff; cursor: pointer; font-size: 13.5px; transition: 0.2s; border-bottom: 1px solid #1e293b; }
+            .suggestion-item:hover { background: #b38600; color: #030712; font-weight: bold; }
             @media print {
-                /* ড্যাশবোর্ডের চারপাশের ডার্ক সাইডবার, হেডার ও বাটন প্রিন্ট স্ক্রিন থেকে সম্পূর্ণ উধাও করবে */
-                body *, .top-bar, .sidebar-nav, .cyber-glass, button, style { 
-                    visibility: hidden !important; 
-                    box-shadow: none !important;
-                }
-                /* শুধুমাত্র এই ক্লাসের এলিমেন্ট এবং এর ভেতরের এলিমেন্ট দৃশ্যমান হবে */
-                .premium-cert-print-node, .premium-cert-print-node * { 
-                    visibility: visible !important; 
-                }
-                .premium-cert-print-node { 
-                    position: fixed !important; 
-                    left: 0 !important; 
-                    top: 0 !important; 
-                    width: 100% !important; 
-                    height: 100% !important; 
-                    border: none !important;
-                    margin: 0 !important; 
-                    padding: 40px !important;
-                    box-sizing: border-box !important;
-                    page-break-inside: avoid !important;
-                }
-                @page {
-                    size: A4 landscape;
-                    margin: 0;
-                }
+                body *, .top-bar, .sidebar-nav, .cyber-glass, button, style, #certSuggestions { visibility: hidden !important; box-shadow: none !important; }
+                .premium-cert-print-node, .premium-cert-print-node * { visibility: visible !important; }
+                .premium-cert-print-node { position: fixed !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; border: none !important; margin: 0 !important; padding: 45px !important; box-sizing: border-box !important; }
+                @page { size: A4 landscape; margin: 0; }
             }
         </style>
     `;
 
-    // এলিমেন্ট সমূহের রেফারেন্স কালেকশন
+    // এলিমেন্টসমূহ টার্গেটিং
     const searchInput = document.getElementById('certSearchInput');
-    const searchBtn = document.getElementById('certSearchBtn');
-    const resultArea = document.getElementById('certResultArea');
-    const memberSelect = document.getElementById('certMemberSelect');
+    const suggestionsDiv = document.getElementById('certSuggestions');
+    const langSelect = document.getElementById('certLangSelect');
     const generateBtn = document.getElementById('generateCertBtn');
     const previewZone = document.getElementById('certificatePreviewZone');
-    
-    let searchedMembersList = [];
+    const certDynamicBody = document.getElementById('certDynamicBody');
+    const badge = document.getElementById('selectedMemberBadge');
 
-    // ১. ফায়ারবেস Firestore থেকে ইন্টেলিজেন্ট মেম্বার সার্চিং মেকানিজম
-    searchBtn.addEventListener('click', async () => {
-        const queryStr = searchInput.value.trim();
-        if(!queryStr) return alert("অনুগ্রহ করে সদস্যের নাম অথবা মেম্বার আইডি টাইপ করুন!");
+    let allMembers = [];
+    let selectedMember = null;
 
-        searchBtn.disabled = true;
-        searchBtn.innerText = "সার্চ হচ্ছে...";
-
+    // ১. ইনিশিয়াল ডাটা লোড (অটো-ফিল্টারিং এর জন্য সমস্ত মেম্বার একবারে আনা হচ্ছে)
+    async function initModuleData() {
         try {
             const q = query(collection(db, "users"));
             const snapshot = await getDocs(q);
-            
-            memberSelect.innerHTML = "";
-            searchedMembersList = [];
-
-            snapshot.forEach((snap) => {
-                const data = snap.data();
-                const englishNameStr = data.englishName || "";
-                const fullNameStr = data.fullName || "";
-                const docId = snap.id;
-                
-                // নাম বা ফায়ারবেস ডকুমেন্টের আইডির সাথে কি-ওয়ার্ড ফিল্টার ম্যাপ
-                if(englishNameStr.toLowerCase().includes(queryStr.toLowerCase()) || 
-                   fullNameStr.toLowerCase().includes(queryStr.toLowerCase()) || 
-                   docId.includes(queryStr)) {
-                    
-                    searchedMembersList.push({ uid: docId, ...data });
-                    
-                    const opt = document.createElement('option');
-                    opt.value = docId;
-                    opt.innerText = `${data.banglaName || englishNameStr || fullNameStr} — (${data.role === 'general_member' ? 'সাধারণ সদস্য' : (data.role || 'সদস্য')}) — ID: ${docId.substring(0,12)}`;
-                    memberSelect.appendChild(opt);
-                }
+            allMembers = [];
+            snapshot.forEach(s => {
+                allMembers.push({ uid: s.id, ...s.data() });
             });
-
-            if(searchedMembersList.length > 0) {
-                resultArea.style.display = 'block';
-            } else {
-                alert("দুঃখিত, এই নাম বা আইডি দিয়ে কোনো নিবন্ধিত সদস্যের তথ্য ডাটাবেজে পাওয়া যায়নি!");
-                resultArea.style.display = 'none';
-            }
         } catch (err) {
-            console.error("Certificate Search Engine Error:", err);
-            alert("ডাটাবেজ থেকে তথ্য রিড করতে সমস্যা হয়েছে। কনসোল চেক করুন।");
-        } finally {
-            searchBtn.disabled = false;
-            searchBtn.innerHTML = `<i class="fas fa-search"></i> খুঁজুন`;
+            console.error("Error loading members for auto-complete:", err);
+        }
+    }
+    initModuleData();
+
+    // ২. অটোমেটিক লাইভ ফিল্টারিং লজিক (Input Event Listener)
+    searchInput.addEventListener('input', () => {
+        const value = searchInput.value.trim().toLowerCase();
+        suggestionsDiv.innerHTML = "";
+        
+        if (!value) {
+            suggestionsDiv.style.display = 'none';
+            return;
+        }
+
+        const filtered = allMembers.filter(m => {
+            const bName = (m.banglaName || "").toLowerCase();
+            const eName = (m.englishName || m.fullName || "").toLowerCase();
+            return bName.includes(value) || eName.includes(value) || m.uid.toLowerCase().includes(value);
+        });
+
+        if (filtered.length > 0) {
+            filtered.slice(0, 6).forEach(m => { // টপ ৬ টি রেজাল্ট দেখাবে
+                const name = m.banglaName || m.englishName || m.fullName || "সদস্য";
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerText = `${name} (${m.uid.substring(0, 8).toUpperCase()})`;
+                div.addEventListener('click', () => {
+                    selectedMember = m;
+                    searchInput.value = name;
+                    suggestionsDiv.style.display = 'none';
+                    badge.style.display = 'inline-block';
+                    badge.innerHTML = `<strong>নির্বাচিত:</strong> ${name} | ID: ${m.uid.substring(0,10)}`;
+                });
+                suggestionsDiv.appendChild(div);
+            });
+            suggestionsDiv.style.display = 'block';
+        } else {
+            suggestionsDiv.style.display = 'none';
         }
     });
 
-    // ২. সিলেক্টেড মেম্বারের রিয়েল-টাইম ডাটা সার্টিফিকেটে ইনজেক্ট করা
-    generateBtn.addEventListener('click', () => {
-        const activeUid = memberSelect.value;
-        const selectedMember = searchedMembersList.find(m => m.uid === activeUid);
+    // মডাল এরিয়ার বাইরে ক্লিক করলে সাজেশন হাইড হবে
+    document.addEventListener('click', (e) => {
+        if (e.target !== searchInput) suggestionsDiv.style.display = 'none';
+    });
 
-        if(!selectedMember) return alert("দয়া করে একজন বৈধ সদস্য সিলেক্ট করুন!");
-
-        // মেম্বারশিপ সার্টিফিকেটের ভেতরের ভ্যারিয়েবল রেন্ডারিং
-        document.getElementById('certTargetName').innerText = (selectedMember.englishName || selectedMember.fullName || "MEMBER PROFILE").toUpperCase();
-        document.getElementById('certTargetId').innerText = (selectedMember.memberId || selectedMember.registrationNo || activeUid).toUpperCase();
-        document.getElementById('certTargetRole').innerText = selectedMember.role === 'general_member' ? 'GENERAL MEMBER' : (selectedMember.role ? selectedMember.role.toUpperCase().replace('_', ' ') : 'MEMBER');
+    // ৩. ইউনিক সার্টিফিকেট আইডি জেনারেটর এবং ফায়ারবেস নতুন কালেকশনে সেভিং মেকানিজম
+    async function issueCertificateNumber(memberUid, lang) {
+        const certNo = "ROS-" + Math.floor(100000 + Math.random() * 900000); // যেমন: ROS-583920
         
-        // মেম্বার ক্রিয়েশন বা ইস্যুর বর্তমান ডেট ফরম্যাটিং
-        const issueDateObj = selectedMember.createdAt ? new Date(selectedMember.createdAt) : new Date();
-        document.getElementById('certIssueDate').innerText = issueDateObj.toLocaleDateString('bn-BD');
+        // ফায়ারবেসের আলাদা কালেকশন 'issued_certificates'-এ ডাটা যুক্ত হবে
+        await addDoc(collection(db, "issued_certificates"), {
+            certificateNo: certNo,
+            userId: memberUid,
+            language: lang,
+            issuedAt: serverTimestamp ? serverTimestamp() : new Date().toISOString()
+        });
+        
+        return certNo;
+    }
 
-        // প্রিভিউ প্যানেল অন করা এবং স্ক্রল অ্যানিমেশন
-        previewZone.style.display = 'flex';
-        previewZone.scrollIntoView({ behavior: 'smooth' });
+    // ৪. সার্টিফিকেট জেনারেট এবং ভিউ রেন্ডারিং লজিক
+    generateBtn.addEventListener('click', async () => {
+        if (!selectedMember) return alert("অনুগ্রহ করে সাজেস্টেড ড্রপডাউন থেকে একজন সদস্য সিলেক্ট করুন!");
+
+        generateBtn.disabled = true;
+        generateBtn.innerText = "সার্টিফিকেট নাম্বার তৈরি হচ্ছে...";
+
+        try {
+            const lang = langSelect.value;
+            const certNumber = await issueCertificateNumber(selectedMember.uid, lang);
+            const today = new Date();
+
+            if (lang === 'bn') {
+                // 🎯 সম্পূর্ণ বাংলা টেমপ্লেট
+                const বাংলাতারিখ = today.toLocaleDateString('bn-BD');
+                const বাংলাআইডি = selectedMember.memberId || selectedMember.uid.substring(0, 8).toUpperCase();
+                
+                certDynamicBody.innerHTML = `
+                    <div>
+                        <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 55px; height: 55px; margin-bottom: 5px;">
+                        <h1 style="font-size: 25px; font-weight: 800; color: #111827; margin: 0; letter-spacing: 1px; font-family: 'Arial';">RAJSHAHI OLYMPIAD SOCIETY</h1>
+                        <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #b38600; margin-top: 3px; font-weight: bold;">সিস্টেম কন্ট্রোল ও এন্টারপ্রাইজ নেটওয়ার্ক</p>
+                    </div>
+
+                    <div>
+                        <h2 style="font-family: 'Galada', cursive; font-size: 44px; color: #aa7c11; margin: 5px 0;">মেম্বারশিপ সার্টিফিকেট</h2>
+                        <p style="font-size: 16px; color: #4b5563; font-style: italic;">এই মর্মে অত্যন্ত নিষ্ঠার সাথে প্রত্যয়ন করা যাচ্ছে যে,</p>
+                        <h3 style="font-size: 28px; font-weight: bold; color: #0284c7; margin: 12px 0; border-bottom: 2px dashed #cc9933; display: inline-block; padding: 0 30px;">${selectedMember.banglaName || selectedMember.fullName}</h3>
+                        <p style="font-size: 15px; color: #1f2937; max-width: 640px; line-height: 1.8; margin: 0 auto;">
+                            তিনি সফলভাবে সকল নিয়মাবলী সম্পন্ন করে <span style="font-weight: bold;">রাজশাহী অলিম্পিয়াড সোসাইটি</span>-এর একজন অফিশিয়াল নিবন্ধিত আজীবন মেম্বার হিসেবে আমাদের এন্টারপ্রাইজ নেটওয়ার্কে অন্তর্ভুক্ত হয়েছেন।
+                        </p>
+                    </div>
+
+                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 25px; box-sizing: border-box;">
+                        <div style="text-align: left; font-size: 13px; color: #4b5563; line-height: 1.6;">
+                            <p style="margin: 2px 0;"><strong>সার্টিফিকেট নং:</strong> <span style="color: #aa7c11; font-weight: bold;">${certNumber}</span></p>
+                            <p style="margin: 2px 0;"><strong>সদস্য আইডি:</strong> <span style="color: #111827;">${বাংলাআইডি}</span></p>
+                            <p style="margin: 2px 0;"><strong>ইস্যুর তারিখ:</strong> ${বাংলাতারিখ}</p>
+                        </div>
+                        <div style="text-align: center; width: 160px; position: relative;">
+                            <div style="position: absolute; top: -30px; left: -10px; border: 2px dashed #059669; color: #059669; font-size: 9px; font-weight: bold; padding: 2px 5px; transform: rotate(-10deg); background: #fffcf2;">ভেরিফাইড মেম্বার</div>
+                            <div style="border-top: 1.5px solid #4b5563; padding-top: 5px; width: 100%;">
+                                <p style="font-weight: bold; color: #111827; font-size: 13px; margin: 0;">সেন্ট্রাল অথরিটি</p>
+                                <p style="font-size: 11px; color: #6b7280;">রাজশাহী অলিম্পিয়াড সোসাইটি</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 🇬🇧 সম্পূর্ণ ইংরেজি টেমপ্লেট
+                const enDate = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                const enId = selectedMember.uid.substring(0, 8).toUpperCase();
+                const enRole = selectedMember.role === 'general_member' ? 'GENERAL MEMBER' : (selectedMember.role ? selectedMember.role.toUpperCase() : 'OFFICIAL MEMBER');
+
+                certDynamicBody.innerHTML = `
+                    <div>
+                        <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 55px; height: 55px; margin-bottom: 5px;">
+                        <h1 style="font-size: 26px; font-weight: 900; color: #111827; margin: 0; letter-spacing: 1.5px; font-family: 'Arial';">RAJSHAHI OLYMPIAD SOCIETY</h1>
+                        <p style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #b38600; margin-top: 3px; font-weight: bold;">System Control & Enterprise Network</p>
+                    </div>
+
+                    <div>
+                        <h2 style="font-family: 'Times New Roman', serif; font-size: 38px; color: #aa7c11; font-weight: bold; font-style: italic; margin: 5px 0; letter-spacing: 1px;">Certificate of Membership</h2>
+                        <p style="font-size: 14px; color: #4b5563; font-style: italic; margin-top: 8px;">This is to officially certify that</p>
+                        <h3 style="font-size: 26px; font-weight: bold; color: #0284c7; margin: 12px 0; border-bottom: 2px dashed #cc9933; display: inline-block; padding: 0 30px; font-family: 'Arial';">${(selectedMember.englishName || selectedMember.fullName || "Official Member").toUpperCase()}</h3>
+                        <p style="font-size: 14px; color: #1f2937; max-width: 620px; line-height: 1.7; margin: 0 auto; font-family: 'Georgia', serif;">
+                            has been successfully registered as an official corporate <span style="font-weight: bold;">${enRole}</span> of Rajshahi Olympiad Society. Their contribution and profile status are fully recorded in our enterprise station.
+                        </p>
+                    </div>
+
+                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 25px; box-sizing: border-box; font-family: 'Arial';">
+                        <div style="text-align: left; font-size: 12px; color: #4b5563; line-height: 1.6;">
+                            <p style="margin: 2px 0;"><strong>Certificate No:</strong> <span style="color: #aa7c11; font-weight: bold;">${certNumber}</span></p>
+                            <p style="margin: 2px 0;"><strong>Member ID:</strong> <span style="color: #111827;">${selectedMember.memberId || enId}</span></p>
+                            <p style="margin: 2px 0;"><strong>Date of Issue:</strong> ${enDate}</p>
+                        </div>
+                        <div style="text-align: center; width: 160px; position: relative;">
+                            <div style="position: absolute; top: -30px; left: -10px; border: 2px dashed #059669; color: #059669; font-size: 8px; font-weight: bold; padding: 2px 5px; transform: rotate(-10deg); background: #fffcf2;">VERIFIED MEMBER</div>
+                            <div style="border-top: 1.5px solid #4b5563; padding-top: 5px; width: 100%;">
+                                <p style="font-weight: bold; color: #111827; font-size: 12px; margin: 0;">Central Authority</p>
+                                <p style="font-size: 10px; color: #6b7280; margin-top: 1px;">Rajshahi Olympiad Society</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            previewZone.style.display = 'flex';
+            previewZone.scrollIntoView({ behavior: 'smooth' });
+
+        } catch (error) {
+            console.error(error);
+            alert("সার্টিফিকেট জেনারেট এবং নাম্বার সেভ করতে ট্রাবল হয়েছে!");
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = `<i class="fas fa-gem"></i> সার্টিফিকেট তৈরি করুন`;
+        }
     });
 
-    // ৩. সিস্টেম প্রিন্ট ডায়ালগ এবং মডাল ট্রিপ ইভেন্টস
-    document.getElementById('printCertBtn').addEventListener('click', () => {
-        window.print();
-    });
-
-    document.getElementById('closeCertBtn').addEventListener('click', () => {
-        previewZone.style.display = 'none';
-    });
+    // ৪. প্রিন্ট ও মডাল ক্লোজ কন্ট্রোলস
+    document.getElementById('printCertBtn').addEventListener('click', () => window.print());
+    document.getElementById('closeCertBtn').addEventListener('click', () => previewZone.style.display = 'none');
 };
+        
