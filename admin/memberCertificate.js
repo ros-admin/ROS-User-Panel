@@ -1,6 +1,6 @@
 /**
- * ROS Nexus - Enterprise Membership Certificate Module v4.0
- * Features: Multi-Certificate History Modal, Name/memberId Search, 1000363826.jpg Palette, Fixed PDF Engine
+ * ROS Nexus - Enterprise Membership Certificate Module v4.1
+ * Bugfixes: Fixed PDF Left-clipping & Shift alignment, Resolved PDF Text-Gradient fallback box issue
  */
 
 window.loadCertificatesModule = function(container, db, collection, onSnapshot, doc, getDocs, query, where, setDoc, addDoc, serverTimestamp) {
@@ -26,7 +26,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
     container.innerHTML = `
         <div class="cyber-glass" style="padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #00B2E2; background: rgba(5, 17, 36, 0.85); font-family: 'Poppins', sans-serif;">
             <h2 style="color: #fff; font-size: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
-                <i class="fas fa-award" style="color: #00B2E2;"></i> ROS Certificate Generator v4.0
+                <i class="fas fa-award" style="color: #00B2E2;"></i> ROS Certificate Generator v4.1
             </h2>
             <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">
                 Search by Name or Registration Number. Managed history logs enabled.
@@ -46,7 +46,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
             <div id="selectedMemberBadge" style="display: none; color: #00C5FF; font-size: 13px; background: rgba(0, 197, 255, 0.1); padding: 6px 12px; border-radius: 4px;"></div>
         </div>
 
-        <!-- প্রিভিউ জোন -->
         <div id="certificatePreviewZone" style="display: none; flex-direction: column; align-items: center; gap: 25px; margin-top: 20px; width: 100%;">
             <div style="display: flex; gap: 15px; background: rgba(17, 24, 39, 0.8); padding: 12px 25px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <button id="downloadCertBtn" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 10px 24px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px;">
@@ -58,13 +57,12 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
             </div>
 
             <div style="width: 100%; overflow-x: auto; display: flex; justify-content: center; padding: 10px 0;">
-                <div id="certificatePaperFrame" style="width: 842px; height: 595px; background: #ffffff; position: relative; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.35); flex-shrink: 0; box-sizing: border-box;">
+                <div id="certificatePaperFrame" style="width: 842px; height: 595px; background: #ffffff; position: relative; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.35); flex-shrink: 0;">
                     <div id="certDynamicBody" style="width: 100%; height: 100%; box-sizing: border-box; margin: 0; padding: 0; overflow: hidden;"></div>
                 </div>
             </div>
         </div>
 
-        <!-- 🔔 স্মার্ট হিস্টোরি ডিসিশন মোডাল পপআপ -->
         <div id="certHistoryModal" style="display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px); z-index: 10000; justify-content: center; align-items: center; padding: 20px;">
             <div style="background: #0f172a; border: 1px solid rgba(0, 178, 226, 0.3); width: 100%; max-width: 520px; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; font-family: 'Poppins', sans-serif;">
                 <div style="background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 12px;">
@@ -82,7 +80,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                         You can either load an existing certificate from the archive list below or compile a brand new instance.
                     </p>
                     
-                    <!-- পূর্বের সার্টিফিকেটের তালিকা -->
                     <div style="color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; letter-spacing: 0.5px;">Archived Certificates List:</div>
                     <div id="certModalListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; margin-bottom: 20px; padding-right: 4px;"></div>
                     
@@ -111,7 +108,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
     const certDynamicBody = document.getElementById('certDynamicBody');
     const badge = document.getElementById('selectedMemberBadge');
     
-    // মোডাল অবজেক্টস
     const historyModal = document.getElementById('certHistoryModal');
     const modalListContainer = document.getElementById('certModalListContainer');
     const modalCancelBtn = document.getElementById('modalCancelBtn');
@@ -120,9 +116,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
     let allMembers = [];
     let selectedMember = null;
     let currentCertNumber = "";
-    let currentCertDate = "";
 
-    // ডেটাবেজ থেকে মেম্বার ইনফো পুশ
     async function initModuleData() {
         try {
             const q = query(collection(db, "users"));
@@ -133,7 +127,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
     }
     initModuleData();
 
-    // 🔎 পরিবর্তন: নাম অথবা মেম্বার আইডি (memberId) দিয়ে ইনস্ট্যান্ট লাইভ সার্চ অপশন
     searchInput.addEventListener('input', () => {
         const value = searchInput.value.trim().toLowerCase();
         suggestionsDiv.innerHTML = "";
@@ -165,7 +158,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
         } else { suggestionsDiv.style.display = 'none'; }
     });
 
-    // নতুন মেম্বারশিপ সিরিয়াল জেনারেটর 
     async function generateUniqueSerial() {
         try {
             const certRef = collection(db, "issued_certificates");
@@ -177,7 +169,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
         }
     }
 
-    // নতুন ডেটা রাইটার ট্রানজেকশন
     async function saveCertToDatabase(certNo, dateStr) {
         try {
             await addDoc(collection(db, "issued_certificates"), {
@@ -189,7 +180,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
         } catch (e) { console.error("Logging failed:", e); }
     }
 
-    // 🚀 মূল সার্টিফিকেট রেন্ডারিং ভিউপোর্ট ইঞ্জিন 
     function renderCertificateCanvas(certNo, issueDate) {
         const displayMemberId = selectedMember.memberId ? selectedMember.memberId.toUpperCase() : "ROS-PENDING";
         
@@ -205,7 +195,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
             <div style="width: 842px; height: 595px; box-sizing: border-box; padding: 50px; position: relative;
                         background: radial-gradient(circle at 50% 35%, #ffffff 0%, #f3fcfe 60%, #cdf2fa 100%); margin: 0; overflow: hidden; font-family: 'Poppins', sans-serif;">
                 
-                <!-- ওলিম্পিয়াড ম্যাথ গ্রিড এলিমেন্ট -->
                 <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.1; z-index: 0;">
                     <div style="position: absolute; top: 85px; left: 95px; font-size: 50px; font-weight: 700; color: #00B2E2;">π</div>
                     <div style="position: absolute; top: 230px; left: 80px; font-size: 52px; font-weight: 600; color: #00B2E2;">Σ</div>
@@ -216,7 +205,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                     <div style="width: 100%; height: 100%; background-image: linear-gradient(rgba(0, 178, 226, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 178, 226, 0.1) 1px, transparent 1px); background-size: 34px 34px; mask-image: radial-gradient(circle, black 45%, transparent 85%); -webkit-mask-image: radial-gradient(circle, black 45%, transparent 85%);"></div>
                 </div>
 
-                <!-- এলিট বর্ডার আর্কিটেকচার -->
                 <div style="position: absolute; top: 40px; left: 40px; right: 40px; bottom: 40px; border: 2.5px solid #00B2E2; pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
                 <div style="position: absolute; top: 45px; left: 45px; right: 45px; bottom: 45px; border: 1.5px solid #FFD700; pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
                 
@@ -229,7 +217,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                     
                     <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start;">
                         <div style="font-size: 11px; color: #002b3d; text-align: left; line-height: 1.4; font-weight: 500;">
-                            <!-- সিরিয়াল নং 1000363826.jpg অরেঞ্জ কালার কোড #E65F00 এ রূপান্তর -->
                             <div><strong style="color: #00B2E2; font-weight: 600;">SERIAL NO:</strong> <span style="font-weight: 700; color: #E65F00;">${certNo}</span></div>
                             <div><strong style="color: #00B2E2; font-weight: 600;">DATE OF ISSUE:</strong> <span style="font-weight: 500; color: #002b3d;">${issueDate}</span></div>
                         </div>
@@ -240,17 +227,15 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
                     <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: -5px;">
                         <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 55px; height: 55px; object-fit: contain; margin-bottom: 2px;" />
-                        <!-- RAJSHAHI OLYMPIAD SOCIETY সাইজ বড় (24px) -->
                         <h1 style="font-size: 24px; font-weight: 800; color: #002b3d; letter-spacing: 0.5px; margin: 0; text-transform: uppercase;">RAJSHAHI OLYMPIAD SOCIETY</h1>
                         <p style="font-size: 9.5px; font-weight: 600; color: #00B2E2; letter-spacing: 3px; text-transform: uppercase; margin: 0;">
                             SYSTEM CONTROL & ENTERPRISE NETWORK
                         </p>
                     </div>
 
-                    <!-- সমস্যা দুই সমাধান: টাইটেল লেখাটি কোম্পানির নামের চেয়ে ছোট (19px) ও ব্যাকগ্রাউন্ড ১00% ট্রান্সপারেন্ট এবং গ্রেডিয়েন্ট টেক্সট ফিল -->
                     <div style="text-align: center; width: 100%;">
-                        <div style="margin: 0 auto 6px auto; display: inline-block; background: transparent;">
-                            <h2 style="font-size: 19px; font-weight: 800; letter-spacing: 1.5px; margin: 0; text-transform: uppercase; font-family: 'Poppins', sans-serif;
+                        <div style="margin: 0 auto 6px auto; display: inline-block; background: transparent !important;">
+                            <h2 id="targetMembershipText" style="font-size: 19px; font-weight: 800; letter-spacing: 1.5px; margin: 0; text-transform: uppercase; font-family: 'Poppins', sans-serif;
                                        background: linear-gradient(to right, #FFD700 0%, #FF8C00 50%, #FF3344 100%);
                                        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                 CERTIFICATE OF MEMBERSHIP
@@ -259,7 +244,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                         
                         <p style="font-size: 11px; font-style: italic; color: #475569; margin: 0 0 12px 0;">This is to officially certify that</p>
                         
-                             <!-- নাম কালো এবং আন্ডারলাইন থিমের সায়ান নীল -->
                         <div style="font-size: 23px; font-weight: 800; color: #000000; border-bottom: 2.5px solid #00B2E2; display: inline-block; padding-bottom: 4px; min-width: 440px; text-transform: uppercase; letter-spacing: 0.5px;">
                             ${selectedMember.englishName || selectedMember.fullName || "OFFICIAL MEMBER"}
                         </div>
@@ -271,7 +255,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
                         
-                        <!-- রেজিস্ট্রেশন ডাটা নোড (মেম্বার রেজিস্ট্রেশন আইডি ওরেঞ্জ কালার কোড #E65F00 এ রূপান্তর) -->
                         <div style="background: #ffffff; border: 1.5px solid #00B2E2; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 4px; padding: 4px 18px; display: flex; gap: 20px; justify-content: center; align-items: center; font-size: 11px; color: #002b3d;">
                             <div><span style="color: #64748b;">Registration No:</span> <strong style="color: #E65F00; font-size: 11px; margin-left: 2px; font-weight: 800;">${displayMemberId}</strong></div>
                             <div style="width: 1px; height: 10px; background: rgba(0,178,226,0.2);"></div>
@@ -304,7 +287,6 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
         previewZone.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // ⚡ নতুন ফিচার ট্রিপল ইন্টেলিজেন্স অ্যাকশন বাটন কন্ট্রোলার
     generateBtn.addEventListener('click', async () => {
         if (!selectedMember) return alert("Please select a valid member profile first.");
 
@@ -312,20 +294,15 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
         generateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Checking Database...`;
 
         try {
-            // ১. ইউজার আইডির আন্ডারে পূর্বে কোনো ডাটা রেন্ডার হয়ে ক্রিয়েট হয়েছিল কিনা চেক
             const certRef = collection(db, "issued_certificates");
             const q = query(certRef, where("userId", "==", selectedMember.uid));
             const querySnapshot = await getDocs(q);
 
             const pastCertificates = [];
-            querySnapshot.forEach(doc => {
-                pastCertificates.push(doc.data());
-            });
+            querySnapshot.forEach(doc => { pastCertificates.push(doc.data()); });
 
-            // ২. যদি আগের হিস্টোরি ডেটা থেকে থাকে, তবে পপআপ নোটিফিকেশন ওভারলে আসবে
             if (pastCertificates.length > 0) {
                 modalListContainer.innerHTML = "";
-                
                 pastCertificates.forEach((cert) => {
                     const item = document.createElement('div');
                     item.className = 'archive-item';
@@ -336,18 +313,14 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                         </div>
                         <div style="color: #10b981; font-size: 12px; font-weight: 500;"><i class="fas fa-eye"></i> Load Saved</div>
                     `;
-                    
-                    // সংরক্ষিত সার্টিফিকেটে ক্লিক করলে পুরনো ডাটা দিয়ে ডিরেক্ট রেন্ডার হবে
                     item.addEventListener('click', () => {
                         historyModal.style.display = 'none';
                         renderCertificateCanvas(cert.certificateNo, cert.issuedAt);
                     });
                     modalListContainer.appendChild(item);
                 });
-
                 historyModal.style.display = 'flex';
             } else {
-                // ৩. যদি একদম নতুন মেম্বার হয়, তাহলে কোনো পপআপ ছাড়াই ফ্রেশ ডাটা জেনারেট হবে
                 const freshSerial = await generateUniqueSerial();
                 const today = new Date();
                 const freshDate = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -355,17 +328,14 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                 await saveCertToDatabase(freshSerial, freshDate);
                 renderCertificateCanvas(freshSerial, freshDate);
             }
-
         } catch (error) {
             console.error(error);
-            alert("Error in database execution layer.");
         } finally {
             generateBtn.disabled = false;
             generateBtn.innerHTML = `<i class="fas fa-magic"></i> Process Certificate`;
         }
     });
 
-    // মোডাল পপআপের ভেতরে "Issue New" বাটনের ট্র্রিগার অ্যাকশন
     modalGenerateNewBtn.addEventListener('click', async () => {
         historyModal.style.display = 'none';
         generateBtn.disabled = true;
@@ -388,15 +358,26 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
     modalCancelBtn.addEventListener('click', () => historyModal.style.display = 'none');
 
-    // 🚀 হাই-রেজোলিউশন ট্রাস্টেড পিডিএফ জেনারেটর (সিএসএস ব্যাকগ্রাউন্ড ফিল কমপ্যাটিবল মেথড)
+    // 🚀 পিডিএফ এক্সপোর্ট এবং অফসেট অ্যালাইনমেন্ট ইঞ্জিন (১০০% ফিক্সড)
     document.getElementById('downloadCertBtn').addEventListener('click', () => {
         const element = document.getElementById('certDynamicBody');
+        const textNode = document.getElementById('targetMembershipText');
         
         if (!window.html2pdf) {
             alert("PDF asset engine loading, please retry in 2 seconds.");
             return;
         }
 
+        // html2canvas এর ব্যাকগ্রাউন্ড ট্রানজিশন বাগ এড়ানোর জন্য পিডিএফ ডাউনলোডের আগে টেক্সট মোড পরিবর্তন
+        if (textNode) {
+            textNode.style.background = "none";
+            textNode.style.webkitBackgroundClip = "unset";
+            textNode.style.webkitTextFillColor = "unset";
+            textNode.style.backgroundClip = "unset";
+            textNode.style.color = "#FF8C00"; // প্রিমিয়াম মিড-অরেঞ্জ টোন কালার লক
+        }
+
+        // একদম জিরো অফসেটে স্ক্রিন লকিং মেকানিজম (বাম এবং ডান দিকের সমস্যা দূরীকরণে)
         const opt = {
             margin:       0,
             filename:     `ROS-Certificate-${currentCertNumber}.pdf`,
@@ -406,13 +387,25 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                 useCORS: true, 
                 logging: false,
                 letterRendering: true,
+                scrollX: 0,
+                scrollY: 0,
+                x: 0,
+                y: 0,
                 windowWidth: 842,
                 windowHeight: 595
             },
             jsPDF:        { unit: 'px', format: [842, 595], orientation: 'landscape' }
         };
 
-        html2pdf().set(opt).from(element).save();
+        html2pdf().set(opt).from(element).save().then(() => {
+            // পিডিএফ জেনারেট হয়ে গেলে স্ক্রিনে আবার লাইভ ডাইনামিক গ্রেডিয়েন্ট ফিরিয়ে আনা
+            if (textNode) {
+                textNode.style.background = "linear-gradient(to right, #FFD700 0%, #FF8C00 50%, #FF3344 100%)";
+                textNode.style.webkitBackgroundClip = "text";
+                textNode.style.webkitTextFillColor = "transparent";
+                textNode.style.backgroundClip = "text";
+            }
+        });
     });
 
     document.getElementById('closeCertBtn').addEventListener('click', () => previewZone.style.display = 'none');
