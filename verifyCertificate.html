@@ -162,7 +162,7 @@
       <p>Official Verification Station</p>
     </div>
 
-    <form id="publicVerifyForm" onsubmit="event.preventDefault(); return false;">
+    <form id="publicVerifyForm">
       <div class="input-group">
         <label for="certNo"><i class="fas fa-fingerprint"></i> সার্টিফিকেট নাম্বার (Certificate Number)</label>
         <input type="text" id="certNo" class="input-field" placeholder="যেমন: ROS-618441" required autocomplete="off">
@@ -239,25 +239,18 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+    // আপনার প্রজেক্টের সঠিক Firebase SDK ভার্সন এবং আসল ক্রেডেনশিয়াল সরাসরি অ্যাসাইন করা হলো
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    let firebaseConfig;
-    
-    try {
-      // কনফিগ ফাইল থেকে ডাটা ইম্পোর্ট ট্রাই করা হচ্ছে
-      const configData = await import("firebase-config.js");
-      firebaseConfig = configData.default?.firebaseConfig || configData.default || configData.firebaseConfig || configData;
-    } catch (e) {
-      console.error("Config File Import Failed, falling back to window object:", e);
-      // যদি মডিউল ইম্পোর্ট ফেইল করে তবে উইন্ডো গ্লোবাল অবজেক্ট চেক করবে
-      firebaseConfig = window.firebaseConfig;
-    }
-
-    // যদি কোনোভাবেই কনফিগ না পাওয়া যায় তবে ইউজারকে অ্যালার্ট দিবে
-    if (!firebaseConfig || !firebaseConfig.projectId) {
-      alert("❌ ফায়ারবেস কনফিগারেশন ফাইলটি (../firebase-config.js) পাওয়া যাচ্ছে না অথবা ফাইলটি খালি!");
-    }
+    const firebaseConfig = {
+      apiKey: "AIzaSyA8NSt3VP9jnVkzrGKPvNSqbnm7hwL-NqY",
+      authDomain: "rajshahi-olimpiad-society.firebaseapp.com",
+      projectId: "rajshahi-olimpiad-society",
+      storageBucket: "rajshahi-olimpiad-society.firebasestorage.app",
+      messagingSenderId: "248298850450",
+      appId: "1:248298850450:web:d9e99750eddd9c7b18be4b"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -267,9 +260,8 @@
     const resultZone = document.getElementById('resultZone');
 
     verifyForm.addEventListener('submit', async (e) => {
-      // ডাবল প্রোটেকশন রিফ্রেস আটকানোর জন্য
+      // পেজ রিলোড বা রিফ্রেশ হওয়া শতভাগ আটকানোর জন্য
       e.preventDefault();
-      e.stopPropagation();
 
       const inputCertNo = document.getElementById('certNo').value.trim().toUpperCase();
       const inputDate = document.getElementById('issueDate').value; 
@@ -279,7 +271,7 @@
       resultZone.style.display = 'none';
 
       try {
-        // ১. কালেকশন কুয়েরি
+        // ১. 'issued_certificates' কালেকশন থেকে সার্টিফিকেট খোঁজ করা
         const certQuery = query(collection(db, "issued_certificates"), where("certificateNo", "==", inputCertNo));
         const querySnapshot = await getDocs(certQuery);
 
@@ -291,7 +283,7 @@
         let certData = null;
         querySnapshot.forEach(s => { certData = s.data(); });
 
-        // ২. ডেট কনভার্সন ও ক্রস চেক
+        // ২. ডেট টাইমিং ম্যাচিং (ফায়ারবেস টাইমস্ট্যাম্প সুরক্ষিত রূপান্তর)
         const dbIssuedDate = certData.issuedAt?.seconds ? new Date(certData.issuedAt.seconds * 1000) : new Date(certData.issuedAt);
         const year = dbIssuedDate.getFullYear();
         const month = String(dbIssuedDate.getMonth() + 1).padStart(2, '0');
@@ -303,15 +295,17 @@
           return;
         }
 
-        // ৩. ডাবল-চেক ফলব্যাক পদ্ধতিতে ইউজার খোঁজা (UserId ও Uid ম্যাচিং)
+        // ৩. ডাবল-সেক পদ্ধতিতে ইউজার খোঁজা (ডকুমেন্ট ID এবং 'uid' ফিল্ড দুভাবেই চেক করবে)
         let userData = null;
         let userDocId = "";
 
+        // পদ্ধতি A: ডকুমেন্ট আইডি দিয়ে ডিরেক্ট রিড
         const userDocSnap = await getDoc(doc(db, "users", certData.userId));
         if (userDocSnap.exists()) {
           userData = userDocSnap.data();
           userDocId = userDocSnap.id;
         } else {
+          // পদ্ধতি B: যদি ডকুমেন্ট আইডি মেম্বার আইডি হয়, তবে ভেতরের 'uid' ফিল্ড দিয়ে কুয়েরি করা
           const userQuery = query(collection(db, "users"), where("uid", "==", certData.userId));
           const userQuerySnapshot = await getDocs(userQuery);
           if (!userQuerySnapshot.empty) {
@@ -327,7 +321,7 @@
           return;
         }
 
-        // ৪. UI কার্ডে ডাটা রেন্ডার
+        // ৪. সফলভাবে ডাটা UI-তে বসানো
         document.getElementById('resBanglaName').innerText = userData.banglaName || "উল্লেখ নেই";
         document.getElementById('resEnglishName').innerText = userData.englishName || userData.fullName || "—";
         document.getElementById('resMemberId').innerText = userData.memberId ? userData.memberId.toUpperCase() : userDocId.toUpperCase();
@@ -354,12 +348,13 @@
         document.getElementById('resCertNo').innerText = certData.certificateNo;
         document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('bn-BD') + ` (${certData.language === 'bn' ? 'বাংলা সংস্করণ' : 'English Version'})`;
 
+        // সুন্দর এনিমেশন সহ রেজাল্ট প্যানেল শো করা
         resultZone.style.display = 'block';
         resultZone.scrollIntoView({ behavior: 'smooth' });
 
       } catch (error) {
         console.error("Verification Engine Error:", error);
-        alert("সার্ভার রেসপন্স করছে না। অনুগ্রহ করে আবার চেষ্টা করুন।");
+        alert("ফায়ারবেস ডাটাবেজ কানেকশন এরর! অনুগ্রহ করে আবার চেষ্টা করুন।");
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<i class="fas fa-shield-alt"></i> সার্টিফিকেট ভেরিফাই করুন`;
