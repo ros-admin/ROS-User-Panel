@@ -251,9 +251,9 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                                   <!-- Integrated Center Security QR Code Node -->
                                 <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: -2px;">
                                     <div style="border: 1.5px solid #00B2E2; padding: 2px; background: #ffffff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,178,226,0.12);">
-                                        <img src="qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png" style="width: 50px; height: 50px; display: block;" />
+                                        <img src="../qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png" style="width: 50px; height: 50px; display: block;" />
                                     </div>
-                                    <div style="font-family: 'Montserrat', sans-serif; font-size: 7.5px; color: #64748b; font-weight: 600;">Verification Node</div>
+                                    <div style="font-family: 'Montserrat', sans-serif; font-size: 7.5px; color: #64748b; font-weight: 600;">Scan to Verify</div>
                                 </div>
 
                                 <!-- Right Signature -->
