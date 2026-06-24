@@ -234,9 +234,9 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
                                 <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: -4px;">
                                     <div style="border: 1px solid #0284c7; padding: 3px; background: #fff; border-radius: 4px;">
-                                        <img src="qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png" style="width: 55px; height: 55px; display: block;" />
+                                        <img src="https://ros-user-panel.vercel.app/qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png" style="width: 55px; height: 55px; display: block;" />
                                     </div>
-                                    <div style="font-family: 'Montserrat', sans-serif; font-size: 8px; color: #64748b;">Security Node</div>
+                                    <div style="font-family: 'Montserrat', sans-serif; font-size: 8px; color: #64748b;">Scan to Verify</div>
                                 </div>
 
                                 <div style="text-align: center; width: 180px; font-family: 'Montserrat', sans-serif;">
