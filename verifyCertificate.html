@@ -162,7 +162,7 @@
       <p>Official Verification Station</p>
     </div>
 
-    <form id="publicVerifyForm">
+    <form id="publicVerifyForm" onsubmit="event.preventDefault(); return false;">
       <div class="input-group">
         <label for="certNo"><i class="fas fa-fingerprint"></i> সার্টিফিকেট নাম্বার (Certificate Number)</label>
         <input type="text" id="certNo" class="input-field" placeholder="যেমন: ROS-618441" required autocomplete="off">
@@ -242,9 +242,22 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-    // গোপন কনফিগ ফাইল ইম্পোর্ট (যদি অবজেক্ট বা ডিফল্ট দুরকমই থাকে তার ব্যাকআপ হ্যান্ডলিং সহ)
-    import configData from "../firebase-config.js";
-    const firebaseConfig = configData?.firebaseConfig || configData;
+    let firebaseConfig;
+    
+    try {
+      // কনফিগ ফাইল থেকে ডাটা ইম্পোর্ট ট্রাই করা হচ্ছে
+      const configData = await import("../firebase-config.js");
+      firebaseConfig = configData.default?.firebaseConfig || configData.default || configData.firebaseConfig || configData;
+    } catch (e) {
+      console.error("Config File Import Failed, falling back to window object:", e);
+      // যদি মডিউল ইম্পোর্ট ফেইল করে তবে উইন্ডো গ্লোবাল অবজেক্ট চেক করবে
+      firebaseConfig = window.firebaseConfig;
+    }
+
+    // যদি কোনোভাবেই কনফিগ না পাওয়া যায় তবে ইউজারকে অ্যালার্ট দিবে
+    if (!firebaseConfig || !firebaseConfig.projectId) {
+      alert("❌ ফায়ারবেস কনফিগারেশন ফাইলটি (../firebase-config.js) পাওয়া যাচ্ছে না অথবা ফাইলটি খালি!");
+    }
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -254,7 +267,9 @@
     const resultZone = document.getElementById('resultZone');
 
     verifyForm.addEventListener('submit', async (e) => {
+      // ডাবল প্রোটেকশন রিফ্রেস আটকানোর জন্য
       e.preventDefault();
+      e.stopPropagation();
 
       const inputCertNo = document.getElementById('certNo').value.trim().toUpperCase();
       const inputDate = document.getElementById('issueDate').value; 
@@ -264,7 +279,7 @@
       resultZone.style.display = 'none';
 
       try {
-        // ১. 'issued_certificates' কালেকশনে সার্টিফিকেট নম্বর খোঁজা
+        // ১. কালেকশন কুয়েরি
         const certQuery = query(collection(db, "issued_certificates"), where("certificateNo", "==", inputCertNo));
         const querySnapshot = await getDocs(certQuery);
 
@@ -276,7 +291,7 @@
         let certData = null;
         querySnapshot.forEach(s => { certData = s.data(); });
 
-        // ২. ডেট প্রসেসিং ও ভ্যালিডেশন
+        // ২. ডেট কনভার্সন ও ক্রস চেক
         const dbIssuedDate = certData.issuedAt?.seconds ? new Date(certData.issuedAt.seconds * 1000) : new Date(certData.issuedAt);
         const year = dbIssuedDate.getFullYear();
         const month = String(dbIssuedDate.getMonth() + 1).padStart(2, '0');
@@ -288,17 +303,15 @@
           return;
         }
 
-        // ৩. ইউজার ডাটা রিড করার সুরক্ষাকবচ (ডকুমেন্ট আইডি এবং UID ফিল্ড দুভাবেই চেক করবে)
+        // ৩. ডাবল-চেক ফলব্যাক পদ্ধতিতে ইউজার খোঁজা (UserId ও Uid ম্যাচিং)
         let userData = null;
         let userDocId = "";
 
-        // পদ্ধতি A: সরাসরি ডকুমেন্ট আইডি (userId) দিয়ে খোঁজা
         const userDocSnap = await getDoc(doc(db, "users", certData.userId));
         if (userDocSnap.exists()) {
           userData = userDocSnap.data();
           userDocId = userDocSnap.id;
         } else {
-          // পদ্ধতি B: যদি ডকুমেন্ট আইডি অন্য কিছু হয়, তবে ভেতরের 'uid' ফিল্ড দিয়ে কুয়েরি করা
           const userQuery = query(collection(db, "users"), where("uid", "==", certData.userId));
           const userQuerySnapshot = await getDocs(userQuery);
           if (!userQuerySnapshot.empty) {
@@ -309,13 +322,12 @@
           }
         }
 
-        // যদি কোনো পদ্ধতিতেই ইউজার না পাওয়া যায়
         if (!userData) {
           alert("❌ দুঃখিত! সার্টিফিকেটের রেকর্ড আছে কিন্তু ব্যবহারকারীর প্রোফাইল পাওয়া যায়নি।");
           return;
         }
 
-        // ৪. সফলভাবে UI কার্ডে ডাটা রেন্ডার করা
+        // ৪. UI কার্ডে ডাটা রেন্ডার
         document.getElementById('resBanglaName').innerText = userData.banglaName || "উল্লেখ নেই";
         document.getElementById('resEnglishName').innerText = userData.englishName || userData.fullName || "—";
         document.getElementById('resMemberId').innerText = userData.memberId ? userData.memberId.toUpperCase() : userDocId.toUpperCase();
@@ -339,7 +351,6 @@
         document.getElementById('resFatherName').innerText = userData.fatherName || "উল্লেখ নেই";
         document.getElementById('resMotherName').innerText = userData.motherName || "উল্লেখ নেই";
         
-        // সার্টিফিকেট মেটাডাটা
         document.getElementById('resCertNo').innerText = certData.certificateNo;
         document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('bn-BD') + ` (${certData.language === 'bn' ? 'বাংলা সংস্করণ' : 'English Version'})`;
 
