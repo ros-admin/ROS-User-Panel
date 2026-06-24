@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Certificate Verification | Rajshahi Olympiad Society</title>
+  <title>Certificate Verification Portal | Rajshahi Olympiad Society</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
@@ -14,391 +14,514 @@
       --panel-bg: #0b1329;        
       --glass-bg: rgba(11, 19, 41, 0.65); 
       --primary: #00f5ff;       
-      --accent: #ffb703;          
+      --accent: #E65F00;          
       --neon-green: #10b981;      
       --text-light: #f8fafc;      
       --text-muted: #94a3b8;      
       --glass-border: rgba(0, 245, 255, 0.2);
-      --card-gradient: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body { 
-      background-color: var(--dark-bg); 
+    body {
+      background-color: var(--dark-bg);
       color: var(--text-light);
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      font-family: 'Hind Siliguri', 'Inter', sans-serif;
-      background-image: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #020617 70%);
+      justify-content: space-between;
     }
 
-    .verification-container {
+    .container {
       width: 100%;
-      max-width: 650px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      padding: 40px;
-      border-radius: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 245, 255, 0.05);
+      max-width: 750px;
+      margin: 40px auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+
+    .brand-section {
       text-align: center;
+      margin-bottom: 35px;
     }
 
-    .logo-zone img { width: 75px; height: 75px; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(0,245,255,0.2)); }
-    .logo-zone h1 { font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 800; color: #fff; letter-spacing: 1.5px; }
-    .logo-zone p { font-family: 'Orbitron', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--primary); margin-bottom: 35px; opacity: 0.8; }
+    .brand-logo {
+      width: 75px;
+      height: 75px;
+      object-fit: contain;
+      margin-bottom: 12px;
+    }
 
-    .input-group { display: flex; flex-direction: column; text-align: left; margin-bottom: 24px; gap: 10px; }
-    .input-group label { font-size: 13.5px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.3px; }
-    .input-group label i { margin-right: 6px; color: var(--primary); }
-    
-    .input-field {
-      background: #030712;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 14px 18px;
-      border-radius: 12px;
+    .brand-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
       color: #fff;
-      font-size: 14.5px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .input-field:focus {
-      border-color: var(--primary);
-      outline: none;
-      box-shadow: 0 0 15px rgba(0, 245, 255, 0.25);
-      background: #090d16;
+      letter-spacing: 1px;
+      margin: 0;
+      text-transform: uppercase;
     }
 
-    .verify-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #00b4d8 0%, #00f5ff 100%);
-      color: #020617;
-      padding: 16px;
-      border: none;
-      border-radius: 12px;
-      font-weight: 700;
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--primary);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin: 5px 0 0 0;
+      font-weight: 600;
+    }
+
+    .verification-panel {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0, 245, 255, 0.05);
+    }
+
+    .panel-header {
       font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .form-input {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 15px 12px 42px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #00b2e2, #00f5ff);
+      color: #020617;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      box-shadow: 0 8px 25px rgba(0, 245, 255, 0.25);
-      transition: all 0.3s;
+      gap: 8px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    .verify-btn:hover {
+
+    .submit-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(0, 245, 255, 0.4);
+      box-shadow: 0 10px 20px rgba(0, 245, 255, 0.25);
     }
-    .verify-btn:disabled { background: var(--text-muted); cursor: not-allowed; opacity: 0.6; box-shadow: none; }
 
-    /* Premium Result Design */
-    .result-zone {
-      display: none;
-      width: 100%;
-      max-width: 650px;
-      margin-top: 30px;
-      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    .submit-btn:disabled {
+      background: #334155;
+      color: #64748b;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
-    
+
+    /* রেজাল্ট কার্ড আর্কিটেকচার */
     .result-card {
-      background: var(--card-gradient);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      padding: 35px;
-      border-radius: 24px;
-      position: relative;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
-      text-align: left;
-    }
-
-    .badge-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 20px;
-      margin-bottom: 25px;
-    }
-
-    .verified-badge {
-      background: rgba(16, 185, 129, 0.1);
-      color: #34d399;
+      margin-top: 30px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
       border: 1px solid rgba(16, 185, 129, 0.3);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 6px 16px;
-      border-radius: 30px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      display: flex;
+      border-radius: 12px;
+      padding: 25px;
+      display: none;
+    }
+
+    .status-badge {
+      display: inline-flex;
       align-items: center;
       gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--neon-green);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
-    .cert-header-title {
-      font-size: 15px;
-      color: var(--text-muted);
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    /* Primary Highlight Banner inside Card */
-    .student-hero {
-      background: rgba(0, 245, 255, 0.03);
-      border-left: 4px solid var(--primary);
-      padding: 18px 20px;
-      border-radius: 0 14px 14px 0;
-      margin-bottom: 25px;
-    }
-    .hero-name-bn { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-    .hero-name-en { font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text-muted); font-weight: 500; margin-bottom: 12px; }
-    
-    .hero-meta-grid { display: flex; gap: 24px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; }
-    .meta-box { display: flex; flex-direction: column; gap: 4px; }
-    .meta-label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .meta-value { font-family: 'Orbitron', 'Inter', sans-serif; font-size: 14.5px; font-weight: 600; color: var(--accent); }
-
-    /* Elegant Grid Layout for Details */
-    .info-grid {
+    .data-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
     }
-    
-    .info-item {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      padding: 14px 18px;
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+
+    .data-item {
+      background: rgba(2, 6, 23, 0.4);
+      padding: 12px 15px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.03);
     }
-    
-    .info-item-label {
-      font-size: 12.5px;
+
+    .data-label {
+      font-size: 11px;
       color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .data-value {
+      font-size: 13.5px;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* 📞 প্রিমিয়াম কন্টাক্ট বক্স ডিজাইন */
+    .contact-box {
+      margin-top: 25px;
+      background: rgba(230, 95, 0, 0.05);
+      border: 1px solid rgba(230, 95, 0, 0.25);
+      border-radius: 10px;
+      padding: 20px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .contact-title {
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 600;
+      margin: 0 0 12px 0;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .info-item-label i { color: var(--primary); font-size: 13px; width: 16px; text-align: center; }
-    .info-item-value { font-size: 14.5px; color: #e2e8f0; font-weight: 500; padding-left: 24px; }
 
-    @keyframes fadeInUp {
-      from { transform: translateY(30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    .contact-title i {
+      color: var(--accent);
     }
 
-    @media (max-width: 600px) {
-      .verification-container, .result-card { padding: 25px 20px; }
-      .info-grid { grid-template-columns: 1fr; gap: 14px; }
-      .hero-meta-grid { flex-direction: column; gap: 12px; }
+    .contact-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .president-name {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .president-designation {
+      color: var(--text-muted);
+      font-size: 11.5px;
+      margin: 0 0 6px 0;
+    }
+
+    .contact-info-line {
+      font-size: 12.5px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contact-info-line i {
+      color: var(--text-muted);
+      width: 14px;
     }
   </style>
 </head>
 <body>
 
-  <div class="verification-container">
-    <div class="logo-zone">
-      <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" alt="ROS Logo">
-      <h1>RAJSHAHI OLYMPIAD SOCIETY</h1>
-      <p>Verification Hub</p>
+  <div class="container">
+    
+    <div class="brand-section">
+      <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" class="brand-logo" alt="ROS Logo">
+      <h1 class="brand-title">Rajshahi Olympiad Society</h1>
+      <p class="brand-subtitle">Central Verification Node</p>
     </div>
 
-    <form id="publicVerifyForm">
-      <div class="input-group">
-        <label for="certNo"><i class="fas fa-id-card"></i> সার্টিফিকেট নাম্বার (Certificate Number)</label>
-        <input type="text" id="certNo" class="input-field" placeholder="যেমন: ROS-618441" required autocomplete="off">
+    <div class="verification-panel">
+      <div class="panel-header">
+        <i class="fas fa-shield-halved" style="color: var(--primary);"></i> Secure Certificate Verification
       </div>
 
-      <div class="input-group">
-        <label for="issueDate"><i class="fas fa-calendar-check"></i> ইস্যুর তারিখ (Date of Issue)</label>
-        <input type="date" id="issueDate" class="input-field" required>
+      <div class="form-group">
+        <label class="form-label" for="certNoInput">Certificate Serial Number</label>
+        <div class="input-wrapper">
+          <i class="fas fa-id-card input-icon"></i>
+          <input type="text" id="certNoInput" class="form-input" placeholder="ROS-MSC-0001" autocomplete="off">
+        </div>
       </div>
 
-      <button type="submit" id="submitBtn" class="verify-btn">
-        <i class="fas fa-shield-halved"></i> সার্টিফিকেট ভেরিফাই করুন
+      <div class="form-group" style="margin-bottom: 25px;">
+        <label class="form-label" for="issueDateInput">Date of Issue</label>
+        <div class="input-wrapper">
+          <i class="fas fa-calendar-alt input-icon"></i>
+          <input type="date" id="issueDateInput" class="form-input">
+        </div>
+      </div>
+
+      <button id="verifySubmitBtn" class="submit-btn">
+        <i class="fas fa-search"></i> Verify Credentials
       </button>
-    </form>
-  </div>
+    </div>
 
-  <div id="resultZone" class="result-zone">
-    <div class="result-card">
-      
-      <div class="badge-container">
-        <div class="cert-header-title"><i class="fas fa-file-invoice"></i> Official Record Details</div>
-        <div class="verified-badge"><i class="fas fa-badge-check"></i> Verified Record</div>
+    <div id="verificationResultZone" class="result-card">
+      <div class="status-badge">
+        <i class="fas fa-circle-check"></i> Authentic Document Verified
       </div>
 
-      <div class="student-hero">
-        <div id="resBanglaName" class="hero-name-bn">—</div>
-        <div id="resEnglishName" class="hero-name-en">—</div>
-        
-        <div class="hero-meta-grid">
-          <div class="meta-box">
-            <span class="meta-label"><i class="fas fa-fingerprint"></i> Certificate No</span>
-            <span id="resCertNo" class="meta-value" style="color: var(--primary);">—</span>
-          </div>
-          <div class="meta-box">
-            <span class="meta-label"><i class="fas fa-user-vcard"></i> Member ID (UID)</span>
-            <span id="resMemberId" class="meta-value">—</span>
-          </div>
+      <div class="data-grid">
+        <div class="data-item">
+          <div class="data-label">Member Full Name</div>
+          <div id="resFullName" class="data-value">-</div>
+        </div>
+        <div class="data-item">
+          <div class="data-label">Registration ID</div>
+          <div id="resRegNo" class="data-value">-</div>
+        </div>
+        <div class="data-item">
+          <div class="data-label">Registration Date</div>
+          <div id="resRegDate" class="data-value">-</div>
+        </div>
+        <div class="data-item">
+          <div class="data-label">Date of Birth</div>
+          <div id="resBirthDate" class="data-value">-</div>
+        </div>
+        <div class="data-item">
+          <div class="data-label">Father's Name</div>
+          <div id="resFatherName" class="data-value">-</div>
+        </div>
+        <div class="data-item">
+          <div class="data-label">Mother's Name</div>
+          <div id="resMotherName" class="data-value">-</div>
+        </div>
+        <div class="data-item">
+          <div class="data-label">Certificate No</div>
+          <div id="resCertNo" class="data-value" style="color: var(--accent); font-weight:700;">-</div>
+        </div>
+        <div class="data-item">
+          <div class="data-label">System Issue Log</div>
+          <div id="resCertIssueDate" class="data-value">-</div>
         </div>
       </div>
 
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="info-item-label"><i class="fas fa-user-tie"></i> বাবার নাম</span>
-          <span id="resFatherName" class="info-item-value">—</span>
-        </div>
-        
-        <div class="info-item">
-          <span class="info-item-label"><i class="fas fa-user-gradient"></i> মায়ের নাম</span>
-          <span id="resMotherName" class="info-item-value">—</span>
-        </div>
-
-        <div class="info-item">
-          <span class="info-item-label"><i class="fas fa-cake-candles"></i> জন্ম তারিখ</span>
-          <span id="resBirthDate" class="info-item-value">—</span>
-        </div>
-
-        <div class="info-item">
-          <span class="info-item-label"><i class="fas fa-calendar-plus"></i> নিবন্ধনের তারিখ</span>
-          <span id="resRegDate" class="info-item-value">—</span>
-        </div>
-
-        <div class="info-item" style="grid-column: span 2;">
-          <span class="info-item-label"><i class="fas fa-calendar-day"></i> সার্টিফিকেট ইস্যুর তারিখ</span>
-          <span id="resCertIssueDate" class="info-item-value" style="color: #34d399; font-weight: 600;">—</span>
+      <div class="contact-box">
+        <p class="contact-title"><i class="fas fa-headset"></i> For more details / query please contact:</p>
+        <div class="contact-details">
+          <h4 id="presidentName" class="president-name">Loading...</h4>
+          <p class="president-designation">President, Rajshahi Olympiad Society</p>
+          <div class="contact-info-line">
+            <i class="fas fa-phone-alt"></i> <span id="presidentPhone">-</span>
+          </div>
+          <div class="contact-info-line" style="margin-top: 2px;">
+            <i class="fas fa-envelope"></i> <span id="presidentEmail">-</span>
+          </div>
         </div>
       </div>
 
     </div>
+
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // সরাসরি আপনার দেওয়া কনফিগারেশন কী
+    // আপনার ফায়ারবেস প্রজেক্ট কনফিগ কোডটি এখানে নিশ্চিত করুন
     const firebaseConfig = {
-      apiKey: "AIzaSyA8NSt3VP9jnVkzrGKPvNSqbnm7hwL-NqY",
-      authDomain: "rajshahi-olimpiad-society.firebaseapp.com",
-      projectId: "rajshahi-olimpiad-society",
-      storageBucket: "rajshahi-olimpiad-society.firebasestorage.app",
-      messagingSenderId: "248298850450",
-      appId: "1:248298850450:web:d9e99750eddd9c7b18be4b"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const verifyForm = document.getElementById('publicVerifyForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const resultZone = document.getElementById('resultZone');
+    const certInput = document.getElementById('certNoInput');
+    const dateInput = document.getElementById('issueDateInput');
+    const submitBtn = document.getElementById('verifySubmitBtn');
+    const resultZone = document.getElementById('verificationResultZone');
 
-    verifyForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // ⚡ শুরুতেই সার্চ বক্সে "ROS-MSC-" ইনপুট প্রিফিক্স করার স্মার্ট কন্ট্রোল ট্র্যাকিং
+    const prefix = "ROS-MSC-";
+    
+    certInput.addEventListener('focus', () => {
+      if (!certInput.value.startsWith(prefix)) {
+        certInput.value = prefix;
+      }
+    });
 
-      const inputCertNo = document.getElementById('certNo').value.trim().toUpperCase();
-      const inputDate = document.getElementById('issueDate').value; 
+    certInput.addEventListener('input', () => {
+      if (!certInput.value.startsWith(prefix)) {
+        // যদি ইউজার প্রিফিক্সটি ব্যাকস্পেস দিয়ে কাটার চেষ্টা করে তবে সেটি অটো-রিস্টোর হবে
+        if (certInput.value.length < prefix.length) {
+          certInput.value = prefix;
+        } else {
+          certInput.value = prefix + certInput.value.replace(prefix, "");
+        }
+      }
+    });
+
+    // 📞 ফায়ারবেস থেকে রোল "president" ওয়ালা ইউজারের কন্টাক্ট ডিটেইলস তুলে আনার ফাংশন
+    async function fetchPresidentContact() {
+      try {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("role", "==", "president"));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const docData = querySnapshot.docs[0].data();
+          document.getElementById('presidentName').innerText = docData.englishName || docData.fullName || "President";
+          document.getElementById('presidentPhone').innerText = docData.phone || docData.mobile || "N/A";
+          document.getElementById('presidentEmail').innerText = docData.email || "N/A";
+        } else {
+          document.getElementById('presidentName').innerText = "Authority Management Node";
+          document.getElementById('presidentPhone').innerText = "+880 XXXXX-XXXXXX";
+          document.getElementById('presidentEmail').innerText = "info@rajshahiolympiad.org";
+        }
+      } catch (err) {
+        console.error("Error fetching president contact details:", err);
+      }
+    }
+
+    // 🚀 মূল ডেটা ভেরিফিকেশন সার্চ ইঞ্জিন সাবমিট হ্যান্ডলার
+    submitBtn.addEventListener('click', async () => {
+      const targetCertNo = certInput.value.trim().toUpperCase();
+      const targetDateVal = dateInput.value;
+
+      if (targetCertNo === prefix || !targetCertNo) {
+        alert("Please enter a valid certificate number.");
+        return;
+      }
+      if (!targetDateVal) {
+        alert("Please choose the valid Date of Issue.");
+        return;
+      }
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ভেরিফিকেশন চলছে...`;
+      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validating...`;
       resultZone.style.display = 'none';
 
       try {
-        const certQuery = query(collection(db, "issued_certificates"), where("certificateNo", "==", inputCertNo));
-        const querySnapshot = await getDocs(certQuery);
+        // ১. ইস্যুকৃত সার্টিফিকেট কালেকশন কুয়েরি ম্যাচিং 
+        const certQuery = query(collection(db, "issued_certificates"), where("certificateNo", "==", targetCertNo));
+        const certSnapshot = await getDocs(certQuery);
 
-        if (querySnapshot.empty) {
-          alert("❌ ভুল সার্টিফিকেট নাম্বার! ডাটাবেজে এই নাম্বারের কোনো রেকর্ড পাওয়া যায়নি।");
+        if (certSnapshot.empty) {
+          alert("Verification Failed: No records matching this certificate number found.");
           return;
         }
 
-        let certData = null;
-        querySnapshot.forEach(s => { certData = s.data(); });
+        let certData = certSnapshot.docs[0].data();
+        const dbIssuedDate = new Date(certData.issuedAt);
+        const inputIssuedDate = new Date(targetDateVal);
 
-        const dbIssuedDate = certData.issuedAt?.seconds ? new Date(certData.issuedAt.seconds * 1000) : new Date(certData.issuedAt);
-        const year = dbIssuedDate.getFullYear();
-        const month = String(dbIssuedDate.getMonth() + 1).padStart(2, '0');
-        const day = String(dbIssuedDate.getDate()).padStart(2, '0');
-        const dbDateString = `${year}-${month}-${day}`;
-
-        if (inputDate !== dbDateString) {
-          alert("⚠️ সার্টিফিকেট নাম্বার সঠিক হলেও, ইস্যুর তারিখটি আমাদের রেকর্ডের সাথে মিলছে না!");
+        // ২. ইউজার ইনপুটকৃত তারিখের সাথে সিস্টেমে সংরক্ষিত তারিখের তুলনা
+        if (dbIssuedDate.toDateString() !== inputIssuedDate.toDateString()) {
+          alert("Verification Failed: The specified date of issue does not match our security logs.");
           return;
         }
 
-        let userData = null;
-        let userDocId = "";
+        // ৩. সার্টিফিকেট ডাটার আন্ডারে মূল ইউজারের প্রোফাইল স্ন্যাপশট সংগ্রহ
+        const userQuery = query(collection(db, "users"), where("__name__", "==", certData.userId));
+        const userSnapshot = await getDocs(userQuery);
 
-        const userDocSnap = await getDoc(doc(db, "users", certData.userId));
-        if (userDocSnap.exists()) {
-          userData = userDocSnap.data();
-          userDocId = userDocSnap.id;
-        } else {
-          const userQuery = query(collection(db, "users"), where("uid", "==", certData.userId));
-          const userQuerySnapshot = await getDocs(userQuery);
-          if (!userQuerySnapshot.empty) {
-            userQuerySnapshot.forEach(u => {
-              userData = u.data();
-              userDocId = u.id;
-            });
-          }
-        }
-
-        if (!userData) {
-          alert("❌ দুঃখিত! সার্টিফিকেটের রেকর্ড আছে কিন্তু ব্যবহারকারীর প্রোফাইল পাওয়া যায়নি।");
+        if (userSnapshot.empty) {
+          alert("System Error: Linked member account not found in database.");
           return;
         }
 
-        // UI ডাটা রেন্ডারিং
-        document.getElementById('resBanglaName').innerText = userData.banglaName || "উল্লেখ নেই";
-        document.getElementById('resEnglishName').innerText = userData.englishName || userData.fullName || "—";
-        document.getElementById('resMemberId').innerText = userData.memberId ? userData.memberId.toUpperCase() : userDocId.toUpperCase();
+        const userData = userSnapshot.docs[0].data();
+
+        // ৪. ইংরেজি ফরম্যাটে রেজাল্ট প্যানেলে ডেটা পুশ
+        document.getElementById('resFullName').innerText = userData.englishName || userData.fullName || "N/A";
+        document.getElementById('resRegNo').innerText = userData.memberId ? userData.memberId.toUpperCase() : "PENDING";
         
-        let regDateText = "উল্লেখ নেই";
+        let regDateText = "N/A";
         if (userData.createdAt) {
           const regDateObj = new Date(userData.createdAt);
-          if(!isNaN(regDateObj)) {
-            regDateText = regDateObj.toLocaleDateString('bn-BD');
-          }
+          if(!isNaN(regDateObj)) regDateText = regDateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         }
         document.getElementById('resRegDate').innerText = regDateText;
         
         if (userData.dob) {
           const dobObj = new Date(userData.dob);
-          document.getElementById('resBirthDate').innerText = !isNaN(dobObj) ? dobObj.toLocaleDateString('bn-BD') : userData.dob;
+          document.getElementById('resBirthDate').innerText = !isNaN(dobObj) ? dobObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : userData.dob;
         } else {
-          document.getElementById('resBirthDate').innerText = "উল্লেখ নেই";
+          document.getElementById('resBirthDate').innerText = "Not Specified";
         }
         
-        document.getElementById('resFatherName').innerText = userData.fatherName || "উল্লেখ নেই";
-        document.getElementById('resMotherName').innerText = userData.motherName || "উল্লেখ নেই";
-        
+        document.getElementById('resFatherName').innerText = userData.fatherName || "Not Specified";
+        document.getElementById('resMotherName').innerText = userData.motherName || "Not Specified";
         document.getElementById('resCertNo').innerText = certData.certificateNo;
-        document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('bn-BD') + ` (${certData.language === 'bn' ? 'বাংলা সংস্করণ' : 'English Version'})`;
+        document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + " (Official Copy)";
 
+        // ৫. ডাইনামিক প্রেসিডেন্ট কন্টাক্ট বক্স রান করানো
+        await fetchPresidentContact();
+
+        // ৬. স্ক্রিনে রেজাল্ট প্রদর্শন
         resultZone.style.display = 'block';
         resultZone.scrollIntoView({ behavior: 'smooth' });
 
       } catch (error) {
         console.error("Verification Engine Error:", error);
-        alert("ফায়ারবেস ডাটাবেজ কানেকশন এরর! অনুগ্রহ করে আবার চেষ্টা করুন।");
+        alert("Database connection error! Please check your network and retry.");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="fas fa-shield-halved"></i> সার্টিফিকেট ভেরিফাই করুন`;
+        submitBtn.innerHTML = `<i class="fas fa-search"></i> Verify Credentials`;
       }
     });
   </script>
+
 </body>
 </html>
