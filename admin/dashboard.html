@@ -134,6 +134,7 @@
   <script src="../admin/reports.js"></script>
   <script src="../admin/logs.js"></script>
   <script src="../admin/infoUpdateRequest.js"></script>
+  <script src="../admin/memberCertificate.js"></script> 
   
   <script type="module">
     import { db, auth } from '../firebase-config.js';
@@ -156,7 +157,7 @@
       { id: 'idCards', name: '🪪 মেম্বারশিপ কার্ড জোন' },
       { id: 'qrVerify', name: '🔍 QR কোড ভেরিфикации' },
       { id: 'reports', name: '📈 এন্টারপ্রাইজ রিপোর্টস' },
-      { id: 'logs', name: '🔐 সিস্টেম অ্যাক্টিভিটি লগ' },
+      { id: 'certificates', name: '📜 মেম্বারশিপ সার্টিফিকেট' },
       { id: 'adminRequests', name: '<i class="fas fa-tasks"></i> তথ্য পরিবর্তনের আবেদন' }
     ];
 
@@ -308,6 +309,9 @@
       else if (id === 'adminRequests') {
         loadAdminRequestsModule(contentRoot, db, auth, doc, onSnapshot, updateDoc, collection, query, where, serverTimestamp);
       }
+        else if (id === 'certificates') {
+  loadCertificatesModule(contentRoot, db, collection, onSnapshot, doc, getDocs, query, where);
+        }
       else {
         contentRoot.innerHTML = `
           <div class="cyber-glass" style="padding:40px; text-align:center; border-radius:8px;">
