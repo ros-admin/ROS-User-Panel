@@ -10,15 +10,14 @@
   
   <style>
     :root {
-      --dark-bg: #020617;         
-      --panel-bg: #0b1329;        
-      --glass-bg: rgba(11, 19, 41, 0.65); 
+      --dark-bg: #030712;         
+      --panel-bg: rgba(15, 23, 42, 0.65); 
       --primary: #00f5ff;       
       --accent: #E65F00;          
       --neon-green: #10b981;      
-      --text-light: #f8fafc;      
+      --text-light: #f3f4f6;      
       --text-muted: #94a3b8;      
-      --glass-border: rgba(0, 245, 255, 0.2);
+      --glass-border: rgba(0, 245, 255, 0.15);
     }
 
     body {
@@ -30,12 +29,14 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 245, 255, 0.03) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(230, 95, 0, 0.03) 0px, transparent 50%);
     }
 
     .container {
       width: 100%;
-      max-width: 750px;
+      max-width: 780px;
       margin: 40px auto;
       padding: 0 20px;
       box-sizing: border-box;
@@ -47,15 +48,15 @@
     }
 
     .brand-logo {
-      width: 75px;
-      height: 75px;
+      width: 80px;
+      height: 80px;
       object-fit: contain;
       margin-bottom: 12px;
     }
 
     .brand-title {
       font-family: 'Orbitron', sans-serif;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 800;
       color: #fff;
       letter-spacing: 1px;
@@ -66,39 +67,40 @@
     .brand-subtitle {
       font-size: 11px;
       color: var(--primary);
-      letter-spacing: 3px;
+      letter-spacing: 4px;
       text-transform: uppercase;
-      margin: 5px 0 0 0;
+      margin: 6px 0 0 0;
       font-weight: 600;
     }
 
     .verification-panel {
-      background: var(--glass-bg);
+      background: var(--panel-bg);
       border: 1px solid var(--glass-border);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 16px;
-      padding: 30px;
-      box-shadow: 0 20px 50px rgba(0, 245, 255, 0.05);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 35px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
     }
 
     .panel-header {
       font-size: 16px;
       font-weight: 600;
       color: #fff;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      letter-spacing: 0.5px;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
 
     .form-label {
       display: block;
-      font-size: 12.5px;
+      font-size: 13px;
       color: var(--text-muted);
       margin-bottom: 8px;
       font-weight: 500;
@@ -110,7 +112,7 @@
 
     .input-icon {
       position: absolute;
-      left: 15px;
+      left: 16px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-muted);
@@ -120,29 +122,29 @@
     .form-input {
       width: 100%;
       box-sizing: border-box;
-      background: rgba(2, 6, 23, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 12px 15px 12px 42px;
-      border-radius: 8px;
+      background: rgba(17, 24, 39, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 13px 15px 13px 44px;
+      border-radius: 10px;
       color: #fff;
       font-size: 14px;
-      transition: all 0.3s ease;
-      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .form-input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+      box-shadow: 0 0 15px rgba(0, 245, 255, 0.15);
+      background: rgba(17, 24, 39, 0.95);
     }
 
     .submit-btn {
       width: 100%;
       background: linear-gradient(135deg, #00b2e2, #00f5ff);
-      color: #020617;
-      padding: 13px;
+      color: #030712;
+      padding: 14px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
@@ -152,89 +154,107 @@
       gap: 8px;
       transition: all 0.3s ease;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
+      margin-top: 28px;
     }
 
     .submit-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(0, 245, 255, 0.25);
+      box-shadow: 0 12px 25px rgba(0, 245, 255, 0.25);
     }
 
-    .submit-btn:disabled {
-      background: #334155;
-      color: #64748b;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
+    /* 💎 ইউনিক সাইবার-ফিউচারিস্টিক রেজাল্ট গ্রিড ডিজাইন */
     .result-card {
-      margin-top: 30px;
-      background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 12px;
-      padding: 25px;
+      margin-top: 35px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 20px;
+      padding: 30px;
       display: none;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(12px);
     }
 
     .status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(16, 185, 129, 0.15);
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.1);
       color: var(--neon-green);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 12.5px;
       font-weight: 600;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       border: 1px solid rgba(16, 185, 129, 0.2);
+      letter-spacing: 0.5px;
     }
 
     .data-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
     }
 
+    /* প্রিমিয়াম নিওন-বর্ডার বক্স ডিজাইন */
     .data-item {
-      background: rgba(2, 6, 23, 0.4);
-      padding: 12px 15px;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.03);
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6));
+      padding: 16px 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .data-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 4px;
+      background: var(--primary);
+      opacity: 0.6;
+    }
+
+    .data-item.highlight-box::before {
+      background: var(--accent);
     }
 
     .data-label {
       font-size: 11px;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      font-weight: 600;
     }
 
     .data-value {
-      font-size: 13.5px;
-      color: #fff;
+      font-size: 14.5px;
+      color: #ffffff;
       font-weight: 600;
+      letter-spacing: 0.3px;
     }
 
+    /* 📞 প্রফেশনাল কন্টাক্ট বক্স */
     .contact-box {
-      margin-top: 25px;
-      background: rgba(230, 95, 0, 0.05);
+      margin-top: 35px;
+      background: linear-gradient(135deg, rgba(230, 95, 0, 0.03), rgba(15, 23, 42, 0.8));
       border: 1px solid rgba(230, 95, 0, 0.25);
-      border-radius: 10px;
-      padding: 20px;
-      font-family: 'Poppins', sans-serif;
+      border-radius: 14px;
+      padding: 24px;
     }
 
     .contact-title {
-      color: #fff;
-      font-size: 13.5px;
+      color: #f3f4f6;
+      font-size: 14px;
       font-weight: 600;
-      margin: 0 0 12px 0;
+      margin: 0 0 15px 0;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .contact-title i {
@@ -244,33 +264,34 @@
     .contact-details {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
     }
 
     .president-name {
       color: #fff;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       margin: 0;
+      letter-spacing: 0.3px;
     }
 
     .president-designation {
       color: var(--text-muted);
-      font-size: 11.5px;
-      margin: 0 0 6px 0;
+      font-size: 12px;
+      margin: 0 0 8px 0;
     }
 
     .contact-info-line {
-      font-size: 12.5px;
+      font-size: 13px;
       color: #cbd5e1;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .contact-info-line i {
       color: var(--text-muted);
-      width: 14px;
+      width: 16px;
     }
   </style>
 </head>
@@ -297,7 +318,7 @@
         </div>
       </div>
 
-      <div class="form-group" style="margin-bottom: 25px;">
+      <div class="form-group">
         <label class="form-label" for="issueDateInput">Date of Issue</label>
         <div class="input-wrapper">
           <i class="fas fa-calendar-alt input-icon"></i>
@@ -340,7 +361,7 @@
           <div class="data-label">Mother's Name</div>
           <div id="resMotherName" class="data-value">-</div>
         </div>
-        <div class="data-item">
+        <div class="data-item highlight-box">
           <div class="data-label">Certificate No</div>
           <div id="resCertNo" class="data-value" style="color: var(--accent); font-weight:700;">-</div>
         </div>
@@ -353,13 +374,13 @@
       <div class="contact-box">
         <p class="contact-title"><i class="fas fa-headset"></i> For more details / query please contact:</p>
         <div class="contact-details">
-          <h4 id="presidentName" class="president-name">Loading Authority Record...</h4>
-          <p class="president-designation">President, Rajshahi Olympiad Society</p>
+          <h4 id="authName" class="president-name">Loading Authority...</h4>
+          <p id="authDesignation" class="president-designation">President, Rajshahi Olympiad Society</p>
           <div class="contact-info-line">
-            <i class="fas fa-phone-alt"></i> <span id="presidentPhone">-</span>
+            <i class="fas fa-phone-alt"></i> <span id="authPhone">-</span>
           </div>
-          <div class="contact-info-line" style="margin-top: 2px;">
-            <i class="fas fa-envelope"></i> <span id="presidentEmail">-</span>
+          <div class="contact-info-line">
+            <i class="fas fa-envelope"></i> <span id="authEmail">-</span>
           </div>
         </div>
       </div>
@@ -372,7 +393,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // আপনার সরবরাহকৃত রিয়েল ফায়ারবেস কনফিগারেশন কী সমূহ সফলভাবে লক করা হয়েছে
     const firebaseConfig = {
       apiKey: "AIzaSyA8NSt3VP9jnVkzrGKPvNSqbnm7hwL-NqY",
       authDomain: "rajshahi-olimpiad-society.firebaseapp.com",
@@ -390,9 +410,8 @@
     const submitBtn = document.getElementById('verifySubmitBtn');
     const resultZone = document.getElementById('verificationResultZone');
 
-    const prefix = "ROS-MCS-";
+    const prefix = "ROS-MSC-";
     
-    // রিয়েলটাইম প্রিফিক্স ট্র্যাকিং ইঞ্জিন ফিক্স
     function setInitialPrefix() {
       if (!certInput.value.toUpperCase().startsWith(prefix)) {
         certInput.value = prefix;
@@ -413,7 +432,8 @@
       }
     });
 
-    async function fetchPresidentContact() {
+    // 📞 প্রেসিডেন্ট কুয়েরি ফেইল হলে মোবাইল নাম্বার ফিল্ড (`mobileNumber`) হ্যান্ডলিং সহ ডাইনামিক কন্টাক্ট সিস্টেম
+    async function fetchAuthorityContact() {
       try {
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("role", "==", "president"));
@@ -421,16 +441,25 @@
         
         if (!querySnapshot.empty) {
           const docData = querySnapshot.docs[0].data();
-          document.getElementById('presidentName').innerText = docData.englishName || docData.fullName || "President Account";
-          document.getElementById('presidentPhone').innerText = docData.phone || docData.mobile || "N/A";
-          document.getElementById('presidentEmail').innerText = docData.email || "N/A";
+          document.getElementById('authName').innerText = docData.englishName || docData.fullName || "President";
+          document.getElementById('authDesignation').innerText = "President, Rajshahi Olympiad Society";
+          // রিয়েল ডায়নামিক ফিল্ড কন্ডিশন চেকিং (mobileNumber অথবা phone)
+          document.getElementById('authPhone').innerText = docData.mobileNumber || docData.phone || docData.mobile || "N/A";
+          document.getElementById('authEmail').innerText = docData.email || "N/A";
         } else {
-          document.getElementById('presidentName').innerText = "President Office";
-          document.getElementById('presidentPhone').innerText = "Contact details unavailable";
-          document.getElementById('presidentEmail').innerText = "admin@rajshahiolympiad.org";
+          // ⚠️ ফলব্যাক ব্যাকআপ কন্টাক্ট (ইউজার রিকোয়েস্ট অনুযায়ী সম্পূর্ণ নির্ভুল ডেটা হার্ডকোডেড লক)
+          document.getElementById('authName').innerText = "Utsab Sarker";
+          document.getElementById('authDesignation').innerText = "Administrator, Rajshahi Olympiad Society";
+          document.getElementById('authPhone').innerText = "01745-668545";
+          document.getElementById('authEmail').innerText = "us.arup100@gmail.com";
         }
       } catch (err) {
-        console.error("Error fetching authority profile:", err);
+        console.error("Error running authority engine:", err);
+        // সিস্টেম অফলাইন ফলব্যাক রিস্টোরেশন
+        document.getElementById('authName').innerText = "Utsab Sarker";
+        document.getElementById('authDesignation').innerText = "Administrator, Rajshahi Olympiad Society";
+        document.getElementById('authPhone').innerText = "01745-668545";
+        document.getElementById('authEmail').innerText = "us.arup100@gmail.com";
       }
     }
 
@@ -452,7 +481,6 @@
       resultZone.style.display = 'none';
 
       try {
-        // ১. ক্যাপিটাল লেটার কনফ্লিক্ট এড়াতে ইনসেনসিটিভ বা সুনির্দিষ্ট আপারকেস কুয়েরি চালনা
         const certQuery = query(collection(db, "issued_certificates"), where("certificateNo", "==", targetCertNo));
         const certSnapshot = await getDocs(certQuery);
 
@@ -463,7 +491,6 @@
 
         let certData = certSnapshot.docs[0].data();
         
-        // ফায়ারবেস ডেটা ফরম্যাট ফিক্সিং মেথড
         let dbDateStr = certData.issuedAt; 
         const dbIssuedDate = new Date(dbDateStr);
         const inputIssuedDate = new Date(targetDateVal);
@@ -473,7 +500,6 @@
           return;
         }
 
-        // ২. ইউজার ডকুমেন্ট সরাসরি নির্দিষ্ট ID থ্রু অথবা কুয়েরি থ্রু খোঁজা
         const userId = certData.userId;
         const userDocRef = doc(db, "users", userId);
         const userDocSnap = await getDoc(userDocRef);
@@ -482,7 +508,6 @@
         if (userDocSnap.exists()) {
           userData = userDocSnap.data();
         } else {
-          // অল্টারনেট কুয়েরি মেথড ব্যাকআপ
           const altUserQuery = query(collection(db, "users"), where("__name__", "==", userId));
           const altUserSnapshot = await getDocs(altUserQuery);
           if (!altUserSnapshot.empty) {
@@ -495,7 +520,6 @@
           return;
         }
 
-        // ৩. আন্তর্জাতিক ইংরেজি ভিউপোর্টে ডেটা আউটপুট ইনজেকশন
         document.getElementById('resFullName').innerText = userData.englishName || userData.fullName || "N/A";
         document.getElementById('resRegNo').innerText = userData.memberId ? userData.memberId.toUpperCase() : "VERIFIED MEMBER";
         
@@ -518,8 +542,8 @@
         document.getElementById('resCertNo').innerText = certData.certificateNo;
         document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + " (System Record Checked)";
 
-        // ৪. ডাইনামিক প্রেসিডেন্ট ইনফো লোড
-        await fetchPresidentContact();
+        // কন্টাক্ট বক্স এক্সিকিউশন
+        await fetchAuthorityContact();
 
         resultZone.style.display = 'block';
         resultZone.scrollIntoView({ behavior: 'smooth' });
