@@ -1,75 +1,106 @@
 /**
- * ROS Nexus - Ultra Premium Membership Certificate Module
- * File: ../admin/certificate.js
- * Theme: Premium Olympiad Cyan & Custom Tangerine Orange Edition
- * Fonts: Poppins (Weights: 400, 500, 600, 700, 800) & Hind Siliguri
- * Layout: Fixed Text Gradient & Targeted Color Scheme from 1000363826.jpg
+ * ROS Nexus - Enterprise Membership Certificate Module v4.0
+ * Features: Multi-Certificate History Modal, Name/memberId Search, 1000363826.jpg Palette, Fixed PDF Engine
  */
 
 window.loadCertificatesModule = function(container, db, collection, onSnapshot, doc, getDocs, query, where, setDoc, addDoc, serverTimestamp) {
     
-    // ফন্ট এবং আইকন সিডিএন লিংক ডিপেন্ডেন্সি
-    if (!document.getElementById('ros-fonts-dependency')) {
-        const linkNode = document.createElement('div');
-        linkNode.id = 'ros-fonts-dependency';
-        linkNode.innerHTML = `
+    // ডিপেন্ডেন্সি লোডার (Fonts, FontAwesome, html2pdf)
+    if (!document.getElementById('ros-core-dependencies')) {
+        const depNode = document.createElement('div');
+        depNode.id = 'ros-core-dependencies';
+        depNode.innerHTML = `
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         `;
-        document.head.appendChild(linkNode);
+        document.head.appendChild(depNode);
     }
 
-    // html2pdf লাইব্রেরি ডিপেন্ডেন্সি চেকার ও ইনস্টলার
     if (!window.html2pdf) {
         const script = document.createElement('script');
         script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
         document.head.appendChild(script);
     }
 
-    // কন্ট্রোল প্যানেল UI
+    // মূল ইন্টারফেস ও ইতিহাস দেখার জন্য মডার্ন পপআপ মোডাল (Modal HTML)
     container.innerHTML = `
-        <div class="cyber-glass" style="padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #00B2E2; background: rgba(5, 17, 36, 0.85);">
-            <h2 style="color: #fff; font-size: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-family: 'Poppins', sans-serif; font-weight: 600;">
-                <i class="fas fa-award" style="color: #00B2E2;"></i> ROS Certificate Generator v3.3
+        <div class="cyber-glass" style="padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #00B2E2; background: rgba(5, 17, 36, 0.85); font-family: 'Poppins', sans-serif;">
+            <h2 style="color: #fff; font-size: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fas fa-award" style="color: #00B2E2;"></i> ROS Certificate Generator v4.0
             </h2>
-            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px; font-family: 'Poppins', sans-serif;">
-                Verified production layout with 1000363826.jpg custom palette & transparent text gradient. Guaranteed zero bottom clipping.
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">
+                Search by Name or Registration Number. Managed history logs enabled.
             </p>
             
             <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 20px;">
                 <div style="position: relative; flex: 1; min-width: 280px;">
-                    <input type="text" id="certSearchInput" placeholder="Search member profiles..." 
-                           style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 11px 15px; border-radius: 6px; color: #fff; font-size: 14px; font-family: 'Poppins', sans-serif;" autocomplete="off">
-                    <div id="certSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; max-height: 200px; overflow-y: auto; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.5);"></div>
+                    <input type="text" id="certSearchInput" placeholder="Type Member Name or Registration No (e.g. ROS-)..." 
+                           style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 11px 15px; border-radius: 6px; color: #fff; font-size: 14px;" autocomplete="off">
+                    <div id="certSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; max-height: 220px; overflow-y: auto; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.5);"></div>
                 </div>
 
-                <button id="generateCertBtn" style="background: linear-gradient(135deg, #00B2E2, #00C5FF); color: #001a24; padding: 11px 28px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; font-family: 'Poppins', sans-serif;">
-                    <i class="fas fa-magic"></i> Compile & Render
+                <button id="generateCertBtn" style="background: linear-gradient(135deg, #00B2E2, #00C5FF); color: #001a24; padding: 11px 28px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-magic"></i> Process Certificate
                 </button>
             </div>
-            <div id="selectedMemberBadge" style="display: none; color: #00C5FF; font-size: 13px; background: rgba(0, 197, 255, 0.1); padding: 6px 12px; border-radius: 4px; font-family: 'Poppins', sans-serif;"></div>
+            <div id="selectedMemberBadge" style="display: none; color: #00C5FF; font-size: 13px; background: rgba(0, 197, 255, 0.1); padding: 6px 12px; border-radius: 4px;"></div>
         </div>
 
+        <!-- প্রিভিউ জোন -->
         <div id="certificatePreviewZone" style="display: none; flex-direction: column; align-items: center; gap: 25px; margin-top: 20px; width: 100%;">
             <div style="display: flex; gap: 15px; background: rgba(17, 24, 39, 0.8); padding: 12px 25px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);">
-                <button id="downloadCertBtn" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 10px 24px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; font-family: 'Poppins', sans-serif;">
-                    <i class="fas fa-download"></i> Export High-Sharpness PDF
+                <button id="downloadCertBtn" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 10px 24px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                    <i class="fas fa-download"></i> Download PDF
                 </button>
-                <button id="closeCertBtn" style="background: rgba(230, 57, 70, 0.15); color: #ff3344; border: 1px solid rgba(230, 57, 70, 0.4); padding: 10px 24px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; font-family: 'Poppins', sans-serif;">
+                <button id="closeCertBtn" style="background: rgba(230, 57, 70, 0.15); color: #ff3344; border: 1px solid rgba(230, 57, 70, 0.4); padding: 10px 24px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px;">
                     Close
                 </button>
             </div>
 
             <div style="width: 100%; overflow-x: auto; display: flex; justify-content: center; padding: 10px 0;">
-                <div id="certificatePaperFrame" style="width: 842px; height: 595px; background: #ffffff; position: relative; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.35); flex-shrink: 0; box-sizing: border-box; margin: 0; padding: 0;">
+                <div id="certificatePaperFrame" style="width: 842px; height: 595px; background: #ffffff; position: relative; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.35); flex-shrink: 0; box-sizing: border-box;">
                     <div id="certDynamicBody" style="width: 100%; height: 100%; box-sizing: border-box; margin: 0; padding: 0; overflow: hidden;"></div>
                 </div>
             </div>
         </div>
 
+        <!-- 🔔 স্মার্ট হিস্টোরি ডিসিশন মোডাল পপআপ -->
+        <div id="certHistoryModal" style="display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px); z-index: 10000; justify-content: center; align-items: center; padding: 20px;">
+            <div style="background: #0f172a; border: 1px solid rgba(0, 178, 226, 0.3); width: 100%; max-width: 520px; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; font-family: 'Poppins', sans-serif;">
+                <div style="background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 12px;">
+                    <div style="background: rgba(230, 95, 0, 0.15); width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #E65F00; font-size: 18px;">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <h3 style="color: #fff; margin: 0; font-size: 16px; font-weight: 600;">Certificate Record Found!</h3>
+                        <p style="color: #94a3b8; margin: 2px 0 0 0; font-size: 12px;">This member already has issued certificates.</p>
+                    </div>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <p style="color: #cbd5e1; font-size: 13.5px; margin: 0 0 15px 0; line-height: 1.5;">
+                        You can either load an existing certificate from the archive list below or compile a brand new instance.
+                    </p>
+                    
+                    <!-- পূর্বের সার্টিফিকেটের তালিকা -->
+                    <div style="color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; letter-spacing: 0.5px;">Archived Certificates List:</div>
+                    <div id="certModalListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; margin-bottom: 20px; padding-right: 4px;"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                        <button id="modalCancelBtn" style="background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); padding: 9px 18px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500;">Cancel</button>
+                        <button id="modalGenerateNewBtn" style="background: linear-gradient(135deg, #00B2E2, #00C5FF); color: #001a24; border: none; padding: 9px 22px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-plus"></i> Issue New Certificate
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <style>
-            .suggestion-item { padding: 11px 15px; color: #fff; cursor: pointer; font-size: 13.5px; border-bottom: 1px solid #1e293b; font-family: 'Poppins', sans-serif; }
+            .suggestion-item { padding: 11px 15px; color: #fff; cursor: pointer; font-size: 13.5px; border-bottom: 1px solid #1e293b; }
             .suggestion-item:hover { background: #00B2E2; color: #001a24; font-weight: bold; }
+            .archive-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 10px 14px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
+            .archive-item:hover { background: rgba(0, 178, 226, 0.08); border-color: #00B2E2; }
         </style>
     `;
 
@@ -79,11 +110,19 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
     const previewZone = document.getElementById('certificatePreviewZone');
     const certDynamicBody = document.getElementById('certDynamicBody');
     const badge = document.getElementById('selectedMemberBadge');
+    
+    // মোডাল অবজেক্টস
+    const historyModal = document.getElementById('certHistoryModal');
+    const modalListContainer = document.getElementById('certModalListContainer');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalGenerateNewBtn = document.getElementById('modalGenerateNewBtn');
 
     let allMembers = [];
     let selectedMember = null;
     let currentCertNumber = "";
+    let currentCertDate = "";
 
+    // ডেটাবেজ থেকে মেম্বার ইনফো পুশ
     async function initModuleData() {
         try {
             const q = query(collection(db, "users"));
@@ -94,6 +133,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
     }
     initModuleData();
 
+    // 🔎 পরিবর্তন: নাম অথবা মেম্বার আইডি (memberId) দিয়ে ইনস্ট্যান্ট লাইভ সার্চ অপশন
     searchInput.addEventListener('input', () => {
         const value = searchInput.value.trim().toLowerCase();
         suggestionsDiv.innerHTML = "";
@@ -101,21 +141,23 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
         const filtered = allMembers.filter(m => {
             const name = (m.englishName || m.fullName || "").toLowerCase();
-            return name.includes(value) || m.uid.toLowerCase().includes(value);
+            const regNo = (m.memberId || "").toLowerCase();
+            return name.includes(value) || regNo.includes(value);
         });
 
         if (filtered.length > 0) {
             filtered.slice(0, 5).forEach(m => {
-                const name = m.englishName || m.fullName || "Unknown";
+                const name = m.englishName || m.fullName || "Unknown Name";
+                const regNo = m.memberId ? m.memberId.toUpperCase() : "NO-ID";
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
-                div.innerText = `${name} (${m.uid.substring(0, 8).toUpperCase()})`;
+                div.innerText = `${name} (${regNo})`;
                 div.addEventListener('click', () => {
                     selectedMember = m;
                     searchInput.value = name;
                     suggestionsDiv.style.display = 'none';
                     badge.style.display = 'inline-block';
-                    badge.innerHTML = `<strong>✔ Selected:</strong> ${name}`;
+                    badge.innerHTML = `<strong>✔ Selected:</strong> ${name} [${regNo}]`;
                 });
                 suggestionsDiv.appendChild(div);
             });
@@ -123,184 +165,254 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
         } else { suggestionsDiv.style.display = 'none'; }
     });
 
-    async function issueCertificateNumber(memberUid) {
+    // নতুন মেম্বারশিপ সিরিয়াল জেনারেটর 
+    async function generateUniqueSerial() {
         try {
             const certRef = collection(db, "issued_certificates");
             const qSnapshot = await getDocs(query(certRef));
             const nextSerial = String(qSnapshot.size + 1).padStart(4, '0');
-            const certNo = `ROS-MCS-${nextSerial}`;
-            await addDoc(certRef, {
-                certificateNo: certNo,
-                userId: memberUid,
-                language: "en",
-                issuedAt: serverTimestamp ? serverTimestamp() : new Date().toISOString()
-            });
-            return certNo;
-        } catch (e) { return "ROS-" + Math.floor(100000 + Math.random() * 900000); }
+            return `ROS-MCS-${nextSerial}`;
+        } catch (e) { 
+            return "ROS-" + Math.floor(100000 + Math.random() * 900000); 
+        }
     }
 
-    generateBtn.addEventListener('click', async () => {
-        if (!selectedMember) return alert("Please select a valid member first.");
-
-        generateBtn.disabled = true;
-        generateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Rendering Elite Grid...`;
-
+    // নতুন ডেটা রাইটার ট্রানজেকশন
+    async function saveCertToDatabase(certNo, dateStr) {
         try {
-            currentCertNumber = await issueCertificateNumber(selectedMember.uid);
-            const today = new Date();
-            const enDate = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-            const displayMemberId = selectedMember.memberId ? selectedMember.memberId.toUpperCase() : `ROS-2026-${String(allMembers.indexOf(selectedMember) + 1).padStart(4, '0')}`;
-            
-            let regDateText = "June 24, 2026";
-            if (selectedMember.createdAt) {
-                const regDateObj = new Date(selectedMember.createdAt);
-                if(!isNaN(regDateObj)) regDateText = regDateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-            }
+            await addDoc(collection(db, "issued_certificates"), {
+                certificateNo: certNo,
+                userId: selectedMember.uid,
+                language: "en",
+                issuedAt: dateStr
+            });
+        } catch (e) { console.error("Logging failed:", e); }
+    }
 
-            // 🎨 প্রিমিয়াম জেনারেটেড আর্কিটেকচার বডি
-            certDynamicBody.innerHTML = `
-                <div style="width: 842px; height: 595px; box-sizing: border-box; padding: 50px; position: relative;
-                            background: radial-gradient(circle at 50% 35%, #ffffff 0%, #f3fcfe 60%, #cdf2fa 100%); margin: 0; overflow: hidden; font-family: 'Poppins', sans-serif;">
+    // 🚀 মূল সার্টিফিকেট রেন্ডারিং ভিউপোর্ট ইঞ্জিন 
+    function renderCertificateCanvas(certNo, issueDate) {
+        const displayMemberId = selectedMember.memberId ? selectedMember.memberId.toUpperCase() : "ROS-PENDING";
+        
+        let regDateText = "June 24, 2026";
+        if (selectedMember.createdAt) {
+            const regDateObj = new Date(selectedMember.createdAt);
+            if(!isNaN(regDateObj)) regDateText = regDateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        currentCertNumber = certNo;
+
+        certDynamicBody.innerHTML = `
+            <div style="width: 842px; height: 595px; box-sizing: border-box; padding: 50px; position: relative;
+                        background: radial-gradient(circle at 50% 35%, #ffffff 0%, #f3fcfe 60%, #cdf2fa 100%); margin: 0; overflow: hidden; font-family: 'Poppins', sans-serif;">
+                
+                <!-- ওলিম্পিয়াড ম্যাথ গ্রিড এলিমেন্ট -->
+                <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.1; z-index: 0;">
+                    <div style="position: absolute; top: 85px; left: 95px; font-size: 50px; font-weight: 700; color: #00B2E2;">π</div>
+                    <div style="position: absolute; top: 230px; left: 80px; font-size: 52px; font-weight: 600; color: #00B2E2;">Σ</div>
+                    <div style="position: absolute; top: 90px; right: 160px; font-size: 55px; color: #00B2E2;">∫</div>
+                    <div style="position: absolute; bottom: 170px; left: 100px; font-size: 50px; color: #00B2E2;">√</div>
+                    <div style="position: absolute; top: 210px; right: 90px; font-size: 46px; color: #00B2E2;"><i class="fas fa-atom"></i></div>
+                    <div style="position: absolute; bottom: 95px; left: 270px; font-size: 40px; color: #00B2E2;"><i class="fas fa-book"></i></div>
+                    <div style="width: 100%; height: 100%; background-image: linear-gradient(rgba(0, 178, 226, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 178, 226, 0.1) 1px, transparent 1px); background-size: 34px 34px; mask-image: radial-gradient(circle, black 45%, transparent 85%); -webkit-mask-image: radial-gradient(circle, black 45%, transparent 85%);"></div>
+                </div>
+
+                <!-- এলিট বর্ডার আর্কিটেকচার -->
+                <div style="position: absolute; top: 40px; left: 40px; right: 40px; bottom: 40px; border: 2.5px solid #00B2E2; pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
+                <div style="position: absolute; top: 45px; left: 45px; right: 45px; bottom: 45px; border: 1.5px solid #FFD700; pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
+                
+                <div style="position: absolute; width: 20px; height: 20px; border-color: #FFD700; border-style: solid; top: 34px; left: 34px; border-width: 4px 0 0 4px; z-index: 3;"></div>
+                <div style="position: absolute; width: 20px; height: 20px; border-color: #FFD700; border-style: solid; top: 34px; right: 34px; border-width: 4px 4px 0 0; z-index: 3;"></div>
+                <div style="position: absolute; width: 20px; height: 20px; border-color: #FFD700; border-style: solid; bottom: 34px; left: 34px; border-width: 0 0 4px 4px; z-index: 3;"></div>
+                <div style="position: absolute; width: 20px; height: 20px; border-color: #FFD700; border-style: solid; bottom: 34px; right: 34px; border-width: 0 4px 4px 0; z-index: 3;"></div>
+
+                <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; box-sizing: border-box; padding: 12px 15px; position: relative; z-index: 4;">
                     
-                    <!-- ব্যাকগ্রাউন্ড ওলিম্পিয়াড ম্যাথ গ্রিড অবজেক্টস -->
-                    <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.1; z-index: 0;">
-                        <div style="position: absolute; top: 85px; left: 95px; font-size: 50px; font-weight: 700; color: #00B2E2;">π</div>
-                        <div style="position: absolute; top: 230px; left: 80px; font-size: 52px; font-weight: 600; color: #00B2E2;">Σ</div>
-                        <div style="position: absolute; top: 90px; right: 160px; font-size: 55px; color: #00B2E2;">∫</div>
-                        <div style="position: absolute; bottom: 170px; left: 100px; font-size: 50px; color: #00B2E2;">√</div>
-                        <div style="position: absolute; top: 210px; right: 90px; font-size: 46px; color: #00B2E2;"><i class="fas fa-atom"></i></div>
-                        <div style="position: absolute; bottom: 95px; left: 270px; font-size: 40px; color: #00B2E2;"><i class="fas fa-book"></i></div>
-                        <div style="position: absolute; bottom: 170px; right: 100px; font-size: 48px; color: #00B2E2;"><i class="fas fa-telescope"></i></div>
-                        <div style="position: absolute; top: 75px; left: 380px; font-size: 38px; color: #00B2E2;"><i class="far fa-lightbulb"></i></div>
-                        <div style="width: 100%; height: 100%; background-image: linear-gradient(rgba(0, 178, 226, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 178, 226, 0.1) 1px, transparent 1px); background-size: 34px 34px; mask-image: radial-gradient(circle, black 45%, transparent 85%); -webkit-mask-image: radial-gradient(circle, black 45%, transparent 85%);"></div>
+                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="font-size: 11px; color: #002b3d; text-align: left; line-height: 1.4; font-weight: 500;">
+                            <!-- সিরিয়াল নং 1000363826.jpg অরেঞ্জ কালার কোড #E65F00 এ রূপান্তর -->
+                            <div><strong style="color: #00B2E2; font-weight: 600;">SERIAL NO:</strong> <span style="font-weight: 700; color: #E65F00;">${certNo}</span></div>
+                            <div><strong style="color: #00B2E2; font-weight: 600;">DATE OF ISSUE:</strong> <span style="font-weight: 500; color: #002b3d;">${issueDate}</span></div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #00B2E2, #00C5FF); color: #001a24; font-size: 10px; font-weight: 600; padding: 4px 14px; border-radius: 4px; letter-spacing: 0.5px;">
+                            SYSTEM CONTROL RECORD
+                        </div>
                     </div>
 
-                    <!-- বর্ডার ফ্রেমওয়ার্ক -->
-                    <div style="position: absolute; top: 40px; left: 40px; right: 40px; bottom: 40px; border: 2.5px solid #00B2E2; pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
-                    <div style="position: absolute; top: 45px; left: 45px; right: 45px; bottom: 45px; border: 1.5px solid #FFD700; pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
-                    <div style="position: absolute; top: 52px; left: 52px; right: 52px; bottom: 52px; border: 1px solid rgba(0, 178, 226, 0.2); pointer-events: none; z-index: 2; box-sizing: border-box;"></div>
-                    
-                    <div style="position: absolute; width: 20px; height: 20px; border-color: #FFD700; border-style: solid; top: 34px; left: 34px; border-width: 4px 0 0 4px; z-index: 3;"></div>
-                    <div style="position: absolute; width: 20px; height: 20px; border-color: #FFD700; border-style: solid; top: 34px; right: 34px; border-width: 4px 4px 0 0; z-index: 3;"></div>
-                    <div style="position: absolute; width: 20px; height: 20px; border-color: #FFD700; border-style: solid; bottom: 34px; left: 34px; border-width: 0 0 4px 4px; z-index: 3;"></div>
-                    <div style="position: absolute; width: 20px; height: 20px; border-color: #FFD700; border-style: solid; bottom: 34px; right: 34px; border-width: 0 4px 4px 0; z-index: 3;"></div>
+                    <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: -5px;">
+                        <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 55px; height: 55px; object-fit: contain; margin-bottom: 2px;" />
+                        <!-- RAJSHAHI OLYMPIAD SOCIETY সাইজ বড় (24px) -->
+                        <h1 style="font-size: 24px; font-weight: 800; color: #002b3d; letter-spacing: 0.5px; margin: 0; text-transform: uppercase;">RAJSHAHI OLYMPIAD SOCIETY</h1>
+                        <p style="font-size: 9.5px; font-weight: 600; color: #00B2E2; letter-spacing: 3px; text-transform: uppercase; margin: 0;">
+                            SYSTEM CONTROL & ENTERPRISE NETWORK
+                        </p>
+                    </div>
 
-                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; box-sizing: border-box; padding: 12px 15px; position: relative; z-index: 4;">
+                    <!-- সমস্যা দুই সমাধান: টাইটেল লেখাটি কোম্পানির নামের চেয়ে ছোট (19px) ও ব্যাকগ্রাউন্ড ১00% ট্রান্সপারেন্ট এবং গ্রেডিয়েন্ট টেক্সট ফিল -->
+                    <div style="text-align: center; width: 100%;">
+                        <div style="margin: 0 auto 6px auto; display: inline-block; background: transparent;">
+                            <h2 style="font-size: 19px; font-weight: 800; letter-spacing: 1.5px; margin: 0; text-transform: uppercase; font-family: 'Poppins', sans-serif;
+                                       background: linear-gradient(to right, #FFD700 0%, #FF8C00 50%, #FF3344 100%);
+                                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                CERTIFICATE OF MEMBERSHIP
+                            </h2>
+                        </div>
                         
-                        <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div style="font-size: 11px; color: #002b3d; text-align: left; line-height: 1.4; font-weight: 500;">
-                                <!-- সার্টিফিকেট সিরিয়াল নাম্বার 1000363826.jpg কালারে রূপান্তর -->
-                                <div><strong style="color: #00B2E2; font-weight: 600;">SERIAL NO:</strong> <span style="font-weight: 700; color: #E65F00;">${currentCertNumber}</span></div>
-                                <div><strong style="color: #00B2E2; font-weight: 600;">DATE OF ISSUE:</strong> <span style="font-weight: 500; color: #002b3d;">${enDate}</span></div>
-                            </div>
-                            <div style="background: linear-gradient(135deg, #00B2E2, #00C5FF); color: #001a24; font-size: 10px; font-weight: 600; padding: 4px 14px; border-radius: 4px; letter-spacing: 0.5px;">
-                                SYSTEM CONTROL RECORD
-                            </div>
+                        <p style="font-size: 11px; font-style: italic; color: #475569; margin: 0 0 12px 0;">This is to officially certify that</p>
+                        
+                             <!-- নাম কালো এবং আন্ডারলাইন থিমের সায়ান নীল -->
+                        <div style="font-size: 23px; font-weight: 800; color: #000000; border-bottom: 2.5px solid #00B2E2; display: inline-block; padding-bottom: 4px; min-width: 440px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ${selectedMember.englishName || selectedMember.fullName || "OFFICIAL MEMBER"}
+                        </div>
+                        
+                        <p style="font-size: 11.5px; color: #1e293b; line-height: 1.6; max-width: 660px; margin: 12px auto 0 auto; font-weight: 400;">
+                            has been successfully registered as an official active <strong style="color: #00B2E2; font-weight: 600;">GENERAL MEMBER</strong> of Rajshahi Olympiad Society. Their credentials, contribution matrix, and profile signature status are fully recorded in our permanent enterprise system.
+                        </p>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
+                        
+                        <!-- রেজিস্ট্রেশন ডাটা নোড (মেম্বার রেজিস্ট্রেশন আইডি ওরেঞ্জ কালার কোড #E65F00 এ রূপান্তর) -->
+                        <div style="background: #ffffff; border: 1.5px solid #00B2E2; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 4px; padding: 4px 18px; display: flex; gap: 20px; justify-content: center; align-items: center; font-size: 11px; color: #002b3d;">
+                            <div><span style="color: #64748b;">Registration No:</span> <strong style="color: #E65F00; font-size: 11px; margin-left: 2px; font-weight: 800;">${displayMemberId}</strong></div>
+                            <div style="width: 1px; height: 10px; background: rgba(0,178,226,0.2);"></div>
+                            <div><span style="color: #64748b;">Registration Date:</span> <strong style="color: #002b3d; margin-left: 2px; font-weight: 600;">${regDateText}</strong></div>
                         </div>
 
-                        <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: -5px;">
-                            <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 55px; height: 55px; object-fit: contain; margin-bottom: 2px;" />
-                            <h1 style="font-size: 24px; font-weight: 800; color: #002b3d; letter-spacing: 0.5px; margin: 0; text-transform: uppercase;">RAJSHAHI OLYMPIAD SOCIETY</h1>
-                            <p style="font-size: 9.5px; font-weight: 600; color: #00B2E2; letter-spacing: 3px; text-transform: uppercase; margin: 0;">
-                                SYSTEM CONTROL & ENTERPRISE NETWORK
-                            </p>
-                        </div>
-
-                        <!-- মেম্বারশিপ টেক্সট সেকশন: বক্স রিমুভড, ট্রান্সপারেন্ট ব্যাকগ্রাউন্ড এবং হলুদ থেকে হালকা লাল টেক্সট গ্রেডিয়েন্ট -->
-                        <div style="text-align: center; width: 100%;">
-                            <div style="margin: 0 auto 6px auto; display: inline-block;">
-                                <h2 style="font-size: 25px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; font-family: 'Poppins', sans-serif;
-                                           background: linear-gradient(to right, #FFD700 0%, #FF8C00 50%, #FF3344 100%);
-                                           -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                                    CERTIFICATE OF MEMBERSHIP
-                                </h2>
-                            </div>
-                            
-                            <p style="font-size: 11px; font-style: italic; color: #475569; margin: 0 0 12px 0;">This is to officially certify that</p>
-                            
-                            <!-- নাম সম্পূর্ণ গভীর কালো রঙে এবং নিচের টানটি থিমের নীল (Cyan) রঙে -->
-                            <div style="font-size: 23px; font-weight: 800; color: #000000; border-bottom: 2.5px solid #00B2E2; display: inline-block; padding-bottom: 4px; min-width: 440px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                ${selectedMember.englishName || selectedMember.fullName || "OFFICIAL MEMBER"}
-                            </div>
-                            
-                            <p style="font-size: 11.5px; color: #1e293b; line-height: 1.6; max-width: 660px; margin: 12px auto 0 auto; font-weight: 400;">
-                                has been successfully registered as an official active <strong style="color: #00B2E2; font-weight: 600;">GENERAL MEMBER</strong> of Rajshahi Olympiad Society. Their credentials, contribution matrix, and profile signature status are fully recorded in our permanent enterprise system.
-                            </p>
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
-                            
-                            <!-- রেজিস্ট্রেশন ডাটা নোড (রেজিস্ট্রেশন নং 1000363826.jpg কালারে রূপান্তর করা হলো) -->
-                            <div style="background: #ffffff; border: 1.5px solid #00B2E2; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 4px; padding: 4px 18px; display: flex; gap: 20px; justify-content: center; align-items: center; font-size: 11px; color: #002b3d;">
-                                <div><span style="color: #64748b;">Registration No:</span> <strong style="color: #E65F00; font-size: 11px; margin-left: 2px; font-weight: 800;">${displayMemberId}</strong></div>
-                                <div style="width: 1px; height: 10px; background: rgba(0,178,226,0.2);"></div>
-                                <div><span style="color: #64748b;">Registration Date:</span> <strong style="color: #002b3d; margin-left: 2px; font-weight: 600;">${regDateText}</strong></div>
+                        <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 15px; box-sizing: border-box; margin-top: 2px;">
+                            <div style="text-align: center; width: 170px;">
+                                <div style="border-top: 1.5px solid #002b3d; padding-top: 4px; font-size: 11px; font-weight: 600; color: #002b3d;">General Secretary</div>
+                                <div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">Rajshahi Olympiad Society</div>
                             </div>
 
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 15px; box-sizing: border-box; margin-top: 2px;">
-                                
-                                <div style="text-align: center; width: 170px;">
-                                    <div style="border-top: 1.5px solid #002b3d; padding-top: 4px; font-size: 11px; font-weight: 600; color: #002b3d;">General Secretary</div>
-                                    <div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">Rajshahi Olympiad Society</div>
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 1px; margin-bottom: -4px;">
+                                <div style="border: 1.5px solid #00B2E2; padding: 2px; background: #ffffff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,178,226,0.12);">
+                                    <img src="qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png" style="width: 46px; height: 46px; display: block;" />
                                 </div>
+                                <div style="font-size: 7.5px; color: #64748b; font-weight: 500;">Verification Node</div>
+                            </div>
 
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 1px; margin-bottom: -4px;">
-                                    <div style="border: 1.5px solid #00B2E2; padding: 2px; background: #ffffff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,178,226,0.12);">
-                                        <img src="qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png; " style="width: 46px; height: 46px; display: block;" />
-                                    </div>
-                                    <div style="font-size: 7.5px; color: #64748b; font-weight: 500;">Verification Node</div>
-                                </div>
-
-                                <div style="text-align: center; width: 170px;">
-                                    <div style="border-top: 1.5px solid #002b3d; padding-top: 4px; font-size: 11px; font-weight: 600; color: #002b3d;">President</div>
-                                    <div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">Rajshahi Olympiad Society</div>
-                                </div>
-
+                            <div style="text-align: center; width: 170px;">
+                                <div style="border-top: 1.5px solid #002b3d; padding-top: 4px; font-size: 11px; font-weight: 600; color: #002b3d;">President</div>
+                                <div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">Rajshahi Olympiad Society</div>
                             </div>
                         </div>
 
                     </div>
                 </div>
             `;
+        previewZone.style.display = 'flex';
+        previewZone.scrollIntoView({ behavior: 'smooth' });
+    }
 
-            previewZone.style.display = 'flex';
-            previewZone.scrollIntoView({ behavior: 'smooth' });
+    // ⚡ নতুন ফিচার ট্রিপল ইন্টেলিজেন্স অ্যাকশন বাটন কন্ট্রোলার
+    generateBtn.addEventListener('click', async () => {
+        if (!selectedMember) return alert("Please select a valid member profile first.");
+
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Checking Database...`;
+
+        try {
+            // ১. ইউজার আইডির আন্ডারে পূর্বে কোনো ডাটা রেন্ডার হয়ে ক্রিয়েট হয়েছিল কিনা চেক
+            const certRef = collection(db, "issued_certificates");
+            const q = query(certRef, where("userId", "==", selectedMember.uid));
+            const querySnapshot = await getDocs(q);
+
+            const pastCertificates = [];
+            querySnapshot.forEach(doc => {
+                pastCertificates.push(doc.data());
+            });
+
+            // ২. যদি আগের হিস্টোরি ডেটা থেকে থাকে, তবে পপআপ নোটিফিকেশন ওভারলে আসবে
+            if (pastCertificates.length > 0) {
+                modalListContainer.innerHTML = "";
+                
+                pastCertificates.forEach((cert) => {
+                    const item = document.createElement('div');
+                    item.className = 'archive-item';
+                    item.innerHTML = `
+                        <div style="text-align: left;">
+                            <div style="color: #00B2E2; font-size: 12.5px; font-weight: 700;">${cert.certificateNo}</div>
+                            <div style="color: #94a3b8; font-size: 11px;"><i class="far fa-calendar-alt"></i> ${cert.issuedAt}</div>
+                        </div>
+                        <div style="color: #10b981; font-size: 12px; font-weight: 500;"><i class="fas fa-eye"></i> Load Saved</div>
+                    `;
+                    
+                    // সংরক্ষিত সার্টিফিকেটে ক্লিক করলে পুরনো ডাটা দিয়ে ডিরেক্ট রেন্ডার হবে
+                    item.addEventListener('click', () => {
+                        historyModal.style.display = 'none';
+                        renderCertificateCanvas(cert.certificateNo, cert.issuedAt);
+                    });
+                    modalListContainer.appendChild(item);
+                });
+
+                historyModal.style.display = 'flex';
+            } else {
+                // ৩. যদি একদম নতুন মেম্বার হয়, তাহলে কোনো পপআপ ছাড়াই ফ্রেশ ডাটা জেনারেট হবে
+                const freshSerial = await generateUniqueSerial();
+                const today = new Date();
+                const freshDate = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                
+                await saveCertToDatabase(freshSerial, freshDate);
+                renderCertificateCanvas(freshSerial, freshDate);
+            }
 
         } catch (error) {
             console.error(error);
-            alert("Error running the elite render engine.");
+            alert("Error in database execution layer.");
         } finally {
             generateBtn.disabled = false;
-            generateBtn.innerHTML = `<i class="fas fa-magic"></i> Compile & Render`;
+            generateBtn.innerHTML = `<i class="fas fa-magic"></i> Process Certificate`;
         }
     });
 
-    // 🚀 হাই-শার্পনেস ক্রিস্টাল পিডিএফ এক্সপোর্ট মেকানিজম (ফিক্সড রেন্ডার টার্গেট)
+    // মোডাল পপআপের ভেতরে "Issue New" বাটনের ট্র্রিগার অ্যাকশন
+    modalGenerateNewBtn.addEventListener('click', async () => {
+        historyModal.style.display = 'none';
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = `<i class="fas fa-cog fa-spin"></i> Compiling New Copy...`;
+        
+        try {
+            const freshSerial = await generateUniqueSerial();
+            const today = new Date();
+            const freshDate = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            await saveCertToDatabase(freshSerial, freshDate);
+            renderCertificateCanvas(freshSerial, freshDate);
+        } catch(e) {
+            console.error(e);
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = `<i class="fas fa-magic"></i> Process Certificate`;
+        }
+    });
+
+    modalCancelBtn.addEventListener('click', () => historyModal.style.display = 'none');
+
+    // 🚀 হাই-রেজোলিউশন ট্রাস্টেড পিডিএফ জেনারেটর (সিএসএস ব্যাকগ্রাউন্ড ফিল কমপ্যাটিবল মেথড)
     document.getElementById('downloadCertBtn').addEventListener('click', () => {
-        const targetElement = document.getElementById('certDynamicBody');
+        const element = document.getElementById('certDynamicBody');
         
         if (!window.html2pdf) {
-            alert("PDF engine assets are still loading. Please try again in a few moments.");
+            alert("PDF asset engine loading, please retry in 2 seconds.");
             return;
         }
 
-        const pdfOptions = {
+        const opt = {
             margin:       0,
-            filename:     `Certificate-${currentCertNumber || 'ROS-MEMBER'}.pdf`,
+            filename:     `ROS-Certificate-${currentCertNumber}.pdf`,
             image:        { type: 'jpeg', quality: 1.0 },
             html2canvas:  { 
-                scale: 3.5, 
+                scale: 3, 
                 useCORS: true, 
-                logging: false, 
+                logging: false,
                 letterRendering: true,
-                scrollY: 0,
-                scrollX: 0
+                windowWidth: 842,
+                windowHeight: 595
             },
-            jsPDF:        { unit: 'px', format: [842, 595], orientation: 'landscape', hotfixes: ["px_scaling"] },
-            pagebreak:    { mode: 'avoid' }
+            jsPDF:        { unit: 'px', format: [842, 595], orientation: 'landscape' }
         };
 
-        html2pdf().set(pdfOptions).from(targetElement).save();
+        html2pdf().set(opt).from(element).save();
     });
 
     document.getElementById('closeCertBtn').addEventListener('click', () => previewZone.style.display = 'none');
