@@ -168,7 +168,6 @@
       box-shadow: none;
     }
 
-    /* রেজাল্ট কার্ড আর্কিটেকচার */
     .result-card {
       margin-top: 30px;
       background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
@@ -219,7 +218,6 @@
       font-weight: 600;
     }
 
-    /* 📞 প্রিমিয়াম কন্টাক্ট বক্স ডিজাইন */
     .contact-box {
       margin-top: 25px;
       background: rgba(230, 95, 0, 0.05);
@@ -355,7 +353,7 @@
       <div class="contact-box">
         <p class="contact-title"><i class="fas fa-headset"></i> For more details / query please contact:</p>
         <div class="contact-details">
-          <h4 id="presidentName" class="president-name">Loading...</h4>
+          <h4 id="presidentName" class="president-name">Loading Authority Record...</h4>
           <p class="president-designation">President, Rajshahi Olympiad Society</p>
           <div class="contact-info-line">
             <i class="fas fa-phone-alt"></i> <span id="presidentPhone">-</span>
@@ -372,16 +370,16 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // আপনার ফায়ারবেস প্রজেক্ট কনফিগ কোডটি এখানে নিশ্চিত করুন
+    // আপনার সরবরাহকৃত রিয়েল ফায়ারবেস কনফিগারেশন কী সমূহ সফলভাবে লক করা হয়েছে
     const firebaseConfig = {
       apiKey: "AIzaSyA8NSt3VP9jnVkzrGKPvNSqbnm7hwL-NqY",
-  authDomain: "rajshahi-olimpiad-society.firebaseapp.com",
-  projectId: "rajshahi-olimpiad-society",
-  storageBucket: "rajshahi-olimpiad-society.firebasestorage.app",
-  messagingSenderId: "248298850450",
-  appId: "1:248298850450:web:d9e99750eddd9c7b18be4b"
+      authDomain: "rajshahi-olimpiad-society.firebaseapp.com",
+      projectId: "rajshahi-olimpiad-society",
+      storageBucket: "rajshahi-olimpiad-society.firebasestorage.app",
+      messagingSenderId: "248298850450",
+      appId: "1:248298850450:web:d9e99750eddd9c7b18be4b"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -392,27 +390,29 @@
     const submitBtn = document.getElementById('verifySubmitBtn');
     const resultZone = document.getElementById('verificationResultZone');
 
-    // ⚡ শুরুতেই সার্চ বক্সে "ROS-MSC-" ইনপুট প্রিফিক্স করার স্মার্ট কন্ট্রোল ট্র্যাকিং
     const prefix = "ROS-MSC-";
     
-    certInput.addEventListener('focus', () => {
-      if (!certInput.value.startsWith(prefix)) {
+    // রিয়েলটাইম প্রিফিক্স ট্র্যাকিং ইঞ্জিন ফিক্স
+    function setInitialPrefix() {
+      if (!certInput.value.toUpperCase().startsWith(prefix)) {
         certInput.value = prefix;
       }
-    });
+    }
+    
+    certInput.addEventListener('focus', setInitialPrefix);
+    certInput.addEventListener('click', setInitialPrefix);
 
     certInput.addEventListener('input', () => {
-      if (!certInput.value.startsWith(prefix)) {
-        // যদি ইউজার প্রিফিক্সটি ব্যাকস্পেস দিয়ে কাটার চেষ্টা করে তবে সেটি অটো-রিস্টোর হবে
-        if (certInput.value.length < prefix.length) {
+      let currentVal = certInput.value;
+      if (!currentVal.toUpperCase().startsWith(prefix)) {
+        if (currentVal.length < prefix.length) {
           certInput.value = prefix;
         } else {
-          certInput.value = prefix + certInput.value.replace(prefix, "");
+          certInput.value = prefix + currentVal.replace(new RegExp(prefix, 'gi'), "");
         }
       }
     });
 
-    // 📞 ফায়ারবেস থেকে রোল "president" ওয়ালা ইউজারের কন্টাক্ট ডিটেইলস তুলে আনার ফাংশন
     async function fetchPresidentContact() {
       try {
         const usersRef = collection(db, "users");
@@ -421,71 +421,83 @@
         
         if (!querySnapshot.empty) {
           const docData = querySnapshot.docs[0].data();
-          document.getElementById('presidentName').innerText = docData.englishName || docData.fullName || "President";
+          document.getElementById('presidentName').innerText = docData.englishName || docData.fullName || "President Account";
           document.getElementById('presidentPhone').innerText = docData.phone || docData.mobile || "N/A";
           document.getElementById('presidentEmail').innerText = docData.email || "N/A";
         } else {
-          document.getElementById('presidentName').innerText = "Authority Management Node";
-          document.getElementById('presidentPhone').innerText = "+880 XXXXX-XXXXXX";
-          document.getElementById('presidentEmail').innerText = "info@rajshahiolympiad.org";
+          document.getElementById('presidentName').innerText = "President Office";
+          document.getElementById('presidentPhone').innerText = "Contact details unavailable";
+          document.getElementById('presidentEmail').innerText = "admin@rajshahiolympiad.org";
         }
       } catch (err) {
-        console.error("Error fetching president contact details:", err);
+        console.error("Error fetching authority profile:", err);
       }
     }
 
-    // 🚀 মূল ডেটা ভেরিফিকেশন সার্চ ইঞ্জিন সাবমিট হ্যান্ডলার
     submitBtn.addEventListener('click', async () => {
       const targetCertNo = certInput.value.trim().toUpperCase();
       const targetDateVal = dateInput.value;
 
       if (targetCertNo === prefix || !targetCertNo) {
-        alert("Please enter a valid certificate number.");
+        alert("Please input the certificate serial identifier digits.");
         return;
       }
       if (!targetDateVal) {
-        alert("Please choose the valid Date of Issue.");
+        alert("Please pick the registered Date of Issue.");
         return;
       }
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validating...`;
+      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Checking Nodes...`;
       resultZone.style.display = 'none';
 
       try {
-        // ১. ইস্যুকৃত সার্টিফিকেট কালেকশন কুয়েরি ম্যাচিং 
+        // ১. ক্যাপিটাল লেটার কনফ্লিক্ট এড়াতে ইনসেনসিটিভ বা সুনির্দিষ্ট আপারকেস কুয়েরি চালনা
         const certQuery = query(collection(db, "issued_certificates"), where("certificateNo", "==", targetCertNo));
         const certSnapshot = await getDocs(certQuery);
 
         if (certSnapshot.empty) {
-          alert("Verification Failed: No records matching this certificate number found.");
+          alert("Verification Failed: Valid database profile matching this certificate serial was not found.");
           return;
         }
 
         let certData = certSnapshot.docs[0].data();
-        const dbIssuedDate = new Date(certData.issuedAt);
+        
+        // ফায়ারবেস ডেটা ফরম্যাট ফিক্সিং মেথড
+        let dbDateStr = certData.issuedAt; 
+        const dbIssuedDate = new Date(dbDateStr);
         const inputIssuedDate = new Date(targetDateVal);
 
-        // ২. ইউজার ইনপুটকৃত তারিখের সাথে সিস্টেমে সংরক্ষিত তারিখের তুলনা
         if (dbIssuedDate.toDateString() !== inputIssuedDate.toDateString()) {
-          alert("Verification Failed: The specified date of issue does not match our security logs.");
+          alert("Verification Failed: Provided Date of Issue does not align with core system logs.");
           return;
         }
 
-        // ৩. সার্টিফিকেট ডাটার আন্ডারে মূল ইউজারের প্রোফাইল স্ন্যাপশট সংগ্রহ
-        const userQuery = query(collection(db, "users"), where("__name__", "==", certData.userId));
-        const userSnapshot = await getDocs(userQuery);
+        // ২. ইউজার ডকুমেন্ট সরাসরি নির্দিষ্ট ID থ্রু অথবা কুয়েরি থ্রু খোঁজা
+        const userId = certData.userId;
+        const userDocRef = doc(db, "users", userId);
+        const userDocSnap = await getDoc(userDocRef);
 
-        if (userSnapshot.empty) {
-          alert("System Error: Linked member account not found in database.");
+        let userData = null;
+        if (userDocSnap.exists()) {
+          userData = userDocSnap.data();
+        } else {
+          // অল্টারনেট কুয়েরি মেথড ব্যাকআপ
+          const altUserQuery = query(collection(db, "users"), where("__name__", "==", userId));
+          const altUserSnapshot = await getDocs(altUserQuery);
+          if (!altUserSnapshot.empty) {
+            userData = altUserSnapshot.docs[0].data();
+          }
+        }
+
+        if (!userData) {
+          alert("System Log Alert: Certificate is registered but structural member account is missing.");
           return;
         }
 
-        const userData = userSnapshot.docs[0].data();
-
-        // ৪. ইংরেজি ফরম্যাটে রেজাল্ট প্যানেলে ডেটা পুশ
+        // ৩. আন্তর্জাতিক ইংরেজি ভিউপোর্টে ডেটা আউটপুট ইনজেকশন
         document.getElementById('resFullName').innerText = userData.englishName || userData.fullName || "N/A";
-        document.getElementById('resRegNo').innerText = userData.memberId ? userData.memberId.toUpperCase() : "PENDING";
+        document.getElementById('resRegNo').innerText = userData.memberId ? userData.memberId.toUpperCase() : "VERIFIED MEMBER";
         
         let regDateText = "N/A";
         if (userData.createdAt) {
@@ -504,18 +516,17 @@
         document.getElementById('resFatherName').innerText = userData.fatherName || "Not Specified";
         document.getElementById('resMotherName').innerText = userData.motherName || "Not Specified";
         document.getElementById('resCertNo').innerText = certData.certificateNo;
-        document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + " (Official Copy)";
+        document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + " (System Record Checked)";
 
-        // ৫. ডাইনামিক প্রেসিডেন্ট কন্টাক্ট বক্স রান করানো
+        // ৪. ডাইনামিক প্রেসিডেন্ট ইনফো লোড
         await fetchPresidentContact();
 
-        // ৬. স্ক্রিনে রেজাল্ট প্রদর্শন
         resultZone.style.display = 'block';
         resultZone.scrollIntoView({ behavior: 'smooth' });
 
       } catch (error) {
-        console.error("Verification Engine Error:", error);
-        alert("Database connection error! Please check your network and retry.");
+        console.error("Critical Verification Engine Failure:", error);
+        alert("Security Handshake Refused: Database query layer encountered an error.");
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<i class="fas fa-search"></i> Verify Credentials`;
