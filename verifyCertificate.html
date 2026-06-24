@@ -5,23 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Certificate Verification | Rajshahi Olympiad Society</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     :root {
-      --dark-bg: #030a16;         
-      --panel-bg: #051124;        
-      --glass-bg: rgba(6, 20, 43, 0.5); 
-      --secondary: #00f5ff;       
+      --dark-bg: #020617;         
+      --panel-bg: #0b1329;        
+      --glass-bg: rgba(11, 19, 41, 0.65); 
+      --primary: #00f5ff;       
       --accent: #ffb703;          
-      --neon-green: #00f5d4;      
+      --neon-green: #10b981;      
       --text-light: #f8fafc;      
-      --text-muted: #64748b;      
-      --glass-border: rgba(0, 245, 255, 0.15);
+      --text-muted: #94a3b8;      
+      --glass-border: rgba(0, 245, 255, 0.2);
+      --card-gradient: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', 'Orbitron', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body { 
       background-color: var(--dark-bg); 
@@ -31,125 +32,175 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      background-image: radial-gradient(circle at 50% 50%, #0a1f3d 0%, #030a16 100%);
+      padding: 24px;
+      font-family: 'Hind Siliguri', 'Inter', sans-serif;
+      background-image: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #020617 70%);
     }
 
     .verification-container {
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       background: var(--glass-bg);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--glass-border);
-      padding: 35px;
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(0, 245, 255, 0.1);
+      padding: 40px;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 245, 255, 0.05);
       text-align: center;
     }
 
-    .logo-zone img { width: 70px; height: 70px; margin-bottom: 10px; }
-    .logo-zone h1 { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: 1px; }
-    .logo-zone p { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 30px; }
+    .logo-zone img { width: 75px; height: 75px; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(0,245,255,0.2)); }
+    .logo-zone h1 { font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 800; color: #fff; letter-spacing: 1.5px; }
+    .logo-zone p { font-family: 'Orbitron', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--primary); margin-bottom: 35px; opacity: 0.8; }
 
-    .input-group { display: flex; flex-direction: column; text-align: left; margin-bottom: 20px; gap: 8px; }
-    .input-group label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-    .input-group i { margin-right: 5px; color: var(--secondary); }
+    .input-group { display: flex; flex-direction: column; text-align: left; margin-bottom: 24px; gap: 10px; }
+    .input-group label { font-size: 13.5px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.3px; }
+    .input-group label i { margin-right: 6px; color: var(--primary); }
     
     .input-field {
       background: #030712;
-      border: 1px solid var(--glass-border);
-      padding: 13px 16px;
-      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px 18px;
+      border-radius: 12px;
       color: #fff;
-      font-size: 14px;
-      transition: all 0.3s;
+      font-size: 14.5px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .input-field:focus {
-      border-color: var(--secondary);
+      border-color: var(--primary);
       outline: none;
-      box-shadow: 0 0 12px rgba(0, 245, 255, 0.25);
+      box-shadow: 0 0 15px rgba(0, 245, 255, 0.25);
+      background: #090d16;
     }
-    .input-field[type="text"] { text-transform: uppercase; letter-spacing: 0.5px; }
 
     .verify-btn {
       width: 100%;
-      background: linear-gradient(135deg, var(--secondary), var(--neon-green));
-      color: #030a16;
-      padding: 14px;
+      background: linear-gradient(135deg, #00b4d8 0%, #00f5ff 100%);
+      color: #020617;
+      padding: 16px;
       border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 15px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 15px rgba(0, 245, 255, 0.2);
+      gap: 10px;
+      box-shadow: 0 8px 25px rgba(0, 245, 255, 0.25);
       transition: all 0.3s;
-      margin-top: 10px;
+      letter-spacing: 0.5px;
     }
     .verify-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 245, 255, 0.35);
+      box-shadow: 0 12px 30px rgba(0, 245, 255, 0.4);
     }
-    .verify-btn:disabled { background: var(--text-muted); cursor: not-allowed; opacity: 0.6; }
+    .verify-btn:disabled { background: var(--text-muted); cursor: not-allowed; opacity: 0.6; box-shadow: none; }
 
+    /* Premium Result Design */
     .result-zone {
       display: none;
       width: 100%;
-      max-width: 600px;
-      margin-top: 25px;
-      animation: fadeInUp 0.5s ease;
+      max-width: 650px;
+      margin-top: 30px;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    
     .result-card {
-      background: linear-gradient(145deg, rgba(5, 17, 36, 0.9), rgba(3, 10, 22, 0.95));
-      border: 1px solid rgba(0, 245, 212, 0.25);
+      background: var(--card-gradient);
+      border: 1px solid rgba(16, 185, 129, 0.2);
       padding: 35px;
-      border-radius: 16px;
+      border-radius: 24px;
       position: relative;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      text-align: left;
     }
-    .verified-stamp {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: var(--neon-green);
-      color: #030a16;
-      font-size: 11px;
-      font-weight: bold;
-      padding: 5px 14px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      box-shadow: 0 0 15px rgba(0,245,212,0.4);
-    }
-    .result-title {
-      color: var(--secondary);
-      font-size: 17px;
+
+    .badge-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 20px;
       margin-bottom: 25px;
+    }
+
+    .verified-badge {
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 30px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cert-header-title {
+      font-size: 15px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Primary Highlight Banner inside Card */
+    .student-hero {
+      background: rgba(0, 245, 255, 0.03);
+      border-left: 4px solid var(--primary);
+      padding: 18px 20px;
+      border-radius: 0 14px 14px 0;
+      margin-bottom: 25px;
+    }
+    .hero-name-bn { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .hero-name-en { font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text-muted); font-weight: 500; margin-bottom: 12px; }
+    
+    .hero-meta-grid { display: flex; gap: 24px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; }
+    .meta-box { display: flex; flex-direction: column; gap: 4px; }
+    .meta-label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .meta-value { font-family: 'Orbitron', 'Inter', sans-serif; font-size: 14.5px; font-weight: 600; color: var(--accent); }
+
+    /* Elegant Grid Layout for Details */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    
+    .info-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 14px 18px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .info-item-label {
+      font-size: 12.5px;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       gap: 8px;
-      border-bottom: 1px solid rgba(0, 245, 255, 0.1);
-      padding-bottom: 12px;
     }
-    .info-grid { display: flex; flex-direction: column; gap: 16px; }
-    .info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 12px; font-size: 14.5px; }
-    .lbl { color: var(--text-muted); }
-    .val { text-align: right; color: #e2e8f0; }
+    .info-item-label i { color: var(--primary); font-size: 13px; width: 16px; text-align: center; }
+    .info-item-value { font-size: 14.5px; color: #e2e8f0; font-weight: 500; padding-left: 24px; }
 
     @keyframes fadeInUp {
-      from { transform: translateY(20px); opacity: 0; }
+      from { transform: translateY(30px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
 
-    @media (max-width: 500px) {
+    @media (max-width: 600px) {
       .verification-container, .result-card { padding: 25px 20px; }
-      .info-row { flex-direction: column; align-items: flex-start; gap: 4px; }
-      .val { text-align: left; width: 100%; }
-      .verified-stamp { position: static; display: inline-block; margin-bottom: 15px; }
+      .info-grid { grid-template-columns: 1fr; gap: 14px; }
+      .hero-meta-grid { flex-direction: column; gap: 12px; }
     }
   </style>
 </head>
@@ -159,90 +210,85 @@
     <div class="logo-zone">
       <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" alt="ROS Logo">
       <h1>RAJSHAHI OLYMPIAD SOCIETY</h1>
-      <p>Official Verification Station</p>
+      <p>Verification Hub</p>
     </div>
 
     <form id="publicVerifyForm">
       <div class="input-group">
-        <label for="certNo"><i class="fas fa-fingerprint"></i> সার্টিফিকেট নাম্বার (Certificate Number)</label>
+        <label for="certNo"><i class="fas fa-id-card"></i> সার্টিফিকেট নাম্বার (Certificate Number)</label>
         <input type="text" id="certNo" class="input-field" placeholder="যেমন: ROS-618441" required autocomplete="off">
       </div>
 
       <div class="input-group">
-        <label for="issueDate"><i class="far fa-calendar-alt"></i> ইস্যুর তারিখ (Date of Issue)</label>
+        <label for="issueDate"><i class="fas fa-calendar-check"></i> ইস্যুর তারিখ (Date of Issue)</label>
         <input type="date" id="issueDate" class="input-field" required>
       </div>
 
       <button type="submit" id="submitBtn" class="verify-btn">
-        <i class="fas fa-shield-alt"></i> সার্টিফিকেট ভেরিফাই করুন
+        <i class="fas fa-shield-halved"></i> সার্টিফিকেট ভেরিফাই করুন
       </button>
     </form>
   </div>
 
   <div id="resultZone" class="result-zone">
     <div class="result-card">
-      <div class="verified-stamp">
-        <i class="fas fa-check-circle"></i> VERIFIED RECORD
+      
+      <div class="badge-container">
+        <div class="cert-header-title"><i class="fas fa-file-invoice"></i> Official Record Details</div>
+        <div class="verified-badge"><i class="fas fa-badge-check"></i> Verified Record</div>
       </div>
 
-      <h3 class="result-title">
-        <i class="fas fa-address-card"></i> সার্টিফিকেটের অফিসিয়াল বিবরণী
-      </h3>
+      <div class="student-hero">
+        <div id="resBanglaName" class="hero-name-bn">—</div>
+        <div id="resEnglishName" class="hero-name-en">—</div>
+        
+        <div class="hero-meta-grid">
+          <div class="meta-box">
+            <span class="meta-label"><i class="fas fa-fingerprint"></i> Certificate No</span>
+            <span id="resCertNo" class="meta-value" style="color: var(--primary);">—</span>
+          </div>
+          <div class="meta-box">
+            <span class="meta-label"><i class="fas fa-user-vcard"></i> Member ID (UID)</span>
+            <span id="resMemberId" class="meta-value">—</span>
+          </div>
+        </div>
+      </div>
 
       <div class="info-grid">
-        <div class="info-row">
-          <span class="lbl">👤 নাম (বাংলা):</span>
-          <span id="resBanglaName" class="val" style="color: #fff; font-weight: bold; font-size: 15.5px;">—</span>
+        <div class="info-item">
+          <span class="info-item-label"><i class="fas fa-user-tie"></i> বাবার নাম</span>
+          <span id="resFatherName" class="info-item-value">—</span>
         </div>
         
-        <div class="info-row">
-          <span class="lbl">👤 Name (English):</span>
-          <span id="resEnglishName" class="val" style="font-weight: 500;">—</span>
-        </div>
-        
-        <div class="info-row">
-          <span class="lbl">🆔 মেম্বার আইডি:</span>
-          <span id="resMemberId" class="val" style="font-family: 'Arial'; color: var(--accent); font-weight: bold;">—</span>
+        <div class="info-item">
+          <span class="info-item-label"><i class="fas fa-user-gradient"></i> মায়ের নাম</span>
+          <span id="resMotherName" class="info-item-value">—</span>
         </div>
 
-        <div class="info-row">
-          <span class="lbl">📅 নিবন্ধনের তারিখ:</span>
-          <span id="resRegDate" class="val">—</span>
+        <div class="info-item">
+          <span class="info-item-label"><i class="fas fa-cake-candles"></i> জন্ম তারিখ</span>
+          <span id="resBirthDate" class="info-item-value">—</span>
         </div>
 
-        <div class="info-row">
-          <span class="lbl">🎂 জন্ম তারিখ:</span>
-          <span id="resBirthDate" class="val">—</span>
+        <div class="info-item">
+          <span class="info-item-label"><i class="fas fa-calendar-plus"></i> নিবন্ধনের তারিখ</span>
+          <span id="resRegDate" class="info-item-value">—</span>
         </div>
 
-        <div class="info-row">
-          <span class="lbl">👨 বাবার নাম:</span>
-          <span id="resFatherName" class="val">—</span>
-        </div>
-
-        <div class="info-row">
-          <span class="lbl">👩 মায়ের নাম:</span>
-          <span id="resMotherName" class="val">—</span>
-        </div>
-
-        <div class="info-row" style="background: rgba(0, 245, 255, 0.03); padding: 10px; border-radius: 6px; margin-top: 5px;">
-          <span class="lbl" style="color: var(--secondary); font-weight: 500;">📜 সার্টিফিকেট নাম্বার:</span>
-          <span id="resCertNo" class="val" style="color: var(--secondary); font-family: 'Arial'; font-weight: bold;">—</span>
-        </div>
-
-        <div class="info-row">
-          <span class="lbl">🗓️ সার্টিফিকেট ইস্যুর তারিখ:</span>
-          <span id="resCertIssueDate" class="val" style="font-weight: 600;">—</span>
+        <div class="info-item" style="grid-column: span 2;">
+          <span class="info-item-label"><i class="fas fa-calendar-day"></i> সার্টিফিকেট ইস্যুর তারিখ</span>
+          <span id="resCertIssueDate" class="info-item-value" style="color: #34d399; font-weight: 600;">—</span>
         </div>
       </div>
+
     </div>
   </div>
 
   <script type="module">
-    // আপনার প্রজেক্টের সঠিক Firebase SDK ভার্সন এবং আসল ক্রেডেনশিয়াল সরাসরি অ্যাসাইন করা হলো
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // সরাসরি আপনার দেওয়া কনফিগারেশন কী
     const firebaseConfig = {
       apiKey: "AIzaSyA8NSt3VP9jnVkzrGKPvNSqbnm7hwL-NqY",
       authDomain: "rajshahi-olimpiad-society.firebaseapp.com",
@@ -260,18 +306,16 @@
     const resultZone = document.getElementById('resultZone');
 
     verifyForm.addEventListener('submit', async (e) => {
-      // পেজ রিলোড বা রিফ্রেশ হওয়া শতভাগ আটকানোর জন্য
       e.preventDefault();
 
       const inputCertNo = document.getElementById('certNo').value.trim().toUpperCase();
       const inputDate = document.getElementById('issueDate').value; 
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ডাটাবেজ যাচাই করা হচ্ছে...`;
+      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ভেরিফিকেশন চলছে...`;
       resultZone.style.display = 'none';
 
       try {
-        // ১. 'issued_certificates' কালেকশন থেকে সার্টিফিকেট খোঁজ করা
         const certQuery = query(collection(db, "issued_certificates"), where("certificateNo", "==", inputCertNo));
         const querySnapshot = await getDocs(certQuery);
 
@@ -283,7 +327,6 @@
         let certData = null;
         querySnapshot.forEach(s => { certData = s.data(); });
 
-        // ২. ডেট টাইমিং ম্যাচিং (ফায়ারবেস টাইমস্ট্যাম্প সুরক্ষিত রূপান্তর)
         const dbIssuedDate = certData.issuedAt?.seconds ? new Date(certData.issuedAt.seconds * 1000) : new Date(certData.issuedAt);
         const year = dbIssuedDate.getFullYear();
         const month = String(dbIssuedDate.getMonth() + 1).padStart(2, '0');
@@ -295,17 +338,14 @@
           return;
         }
 
-        // ৩. ডাবল-সেক পদ্ধতিতে ইউজার খোঁজা (ডকুমেন্ট ID এবং 'uid' ফিল্ড দুভাবেই চেক করবে)
         let userData = null;
         let userDocId = "";
 
-        // পদ্ধতি A: ডকুমেন্ট আইডি দিয়ে ডিরেক্ট রিড
         const userDocSnap = await getDoc(doc(db, "users", certData.userId));
         if (userDocSnap.exists()) {
           userData = userDocSnap.data();
           userDocId = userDocSnap.id;
         } else {
-          // পদ্ধতি B: যদি ডকুমেন্ট আইডি মেম্বার আইডি হয়, তবে ভেতরের 'uid' ফিল্ড দিয়ে কুয়েরি করা
           const userQuery = query(collection(db, "users"), where("uid", "==", certData.userId));
           const userQuerySnapshot = await getDocs(userQuery);
           if (!userQuerySnapshot.empty) {
@@ -321,7 +361,7 @@
           return;
         }
 
-        // ৪. সফলভাবে ডাটা UI-তে বসানো
+        // UI ডাটা রেন্ডারিং
         document.getElementById('resBanglaName').innerText = userData.banglaName || "উল্লেখ নেই";
         document.getElementById('resEnglishName').innerText = userData.englishName || userData.fullName || "—";
         document.getElementById('resMemberId').innerText = userData.memberId ? userData.memberId.toUpperCase() : userDocId.toUpperCase();
@@ -348,7 +388,6 @@
         document.getElementById('resCertNo').innerText = certData.certificateNo;
         document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('bn-BD') + ` (${certData.language === 'bn' ? 'বাংলা সংস্করণ' : 'English Version'})`;
 
-        // সুন্দর এনিমেশন সহ রেজাল্ট প্যানেল শো করা
         resultZone.style.display = 'block';
         resultZone.scrollIntoView({ behavior: 'smooth' });
 
@@ -357,7 +396,7 @@
         alert("ফায়ারবেস ডাটাবেজ কানেকশন এরর! অনুগ্রহ করে আবার চেষ্টা করুন।");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="fas fa-shield-alt"></i> সার্টিফিকেট ভেরিফাই করুন`;
+        submitBtn.innerHTML = `<i class="fas fa-shield-halved"></i> সার্টিফিকেট ভেরিফাই করুন`;
       }
     });
   </script>
