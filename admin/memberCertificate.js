@@ -2,18 +2,17 @@
  * ROS Nexus - Ultra Premium Membership Certificate Module
  * File: ../admin/certificate.js
  * Features: Multi-lingual (BN/EN), Auto-suggest Search, Firestore Serial Generator
- * Theme: Restored Original Layout with Poppins & Hind Siliguri Custom Typography
  */
 
 window.loadCertificatesModule = function(container, db, collection, onSnapshot, doc, getDocs, query, where, setDoc, addDoc, serverTimestamp) {
     
-    // 🔤 আপনার দেওয়া ফন্ট এবং আইকন সিডিএন লিংক (সর্বদা <head> এ যুক্ত হচ্ছে)
+    // 🔤 নির্দিষ্ট ফন্ট এবং আইকন সিডিএন লিংক যুক্ত করা হলো
     if (!document.getElementById('ros-fonts-dependency')) {
         const linkNode = document.createElement('div');
         linkNode.id = 'ros-fonts-dependency';
         linkNode.innerHTML = `
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-            <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght=400;500;600;700&family=Poppins:wght=400;500;600&display=swap" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght=400;500;600;700&family=Poppins:wght=400;500;600;700&display=swap" rel="stylesheet">
         `;
         document.head.appendChild(linkNode);
     }
@@ -169,7 +168,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
         if (e.target !== searchInput) suggestionsDiv.style.display = 'none';
     });
 
-    // ৩. ইউনিকিসিটি আইডি জেনারেটর
+    // ৩. ইউনিক সার্টিফিকেট আইডি জেনারেটর
     async function issueCertificateNumber(memberUid, lang) {
         const certNo = "ROS-" + Math.floor(100000 + Math.random() * 900000);
         await addDoc(collection(db, "issued_certificates"), {
@@ -199,10 +198,10 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                 const বাংলাআইডি = selectedMember.memberId || selectedMember.uid.substring(0, 8).toUpperCase();
                 
                 certDynamicBody.innerHTML = `
-                    <div style="font-family: 'Poppins', sans-serif;">
+                    <div>
                         <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 55px; height: 55px; margin-bottom: 5px;">
-                        <h1 style="font-size: 25px; font-weight: 800; color: #111827; margin: 0; letter-spacing: 1px;">RAJSHAHI OLYMPIAD SOCIETY</h1>
-                        <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #b38600; margin-top: 3px; font-weight: bold;">সিস্টেম কন্ট্রোল ও এন্টারপ্রাইজ নেটওয়ার্ক</p>
+                        <h1 style="font-size: 25px; font-weight: 700; color: #111827; margin: 0; letter-spacing: 1px; font-family: 'Poppins', sans-serif;">RAJSHAHI OLYMPIAD SOCIETY</h1>
+                        <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #b38600; margin-top: 3px; font-weight: bold; font-family: 'Hind Siliguri', sans-serif;">সিস্টেম কন্ট্রোল ও এন্টারপ্রাইজ নেটওয়ার্ক</p>
                     </div>
 
                     <div style="font-family: 'Hind Siliguri', sans-serif;">
@@ -214,17 +213,30 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                         </p>
                     </div>
 
-                    <!-- নিচের মেটাডেটা প্যানেল: ব্যাকগ্রাউন্ড সাদা এবং কাস্টম ফন্ট এলাইন্ড -->
+                    <!-- নিচের প্যানেল: সম্পূর্ণ ব্যাকগ্রাউন্ড সাদা এবং রেডি ফন্ট এলাইনমেন্ট -->
                     <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 12px 25px; box-sizing: border-box; background: #ffffff; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                         <div style="text-align: left; font-size: 13px; color: #4b5563; line-height: 1.6; font-family: 'Hind Siliguri', sans-serif;">
                             <p style="margin: 2px 0;"><strong>সার্টিফিকেট নং:</strong> <span style="color: #aa7c11; font-weight: bold; font-family: 'Poppins', sans-serif;">${certNumber}</span></p>
-                            <p style="margin: 2px 0;"><strong>سদস্য আইডি:</strong> <span style="color: #111827; font-family: 'Poppins', sans-serif;">${বাংলাআইডি}</span></p>
+                            <p style="margin: 2px 0;"><strong>সদস্য আইডি:</strong> <span style="color: #111827; font-family: 'Poppins', sans-serif;">${বাংলাআইডি}</span></p>
                             <p style="margin: 2px 0;"><strong>ইস্যুর তারিখ:</strong> ${বাংলাতারিখ}</p>
                         </div>
                         <div style="text-align: center; width: 160px; position: relative; font-family: 'Hind Siliguri', sans-serif;">
                             <div style="position: absolute; top: -42px; left: -10px; border: 2px dashed #059669; color: #059669; font-size: 9px; font-weight: bold; padding: 2px 5px; transform: rotate(-10deg); background: #ffffff;">ভেরিফাইড মেম্বার</div>
                             <div style="border-top: 1.5px solid #4b5563; padding-top: 5px; width: 100%;">
-                                <p style="font-weight: bold; color: #111827; font-size: 13px; margin: 0;">সেন্ট্রাল অথরিটি</p>
+                                <p style="font-weight: bold; color: #111827; font-size: 13px; margin: 0;">সেন্ট্রাল
+
+
+
+
+
+
+
+
+
+
+
+
+ অথরিটি</p>
                                 <p style="font-size: 11px; color: #6b7280;">রাজশাহী অলিম্পিয়াড সোসাইটি</p>
                             </div>
                         </div>
@@ -239,7 +251,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                 certDynamicBody.innerHTML = `
                     <div style="font-family: 'Poppins', sans-serif;">
                         <img src="https://ros-admin.github.io/Rajshahi-Olimpiad-Society/ros%20logo%20transparent.png" style="width: 55px; height: 55px; margin-bottom: 5px;">
-                        <h1 style="font-size: 26px; font-weight: 600; color: #111827; margin: 0; letter-spacing: 1.5px;">RAJSHAHI OLYMPIAD SOCIETY</h1>
+                        <h1 style="font-size: 26px; font-weight: 700; color: #111827; margin: 0; letter-spacing: 1.5px;">RAJSHAHI OLYMPIAD SOCIETY</h1>
                         <p style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #b38600; margin-top: 3px; font-weight: bold;">System Control & Enterprise Network</p>
                     </div>
 
@@ -252,7 +264,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                         </p>
                     </div>
 
-                    <!-- নিচের মেটাডেটা প্যানেল: ব্যাকগ্রাউন্ড সাদা এবং Poppins ফন্ট এলাইন্ড -->
+                    <!-- নিচের প্যানেল: সম্পূর্ণ ব্যাকগ্রাউন্ড সাদা এবং Poppins ফন্ট এলাইনমেন্ট -->
                     <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 12px 25px; box-sizing: border-box; font-family: 'Poppins', sans-serif; background: #ffffff; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                         <div style="text-align: left; font-size: 12px; color: #4b5563; line-height: 1.6;">
                             <p style="margin: 2px 0;"><strong>Certificate No:</strong> <span style="color: #aa7c11; font-weight: bold;">${certNumber}</span></p>
