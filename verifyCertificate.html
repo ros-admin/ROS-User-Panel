@@ -13,8 +13,8 @@
       --dark-bg: #030a16;         
       --panel-bg: #051124;        
       --glass-bg: rgba(6, 20, 43, 0.5); 
-      --secondary: #00f5ff;       /* ইলেকট্রিক সায়ান নিয়ন */
-      --accent: #ffb703;          /* প্রিমিয়াম গোল্ডেন */
+      --secondary: #00f5ff;       
+      --accent: #ffb703;          
       --neon-green: #00f5d4;      
       --text-light: #f8fafc;      
       --text-muted: #64748b;      
@@ -35,7 +35,6 @@
       background-image: radial-gradient(circle at 50% 50%, #0a1f3d 0%, #030a16 100%);
     }
 
-    /* সাইবার গ্লাস কার্ড এফেক্ট */
     .verification-container {
       width: 100%;
       max-width: 600px;
@@ -53,7 +52,6 @@
     .logo-zone h1 { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: 1px; }
     .logo-zone p { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 30px; }
 
-    /* ইনপুট গ্রুপ স্টাইল */
     .input-group { display: flex; flex-direction: column; text-align: left; margin-bottom: 20px; gap: 8px; }
     .input-group label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
     .input-group i { margin-right: 5px; color: var(--secondary); }
@@ -74,7 +72,6 @@
     }
     .input-field[type="text"] { text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* সাবমিট বাটন */
     .verify-btn {
       width: 100%;
       background: linear-gradient(135deg, var(--secondary), var(--neon-green));
@@ -99,7 +96,6 @@
     }
     .verify-btn:disabled { background: var(--text-muted); cursor: not-allowed; opacity: 0.6; }
 
-    /* ভেরিফিকেশন রেজাল্ট কার্ড */
     .result-zone {
       display: none;
       width: 100%;
@@ -246,8 +242,9 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-    // ⚠️ আপনার ফায়ারবেস কনফিগ ডাটা এখানে দিন
-    import firebaseConfig from "../firebase-config.js";
+    // গোপন কনফিগ ফাইল ইম্পোর্ট (যদি অবজেক্ট বা ডিফল্ট দুরকমই থাকে তার ব্যাকআপ হ্যান্ডলিং সহ)
+    import configData from "../firebase-config.js";
+    const firebaseConfig = configData?.firebaseConfig || configData;
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -260,14 +257,14 @@
       e.preventDefault();
 
       const inputCertNo = document.getElementById('certNo').value.trim().toUpperCase();
-      const inputDate = document.getElementById('issueDate').value; // YYYY-MM-DD
+      const inputDate = document.getElementById('issueDate').value; 
 
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ডাটাবেজ যাচাই করা হচ্ছে...`;
       resultZone.style.display = 'none';
 
       try {
-        // ১. 'issued_certificates' কালেকশনে সার্টিফিকেট নাম্বার ম্যাচিং
+        // ১. 'issued_certificates' কালেকশনে সার্টিফিকেট নম্বর খোঁজা
         const certQuery = query(collection(db, "issued_certificates"), where("certificateNo", "==", inputCertNo));
         const querySnapshot = await getDocs(certQuery);
 
@@ -279,36 +276,50 @@
         let certData = null;
         querySnapshot.forEach(s => { certData = s.data(); });
 
-        // ২. লোকাল টাইমজোন ম্যাচিং (ফায়ারবেস টাইমস্ট্যাম্প কনভার্সন)
+        // ২. ডেট প্রসেসিং ও ভ্যালিডেশন
         const dbIssuedDate = certData.issuedAt?.seconds ? new Date(certData.issuedAt.seconds * 1000) : new Date(certData.issuedAt);
-        
         const year = dbIssuedDate.getFullYear();
         const month = String(dbIssuedDate.getMonth() + 1).padStart(2, '0');
         const day = String(dbIssuedDate.getDate()).padStart(2, '0');
         const dbDateString = `${year}-${month}-${day}`;
 
-        // ৩. ইস্যুর তারিখ ক্রস-চেক ম্যাচিং
         if (inputDate !== dbDateString) {
           alert("⚠️ সার্টিফিকেট নাম্বার সঠিক হলেও, ইস্যুর তারিখটি আমাদের রেকর্ডের সাথে মিলছে না!");
           return;
         }
 
-        // ৪. 'users' কালেকশন থেকে মেম্বারের রিয়েল আইডি দিয়ে ডাটা রিড
-        const userDocSnap = await getDoc(doc(db, "users", certData.userId));
+        // ৩. ইউজার ডাটা রিড করার সুরক্ষাকবচ (ডকুমেন্ট আইডি এবং UID ফিল্ড দুভাবেই চেক করবে)
+        let userData = null;
+        let userDocId = "";
 
-        if (!userDocSnap.exists()) {
+        // পদ্ধতি A: সরাসরি ডকুমেন্ট আইডি (userId) দিয়ে খোঁজা
+        const userDocSnap = await getDoc(doc(db, "users", certData.userId));
+        if (userDocSnap.exists()) {
+          userData = userDocSnap.data();
+          userDocId = userDocSnap.id;
+        } else {
+          // পদ্ধতি B: যদি ডকুমেন্ট আইডি অন্য কিছু হয়, তবে ভেতরের 'uid' ফিল্ড দিয়ে কুয়েরি করা
+          const userQuery = query(collection(db, "users"), where("uid", "==", certData.userId));
+          const userQuerySnapshot = await getDocs(userQuery);
+          if (!userQuerySnapshot.empty) {
+            userQuerySnapshot.forEach(u => {
+              userData = u.data();
+              userDocId = u.id;
+            });
+          }
+        }
+
+        // যদি কোনো পদ্ধতিতেই ইউজার না পাওয়া যায়
+        if (!userData) {
           alert("❌ দুঃখিত! সার্টিফিকেটের রেকর্ড আছে কিন্তু ব্যবহারকারীর প্রোফাইল পাওয়া যায়নি।");
           return;
         }
 
-        const userData = userDocSnap.data();
-
-        // ৫. সফলভাবে UI কার্ডে ডাটা রেন্ডার করা (আপনার ডেটাবেজের ফিল্ড নেম অনুযায়ী)
+        // ৪. সফলভাবে UI কার্ডে ডাটা রেন্ডার করা
         document.getElementById('resBanglaName').innerText = userData.banglaName || "উল্লেখ নেই";
         document.getElementById('resEnglishName').innerText = userData.englishName || userData.fullName || "—";
-        document.getElementById('resMemberId').innerText = userData.memberId ? userData.memberId.toUpperCase() : userDocSnap.id.toUpperCase();
+        document.getElementById('resMemberId').innerText = userData.memberId ? userData.memberId.toUpperCase() : userDocId.toUpperCase();
         
-        // স্ট্রিং ডেট প্রোসেসিং (আপনার ডেটাবেজে createdAt একটি স্ট্রিং ফরম্যাটে আছে)
         let regDateText = "উল্লেখ নেই";
         if (userData.createdAt) {
           const regDateObj = new Date(userData.createdAt);
@@ -318,7 +329,6 @@
         }
         document.getElementById('resRegDate').innerText = regDateText;
         
-        // dob ফিল্ড প্রসেসিং (আপনার ডেটাবেজের "2005-12-16" স্ট্রিং অনুসারে)
         if (userData.dob) {
           const dobObj = new Date(userData.dob);
           document.getElementById('resBirthDate').innerText = !isNaN(dobObj) ? dobObj.toLocaleDateString('bn-BD') : userData.dob;
@@ -333,7 +343,6 @@
         document.getElementById('resCertNo').innerText = certData.certificateNo;
         document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('bn-BD') + ` (${certData.language === 'bn' ? 'বাংলা সংস্করণ' : 'English Version'})`;
 
-        // রেজাল্ট স্লিপ ডিসপ্লে ও স্মুথ স্ক্রল
         resultZone.style.display = 'block';
         resultZone.scrollIntoView({ behavior: 'smooth' });
 
