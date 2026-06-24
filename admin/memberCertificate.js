@@ -1,9 +1,9 @@
 /**
  * ROS Nexus - Ultra Premium Membership Certificate Module
  * File: ../admin/certificate.js
- * Theme: Premium Olympiad Cyan & Bright Yellow Elite Edition
+ * Theme: Premium Olympiad Cyan & Custom Tangerine Orange Edition
  * Fonts: Poppins (Weights: 400, 500, 600, 700, 800) & Hind Siliguri
- * Layout: Based on 1000363821.jpg reference for Gradient Header Area
+ * Layout: Fixed Text Gradient & Targeted Color Scheme from 1000363826.jpg
  */
 
 window.loadCertificatesModule = function(container, db, collection, onSnapshot, doc, getDocs, query, where, setDoc, addDoc, serverTimestamp) {
@@ -30,10 +30,10 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
     container.innerHTML = `
         <div class="cyber-glass" style="padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #00B2E2; background: rgba(5, 17, 36, 0.85);">
             <h2 style="color: #fff; font-size: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-family: 'Poppins', sans-serif; font-weight: 600;">
-                <i class="fas fa-award" style="color: #00B2E2;"></i> ROS Certificate Generator v3.2
+                <i class="fas fa-award" style="color: #00B2E2;"></i> ROS Certificate Generator v3.3
             </h2>
             <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px; font-family: 'Poppins', sans-serif;">
-                Verified production layout with 1000363821.jpg custom gradient bars. Guaranteed zero bottom clipping.
+                Verified production layout with 1000363826.jpg custom palette & transparent text gradient. Guaranteed zero bottom clipping.
             </p>
             
             <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 20px;">
@@ -157,7 +157,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                 if(!isNaN(regDateObj)) regDateText = regDateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
             }
 
-            // 🎨 প্রিমিয়াম জেনারেটেড আর্কিটেকচার বডি 
+            // 🎨 প্রিমিয়াম জেনারেটেড আর্কিটেকচার বডি
             certDynamicBody.innerHTML = `
                 <div style="width: 842px; height: 595px; box-sizing: border-box; padding: 50px; position: relative;
                             background: radial-gradient(circle at 50% 35%, #ffffff 0%, #f3fcfe 60%, #cdf2fa 100%); margin: 0; overflow: hidden; font-family: 'Poppins', sans-serif;">
@@ -189,8 +189,8 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                         
                         <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start;">
                             <div style="font-size: 11px; color: #002b3d; text-align: left; line-height: 1.4; font-weight: 500;">
-                                <!-- সিরিয়াল নং থিমের হলুদ রং করা হলো -->
-                                <div><strong style="color: #00B2E2; font-weight: 600;">SERIAL NO:</strong> <span style="font-weight: 700; color: #FFD700;">${currentCertNumber}</span></div>
+                                <!-- সার্টিফিকেট সিরিয়াল নাম্বার 1000363826.jpg কালারে রূপান্তর -->
+                                <div><strong style="color: #00B2E2; font-weight: 600;">SERIAL NO:</strong> <span style="font-weight: 700; color: #E65F00;">${currentCertNumber}</span></div>
                                 <div><strong style="color: #00B2E2; font-weight: 600;">DATE OF ISSUE:</strong> <span style="font-weight: 500; color: #002b3d;">${enDate}</span></div>
                             </div>
                             <div style="background: linear-gradient(135deg, #00B2E2, #00C5FF); color: #001a24; font-size: 10px; font-weight: 600; padding: 4px 14px; border-radius: 4px; letter-spacing: 0.5px;">
@@ -206,17 +206,19 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
                             </p>
                         </div>
 
-                        <!-- 1000363821.jpg অনুকরণে গ্রেডিয়েন্ট হেডার স্ট্রিপ এরিয়া -->
+                        <!-- মেম্বারশিপ টেক্সট সেকশন: বক্স রিমুভড, ট্রান্সপারেন্ট ব্যাকগ্রাউন্ড এবং হলুদ থেকে হালকা লাল টেক্সট গ্রেডিয়েন্ট -->
                         <div style="text-align: center; width: 100%;">
-                            <div style="width: 100%; max-width: 680px; margin: 0 auto 3px auto; background: linear-gradient(to right, #ffd700, #ff8c00, #e65100); padding: 6px 10px; box-sizing: border-box; display: flex; justify-content: center; align-items: center; border-radius: 2px;">
-                                <h2 style="font-size: 21px; font-weight: 800; color: #ffffff; letter-spacing: 1px; margin: 0; text-transform: uppercase; font-family: 'Poppins', sans-serif;">
+                            <div style="margin: 0 auto 6px auto; display: inline-block;">
+                                <h2 style="font-size: 25px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; font-family: 'Poppins', sans-serif;
+                                           background: linear-gradient(to right, #FFD700 0%, #FF8C00 50%, #FF3344 100%);
+                                           -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                     CERTIFICATE OF MEMBERSHIP
                                 </h2>
                             </div>
                             
                             <p style="font-size: 11px; font-style: italic; color: #475569; margin: 0 0 12px 0;">This is to officially certify that</p>
                             
-                            <!-- নাম সম্পূর্ণ কালো রঙে এবং নিচের টানটি থিমের নীল (Cyan) রঙে রূপান্তর -->
+                            <!-- নাম সম্পূর্ণ গভীর কালো রঙে এবং নিচের টানটি থিমের নীল (Cyan) রঙে -->
                             <div style="font-size: 23px; font-weight: 800; color: #000000; border-bottom: 2.5px solid #00B2E2; display: inline-block; padding-bottom: 4px; min-width: 440px; text-transform: uppercase; letter-spacing: 0.5px;">
                                 ${selectedMember.englishName || selectedMember.fullName || "OFFICIAL MEMBER"}
                             </div>
@@ -228,9 +230,9 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
                         <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
                             
-                            <!-- রেজিস্ট্রেশন ডাটা নোড (রেজিস্ট্রেশন নং থিমের হলুদ রং করা হলো) -->
+                            <!-- রেজিস্ট্রেশন ডাটা নোড (রেজিস্ট্রেশন নং 1000363826.jpg কালারে রূপান্তর করা হলো) -->
                             <div style="background: #ffffff; border: 1.5px solid #00B2E2; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 4px; padding: 4px 18px; display: flex; gap: 20px; justify-content: center; align-items: center; font-size: 11px; color: #002b3d;">
-                                <div><span style="color: #64748b;">Registration No:</span> <strong style="color: #FFD700; font-size: 11px; margin-left: 2px; font-weight: 700;">${displayMemberId}</strong></div>
+                                <div><span style="color: #64748b;">Registration No:</span> <strong style="color: #E65F00; font-size: 11px; margin-left: 2px; font-weight: 800;">${displayMemberId}</strong></div>
                                 <div style="width: 1px; height: 10px; background: rgba(0,178,226,0.2);"></div>
                                 <div><span style="color: #64748b;">Registration Date:</span> <strong style="color: #002b3d; margin-left: 2px; font-weight: 600;">${regDateText}</strong></div>
                             </div>
@@ -244,7 +246,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
                                 <div style="display: flex; flex-direction: column; align-items: center; gap: 1px; margin-bottom: -4px;">
                                     <div style="border: 1.5px solid #00B2E2; padding: 2px; background: #ffffff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,178,226,0.12);">
-                                        <img src="qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png" style="width: 46px; height: 46px; display: block;" />
+                                        <img src="qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png; " style="width: 46px; height: 46px; display: block;" />
                                     </div>
                                     <div style="font-size: 7.5px; color: #64748b; font-weight: 500;">Verification Node</div>
                                 </div>
@@ -275,7 +277,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
     // 🚀 হাই-শার্পনেস ক্রিস্টাল পিডিএফ এক্সপোর্ট মেকানিজম (ফিক্সড রেন্ডার টার্গেট)
     document.getElementById('downloadCertBtn').addEventListener('click', () => {
-        const targetElement = document.getElementById('certDynamicBody'); // সরাসরি ডাইনামিক নোড টার্গেট ফিক্স
+        const targetElement = document.getElementById('certDynamicBody');
         
         if (!window.html2pdf) {
             alert("PDF engine assets are still loading. Please try again in a few moments.");
