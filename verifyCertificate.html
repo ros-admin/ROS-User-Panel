@@ -246,7 +246,7 @@
     
     try {
       // কনফিগ ফাইল থেকে ডাটা ইম্পোর্ট ট্রাই করা হচ্ছে
-      const configData = await import("../firebase-config.js");
+      const configData = await import("firebase-config.js");
       firebaseConfig = configData.default?.firebaseConfig || configData.default || configData.firebaseConfig || configData;
     } catch (e) {
       console.error("Config File Import Failed, falling back to window object:", e);
