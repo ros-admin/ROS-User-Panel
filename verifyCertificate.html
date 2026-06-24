@@ -13,105 +13,36 @@
       --dark-bg: #030a16;         
       --panel-bg: #051124;        
       --glass-bg: rgba(6, 20, 43, 0.5); 
-      --secondary: #00f5ff;       /* ইলেকট্রিক সায়ান নিয়ন */
-      --accent: #ffb703;          /* প্রিমিয়াম গোল্ডেন */
+      --secondary: #00f5ff;       
+      --accent: #ffb703;          
       --neon-green: #00f5d4;      
-      --neon-red: #ff4d6d;        
       --text-light: #f8fafc;      
       --text-muted: #64748b;      
       --glass-border: rgba(0, 245, 255, 0.15);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', 'Orbitron', sans-serif; }
-    
-    body { 
-      background-color: var(--dark-bg); 
-      color: var(--text-light);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background-image: radial-gradient(circle at 50% 50%, #0a1f3d 0%, #030a16 100%);
-    }
-
-    .verification-container {
-      width: 100%;
-      max-width: 600px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      border: 1px solid var(--glass-border);
-      padding: 35px;
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(0, 245, 255, 0.1);
-      text-align: center;
-      animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
+    body { background-color: var(--dark-bg); color: var(--text-light); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background-image: radial-gradient(circle at 50% 50%, #0a1f3d 0%, #030a16 100%); }
+    .verification-container { width: 100%; max-width: 600px; background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-border); padding: 35px; border-radius: 16px; box-shadow: 0 0 30px rgba(0, 245, 255, 0.1); text-align: center; }
     .logo-zone img { width: 70px; height: 70px; margin-bottom: 10px; }
     .logo-zone h1 { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: 1px; }
     .logo-zone p { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 30px; }
-
     .input-group { display: flex; flex-direction: column; text-align: left; margin-bottom: 20px; gap: 8px; }
     .input-group label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
     .input-group i { margin-right: 5px; color: var(--secondary); }
-    
-    .input-field {
-      background: #030712;
-      border: 1px solid var(--glass-border);
-      padding: 13px 16px;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 14px;
-      transition: all 0.3s;
-    }
-    .input-field:focus {
-      border-color: var(--secondary);
-      outline: none;
-      box-shadow: 0 0 12px rgba(0, 245, 255, 0.25);
-    }
-    .input-field[type="text"] { text-transform: uppercase; letter-spacing: 0.5px; }
-
-    .verify-btn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--secondary), var(--neon-green));
-      color: #030a16;
-      padding: 14px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 15px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 15px rgba(0, 245, 255, 0.2);
-      transition: all 0.3s;
-      margin-top: 10px;
-    }
+    .input-field { background: #030712; border: 1px solid var(--glass-border); padding: 13px 16px; border-radius: 8px; color: #fff; font-size: 14px; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px; }
+    .input-field:focus { border-color: var(--secondary); outline: none; box-shadow: 0 0 12px rgba(0, 245, 255, 0.25); }
+    .verify-btn { width: 100%; background: linear-gradient(135deg, var(--secondary), var(--neon-green)); color: #030a16; padding: 14px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 245, 255, 0.2); transition: all 0.3s; margin-top: 10px; }
     .verify-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 245, 255, 0.35); }
-    .verify-btn:disabled { background: var(--text-muted); cursor: not-allowed; opacity: 0.6; }
-
-    .result-zone { display: none; width: 100%; max-width: 600px; margin-top: 25px; animation: fadeInUp 0.5s ease; }
+    .result-zone { display: none; width: 100%; max-width: 600px; margin-top: 25px; }
     .result-card { background: linear-gradient(145deg, rgba(5, 17, 36, 0.9), rgba(3, 10, 22, 0.95)); border: 1px solid rgba(0, 245, 212, 0.25); padding: 35px; border-radius: 16px; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
-    .verified-stamp { position: absolute; top: 20px; right: 20px; background: var(--neon-green); color: #030a16; font-size: 11px; font-weight: bold; padding: 5px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 0 15px rgba(0,245,212,0.4); }
+    .verified-stamp { position: absolute; top: 20px; right: 20px; background: var(--neon-green); color: #030a16; font-size: 11px; font-weight: bold; padding: 5px 14px; border-radius: 20px; text-transform: uppercase; }
     .result-title { color: var(--secondary); font-size: 17px; margin-bottom: 25px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(0, 245, 255, 0.1); padding-bottom: 12px; }
     .info-grid { display: flex; flex-direction: column; gap: 16px; }
     .info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 12px; font-size: 14.5px; }
     .lbl { color: var(--text-muted); }
     .val { text-align: right; color: #e2e8f0; }
-
-    @keyframes fadeInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    @media (max-width: 500px) {
-      .verification-container, .result-card { padding: 25px 20px; }
-      .info-row { flex-direction: column; align-items: flex-start; gap: 4px; }
-      .val { text-align: left; width: 100%; }
-      .verified-stamp { position: static; display: inline-block; margin-bottom: 15px; }
-    }
+    @media (max-width: 500px) { .info-row { flex-direction: column; align-items: flex-start; gap: 4px; } .val { text-align: left; width: 100%; } .verified-stamp { position: static; display: inline-block; margin-bottom: 15px; } }
   </style>
 </head>
 <body>
@@ -125,17 +56,12 @@
 
     <form id="publicVerifyForm">
       <div class="input-group">
-        <label for="certNo"><i class="fas fa-fingerprint"></i> সার্টিফিকেট নাম্বার (Certificate Number)</label>
+        <label for="certNo"><i class="fas fa-fingerprint"></i> সার্টিফিকেট নাম্বার লিখুন (Enter Certificate Number)</label>
         <input type="text" id="certNo" class="input-field" placeholder="যেমন: ROS-618441" required autocomplete="off">
       </div>
 
-      <div class="input-group">
-        <label for="issueDate"><i class="far fa-calendar-alt"></i> ইস্যুর তারিখ (Date of Issue)</label>
-        <input type="date" id="issueDate" class="input-field" required>
-      </div>
-
       <button type="submit" id="submitBtn" class="verify-btn">
-        <i class="fas fa-shield-alt"></i> সার্টিফিকেট ভেরিফাই করুন
+        <i class="fas fa-shield-alt"></i> সার্টিফিকেট যাচাই করুন
       </button>
     </form>
   </div>
@@ -146,38 +72,14 @@
       <h3 class="result-title"><i class="fas fa-address-card"></i> সার্টিফিকেটের অফিসিয়াল বিবরণী</h3>
 
       <div class="info-grid">
-        <div class="info-row">
-          <span class="lbl">👤 ব্যক্তির নাম:</span>
-          <span id="resName" class="val" style="color: #fff; font-weight: bold; font-size: 15.5px;">—</span>
-        </div>
-        <div class="info-row">
-          <span class="lbl">🆔 রেজিস্ট্রেশন নাম্বার:</span>
-          <span id="resRegNo" class="val" style="font-family: 'Arial'; color: var(--accent); font-weight: bold;">—</span>
-        </div>
-        <div class="info-row">
-          <span class="lbl">📅 নিবন্ধনের তারিখ:</span>
-          <span id="resRegDate" class="val">—</span>
-        </div>
-        <div class="info-row">
-          <span class="lbl">🎂 জন্ম তারিখ:</span>
-          <span id="resBirthDate" class="val">—</span>
-        </div>
-        <div class="info-row">
-          <span class="lbl">👨 বাবার নাম:</span>
-          <span id="resFatherName" class="val">—</span>
-        </div>
-        <div class="info-row">
-          <span class="lbl">👩 মায়ের নাম:</span>
-          <span id="resMotherName" class="val">—</span>
-        </div>
-        <div class="info-row" style="background: rgba(0, 245, 255, 0.03); padding: 10px; border-radius: 6px; margin-top: 5px;">
-          <span class="lbl" style="color: var(--secondary); font-weight: 500;">📜 সার্টিফিকেট নাম্বার:</span>
-          <span id="resCertNo" class="val" style="color: var(--secondary); font-family: 'Arial'; font-weight: bold;">—</span>
-        </div>
-        <div class="info-row">
-          <span class="lbl">🗓️ সার্টিফিকেট ইস্যুর তারিখ:</span>
-          <span id="resCertIssueDate" class="val" style="font-weight: 600;">—</span>
-        </div>
+        <div class="info-row"><span class="lbl">👤 ব্যক্তির নাম:</span><span id="resName" class="val" style="color: #fff; font-weight: bold;">—</span></div>
+        <div class="info-row"><span class="lbl">🆔 রেজিস্ট্রেশন নাম্বার:</span><span id="resRegNo" class="val" style="color: var(--accent); font-weight: bold;">—</span></div>
+        <div class="info-row"><span class="lbl">📅 নিবন্ধনের তারিখ:</span><span id="resRegDate" class="val">—</span></div>
+        <div class="info-row"><span class="lbl">🎂 জন্ম তারিখ:</span><span id="resBirthDate" class="val">—</span></div>
+        <div class="info-row"><span class="lbl">👨 বাবার নাম:</span><span id="resFatherName" class="val">—</span></div>
+        <div class="info-row"><span class="lbl">👩 মায়ের নাম:</span><span id="resMotherName" class="val">—</span></div>
+        <div class="info-row" style="background: rgba(0, 245, 255, 0.03); padding: 10px; border-radius: 6px;"><span class="lbl" style="color: var(--secondary);">📜 সার্টিফিকেট নাম্বার:</span><span id="resCertNo" class="val" style="color: var(--secondary); font-weight: bold;">—</span></div>
+        <div class="info-row"><span class="lbl">🗓️ সার্টিফিকেট ইস্যুর তারিখ:</span><span id="resCertIssueDate" class="val" style="font-weight: 600;">—</span></div>
       </div>
     </div>
   </div>
@@ -186,7 +88,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-    // ⚠️ আপনার আসল ফায়ারবেস কনফিগ ডাটা এখানে দিন
+    // ⚠️ আপনার ফায়ারবেস কনফিগ এখানে রিপ্লেস করুন
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_AUTH_DOMAIN",
@@ -205,16 +107,14 @@
 
     verifyForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const inputCertNo = document.getElementById('certNo').value.trim().toUpperCase();
-      const inputDate = document.getElementById('issueDate').value; 
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ডাটাবেজ যাচাই করা হচ্ছে...`;
+      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ভেরিফাই করা হচ্ছে...`;
       resultZone.style.display = 'none';
 
       try {
-        // ১. 'issued_certificates' কালেকশনে সার্টিফিকেট নম্বর ম্যাচ করা হচ্ছে
+        // ১. শুধু সার্টিফিকেট নাম্বার দিয়ে কুয়েরি করা হচ্ছে
         const certQuery = query(collection(db, "issued_certificates"), where("certificateNo", "==", inputCertNo));
         const querySnapshot = await getDocs(certQuery);
 
@@ -226,23 +126,11 @@
         let certData = null;
         querySnapshot.forEach(s => { certData = s.data(); });
 
-        // ফিক্সড টাইমজোন লজিক: ফায়ারবেস টাইমস্ট্যাম্পকে লোকাল ডেট স্ট্রিং (YYYY-MM-DD) এ কনভার্ট করা হচ্ছে
+        // ২. টাইমস্ট্যাম্প থেকে ডেট বের করা (নিখুঁত লোকাল মেথড)
         const dbIssuedDate = certData.issuedAt?.seconds ? new Date(certData.issuedAt.seconds * 1000) : new Date(certData.issuedAt);
-        
-        const year = dbIssuedDate.getFullYear();
-        const month = String(dbIssuedDate.getMonth() + 1).padStart(2, '0');
-        const day = String(dbIssuedDate.getDate()).padStart(2, '0');
-        const dbDateString = `${year}-${month}-${day}`; // পিওর লোকাল ডেট ম্যাচিং
 
-        // ২. ইস্যুর তারিখের ভ্যালিডেশন চেক
-        if (inputDate !== dbDateString) {
-          alert("⚠️ সার্টিফিকেট নাম্বার সঠিক হলেও, ইস্যুর তারিখটি আমাদের রেকর্ডের সাথে মিলছে না!");
-          return;
-        }
-
-        // ৩. 'users' কালেকশন থেকে ডাটা রিড করা হচ্ছে
+        // ৩. মেম্বার প্রোফাইল ডাটা নিয়ে আসা
         const userDocSnap = await getDoc(doc(db, "users", certData.userId));
-
         if (!userDocSnap.exists()) {
           alert("❌ সার্টিফিকেটের রেকর্ড আছে কিন্তু সংশ্লিষ্ট ব্যবহারকারীর প্রোফাইল পাওয়া যায়নি।");
           return;
@@ -250,41 +138,37 @@
 
         const userData = userDocSnap.data();
 
-        // ৪. UI কার্ডে ডাটা বসানো হচ্ছে
+        // ৪. UI-তে ডাটা সাজানো (দুই ধরণের ফিল্ড হ্যান্ডলিং সহ)
         document.getElementById('resName').innerText = userData.banglaName || userData.englishName || userData.fullName || "সদস্য";
         document.getElementById('resRegNo').innerText = userDocSnap.id.toUpperCase();
         
-        // ইউজার রেজিস্টার্ড ডেট কনভার্ট
+        // রেজিস্ট্রেশন ডেট কনভার্ট
         let regDateText = "উল্লেখ নেই";
-        if(userData.createdAt) {
+        if (userData.createdAt) {
           const regDateObj = userData.createdAt.seconds ? new Date(userData.createdAt.seconds * 1000) : new Date(userData.createdAt);
-          if(!isNaN(regDateObj)) regDateText = regDateObj.toLocaleDateString('bn-BD');
-        } else if (userData.createdAtStr) {
-          // যদি স্ক্রিনশটের মতো সাধারণ স্ট্রিং থাকে ("2026-06-17T...")
-          const regDateObj = new Date(userData.createdAt);
           if(!isNaN(regDateObj)) regDateText = regDateObj.toLocaleDateString('bn-BD');
         }
         document.getElementById('resRegDate').innerText = regDateText;
         
-        // অন্যান্য প্রোফাইল মেটাডাটা
-        document.getElementById('resBirthDate').innerText = userData.dob ? new Date(userData.dob).toLocaleDateString('bn-BD') : (userData.birthDate || "উল্লেখ নেই");
+        // জন্ম তারিখ হ্যান্ডলিং (dob এবং birthDate দুটির যেকোনো একটি থাকলেই রিড করবে)
+        const birthDateVal = userData.birthDate || userData.dob || "উল্লেখ নেই";
+        document.getElementById('resBirthDate').innerText = (birthDateVal !== "উল্লেখ নেই") ? new Date(birthDateVal).toLocaleDateString('bn-BD') : birthDateVal;
+        
         document.getElementById('resFatherName').innerText = userData.fatherName || "উল্লেখ নেই";
         document.getElementById('resMotherName').innerText = userData.motherName || "উল্লেখ নেই";
         
-        // সার্টিফিকেট ইনফো
         document.getElementById('resCertNo').innerText = certData.certificateNo;
         document.getElementById('resCertIssueDate').innerText = dbIssuedDate.toLocaleDateString('bn-BD') + ` (${certData.language === 'bn' ? 'বাংলা সংস্করণ' : 'English Version'})`;
 
-        // সফলভাবে ফলাফল প্রদর্শন
         resultZone.style.display = 'block';
         resultZone.scrollIntoView({ behavior: 'smooth' });
 
       } catch (error) {
-        console.error("Verification Engine Error:", error);
+        console.error(error);
         alert("সার্ভার রেসপন্স করছে না। অনুগ্রহ করে আবার চেষ্টা করুন।");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="fas fa-shield-alt"></i> সার্টিফিকেট ভেরিফাই করুন`;
+        submitBtn.innerHTML = `<i class="fas fa-shield-alt"></i> সার্টিফিকেট যাচাই করুন`;
       }
     });
   </script>
