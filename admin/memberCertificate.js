@@ -163,7 +163,7 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
             const certRef = collection(db, "issued_certificates");
             const qSnapshot = await getDocs(query(certRef));
             const nextSerial = String(qSnapshot.size + 1).padStart(4, '0');
-            return `ROS-MCS-${nextSerial}`;
+            return `ROS-MSC-${nextSerial}`;
         } catch (e) { 
             return "ROS-" + Math.floor(100000 + Math.random() * 900000); 
         }
@@ -269,9 +269,9 @@ window.loadCertificatesModule = function(container, db, collection, onSnapshot, 
 
                             <div style="display: flex; flex-direction: column; align-items: center; gap: 1px; margin-bottom: -4px;">
                                 <div style="border: 1.5px solid #00B2E2; padding: 2px; background: #ffffff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,178,226,0.12);">
-                                    <img src="qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png" style="width: 46px; height: 46px; display: block;" />
+                                    <img src="../qrcode_366631672_b43cf58aa0690b3ab9c14d955f7d6c19.png" style="width: 46px; height: 46px; display: block;" />
                                 </div>
-                                <div style="font-size: 7.5px; color: #64748b; font-weight: 500;">Verification Node</div>
+                                <div style="font-size: 7.5px; color: #64748b; font-weight: 500;">Scan To Verify</div>
                             </div>
 
                             <div style="text-align: center; width: 170px;">
